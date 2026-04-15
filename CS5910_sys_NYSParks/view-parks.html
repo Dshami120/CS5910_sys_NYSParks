@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discover Parks - Parks & Recreation</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Maps API -->
+ <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAqa41ar5wdkz_m4gzKKS65ugAlxPnsJow&callback=initMap"></script>
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            margin: 20px 0;
+        }
+
+        .map-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .park-info {
+            background: rgba(255,255,255,0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .park-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .park-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .park-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .park-card h3 {
+            margin: 0 0 10px 0;
+            color: #2E7D32;
+        }
+
+        .park-card p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #4CAF50;
+            background: white;
+            color: #4CAF50;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <ul class="nav-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about-us.html">About Us</a></li>
+          <li><a href="events.html">View Events</a></li>
+          <li><a href="view-parks.html" class="active">Discover Parks</a></li>
+          <li><a href="ai-assistant.html">AI Assist</a></li>
+          <li><a href="news.html">News</a></li>
+          <li><a href="faqs.html">FAQs</a></li>
+          <li><a href="donate.html">Donate</a></li>
+        </ul>
+        <div class="nav-auth">
+          <a href="login.html">Login</a>
+          <a href="signup.html" class="signup-btn">Sign Up</a>
+        </div>
+    </nav>
+
+    <div class="map-container">
+        <h1>Discover Parks</h1>
+        <p>Explore New York State Parks on our interactive map. Click on park markers to learn more about each location.</p>
+
+        <div class="filter-controls">
+            <button class="filter-btn active" data-filter="all">All Parks</button>
+            <button class="filter-btn" data-filter="beach">Beach Parks</button>
+            <button class="filter-btn" data-filter="mountain">Mountain Parks</button>
+            <button class="filter-btn" data-filter="lake">Lake Parks</button>
+            <button class="filter-btn" data-filter="historical">Historical Sites</button>
+        </div>
+
+        <div id="map"></div>
+
+        <div class="park-info">
+            <h2>Park Information</h2>
+            <p>Click on a park marker on the map or select a park below to view details.</p>
+            <div id="park-details"></div>
+        </div>
+
+        <div class="park-list" id="park-list">
+            <!-- Park cards will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let markers = [];
+        let infoWindow;
+
+        // Sample park data with coordinates
+        const parks = [
+            {
+                name: "Jones Beach State Park",
+                type: "beach",
+                lat: 40.6066,
+                lng: -73.5117,
+                description: "Beautiful beach park with boardwalk, playgrounds, and water activities.",
+                address: "Jones Beach State Pkwy, Wantagh, NY 11793",
+                amenities: ["Beach", "Boardwalk", "Playgrounds", "Fishing", "Camping"]
+            },
+            {
+                name: "Bear Mountain State Park",
+                type: "mountain",
+                lat: 41.3165,
+                lng: -73.9868,
+                description: "Scenic mountain park with hiking trails, zoo, and Hudson River views.",
+                address: "Bear Mountain State Park, Bear Mountain, NY 10911",
+                amenities: ["Hiking", "Zoo", "Camping", "Fishing", "Picnic Areas"]
+            },
+            {
+                name: "Robert Moses State Park",
+                type: "beach",
+                lat: 40.6368,
+                lng: -73.2551,
+                description: "Long Island beach park with camping, fishing, and water sports.",
+                address: "Robert Moses State Park, Babylon, NY 11702",
+                amenities: ["Beach", "Camping", "Fishing", "Boating", "Playgrounds"]
+            },
+            {
+                name: "Letchworth State Park",
+                type: "mountain",
+                lat: 42.4347,
+                lng: -78.0519,
+                description: "Known as the 'Grand Canyon of the East' with stunning gorges and waterfalls.",
+                address: "Letchworth State Park, Mount Morris, NY 14510",
+                amenities: ["Hiking", "Camping", "Fishing", "Scenic Views", "Photography"]
+            },
+            {
+                name: "Saratoga Spa State Park",
+                type: "lake",
+                lat: 43.0326,
+                lng: -73.7672,
+                description: "Mineral springs park with pools, golf course, and Saratoga Race Course nearby.",
+                address: "Saratoga Spa State Park, Saratoga Springs, NY 12866",
+                amenities: ["Swimming Pools", "Golf", "Camping", "Mineral Springs", "Pavilion"]
+            },
+            {
+                name: "Stony Brook State Park",
+                type: "lake",
+                lat: 40.9126,
+                lng: -73.1393,
+                description: "Lake park with beaches, camping, and recreational activities.",
+                address: "Stony Brook State Park, Stony Brook, NY 11790",
+                amenities: ["Lake", "Beach", "Camping", "Fishing", "Boating"]
+            },
+            {
+                name: "Washington's Headquarters State Historic Site",
+                type: "historical",
+                lat: 41.4031,
+                lng: -73.6062,
+                description: "Historic site where George Washington headquartered during Revolutionary War.",
+                address: "Washington's Headquarters State Historic Site, Newburgh, NY 12550",
+                amenities: ["Historic Buildings", "Museum", "Guided Tours", "Picnic Areas"]
+            },
+            {
+                name: "Clinton House State Historic Site",
+                type: "historical",
+                lat: 42.6526,
+                lng: -73.7572,
+                description: "Home of DeWitt Clinton, featuring period furnishings and gardens.",
+                address: "Clinton House State Historic Site, Poughkeepsie, NY 12601",
+                amenities: ["Historic House", "Gardens", "Museum", "Educational Programs"]
+            }
+        ];
+
+        function initMap() {
+            // Center on New York State
+            const nyCenter = { lat: 42.1497, lng: -74.9384 };
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 7,
+                center: nyCenter,
+                styles: [
+                    {
+                        featureType: 'poi.park',
+                        elementType: 'geometry',
+                        stylers: [{ color: '#c8e6c9' }]
+                    }
+                ]
+            });
+
+            infoWindow = new google.maps.InfoWindow();
+
+            // Add markers for all parks
+            addParkMarkers('all');
+
+            // Create park list
+            createParkList();
+        }
+
+        function addParkMarkers(filterType) {
+            // Clear existing markers
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
+
+            const filteredParks = filterType === 'all' ?
+                parks :
+                parks.filter(park => park.type === filterType);
+
+            filteredParks.forEach(park => {
+                const marker = new google.maps.Marker({
+                    position: { lat: park.lat, lng: park.lng },
+                    map: map,
+                    title: park.name,
+                    icon: {
+                        url: getMarkerIcon(park.type),
+                        scaledSize: new google.maps.Size(30, 30)
+                    }
+                });
+
+                marker.addListener('click', () => {
+                    showParkInfo(park);
+                });
+
+                markers.push(marker);
+            });
+
+            // Adjust map bounds to show all markers
+            if (markers.length > 0) {
+                const bounds = new google.maps.LatLngBounds();
+                markers.forEach(marker => bounds.extend(marker.getPosition()));
+                map.fitBounds(bounds);
+            }
+        }
+
+        function getMarkerIcon(type) {
+            const icons = {
+                beach: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                    <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="15" cy="15" r="14" fill="#FF6B35" stroke="white" stroke-width="2"/>
+                        <path d="M8 20 Q15 10 22 20" stroke="white" stroke-width="3" fill="none"/>
+                    </svg>`),
+                mountain: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                    <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="15" cy="15" r="14" fill="#8B4513" stroke="white" stroke-width="2"/>
+                        <polygon points="8,22 15,8 22,22" fill="white"/>
+                    </svg>`),
+                lake: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                    <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="15" cy="15" r="14" fill="#4682B4" stroke="white" stroke-width="2"/>
+                        <ellipse cx="15" cy="18" rx="8" ry="4" fill="white"/>
+                    </svg>`),
+                historical: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                    <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="15" cy="15" r="14" fill="#8B0000" stroke="white" stroke-width="2"/>
+                        <rect x="12" y="10" width="6" height="8" fill="white"/>
+                        <polygon points="9,10 15,6 21,10" fill="white"/>
+                    </svg>`)
+            };
+            return icons[type] || 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="30" height="30" viewBox="0 0 30 30" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="15" cy="15" r="14" fill="#4CAF50" stroke="white" stroke-width="2"/>
+                    <circle cx="15" cy="15" r="6" fill="white"/>
+                </svg>`);
+        }
+
+        function showParkInfo(park) {
+            const content = `
+                <div style="max-width: 250px;">
+                    <h3 style="margin: 0 0 10px 0; color: #2E7D32;">${park.name}</h3>
+                    <p style="margin: 5px 0;"><strong>Type:</strong> ${park.type.charAt(0).toUpperCase() + park.type.slice(1)}</p>
+                    <p style="margin: 5px 0;"><strong>Address:</strong> ${park.address}</p>
+                    <p style="margin: 5px 0;">${park.description}</p>
+                    <p style="margin: 5px 0;"><strong>Amenities:</strong> ${park.amenities.join(', ')}</p>
+                </div>
+            `;
+
+            infoWindow.setContent(content);
+            infoWindow.open(map, markers.find(m => m.title === park.name));
+        }
+
+        function createParkList() {
+            const parkList = document.getElementById('park-list');
+
+            parks.forEach(park => {
+                const card = document.createElement('div');
+                card.className = 'park-card';
+                card.onclick = () => {
+                    map.setCenter({ lat: park.lat, lng: park.lng });
+                    map.setZoom(12);
+                    showParkInfo(park);
+                };
+
+                card.innerHTML = `
+                    <h3>${park.name}</h3>
+                    <p><strong>Type:</strong> ${park.type.charAt(0).toUpperCase() + park.type.slice(1)}</p>
+                    <p>${park.description.substring(0, 100)}...</p>
+                    <p><strong>Amenities:</strong> ${park.amenities.slice(0, 3).join(', ')}${park.amenities.length > 3 ? '...' : ''}</p>
+                `;
+
+                parkList.appendChild(card);
+            });
+        }
+
+        // Filter button event listeners
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                addParkMarkers(btn.dataset.filter);
+            });
+        });
+
+        // Handle API loading error
+        window.initMap = initMap;
+    </script>
+</body>
+<footer>
+    <p>&copy; 2026 New York State Parks & Recreation. All rights reserved.</p>
+    <p>Follow us on social media!
+        <a href="https://www.facebook.com/NYSparks" target="_blank">Facebook</a> |
+        <a href="https://twitter.com/NYSparks" target="_blank">Twitter</a> |
+        <a href="https://www.instagram.com/nysparks/" target="_blank">Instagram</a>
+    </p>
+    <p>Contact us at info@nysparks.gov or call (555) 123-4567.</p>
+</footer>
+</html>
