@@ -1,0 +1,508 @@
+/* =========================================================
+   NYS PARKS & RECREATION - SHARED SITE STYLES
+   ---------------------------------------------------------
+   This is the one shared stylesheet for the whole starter site.
+   The design follows the mockup direction:
+   - bright white layout
+   - green / teal accent color
+   - navy gradient feature panels
+   - rounded cards
+   - soft shadows
+   - simple Bootstrap-first spacing
+   ========================================================= */
+
+/* -------------------------------
+   ROOT THEME VALUES
+   Keep colors in one place so
+   they are easy to change later.
+-------------------------------- */
+:root {
+  --nys-green: #14b87a;
+  --nys-green-dark: #0f9a66;
+  --nys-teal: #74f0cf;
+  --nys-navy: #0f1834;
+  --nys-navy-2: #142347;
+  --nys-text: #1f2937;
+  --nys-muted: #6b7280;
+  --nys-border: #e9eef5;
+  --nys-surface: #ffffff;
+  --nys-surface-soft: #f7fafc;
+  --nys-shadow: 0 14px 40px rgba(15, 24, 52, 0.08);
+  --nys-radius-lg: 1.35rem;
+  --nys-radius-xl: 1.75rem;
+}
+
+/* -------------------------------
+   BASIC PAGE RESET / TYPOGRAPHY
+-------------------------------- */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--nys-text);
+  background: #ffffff;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  transition: 0.2s ease;
+}
+
+main {
+  min-height: calc(100vh - 170px);
+}
+
+/* -------------------------------
+   SHARED BRAND / NAV STYLES
+-------------------------------- */
+.site-header {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--nys-border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.brand-link {
+  color: inherit;
+}
+
+.brand-link:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.brand-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #20d39b, #14b87a);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(20, 184, 122, 0.2);
+}
+
+.brand-mark {
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.brand-mark small {
+  color: var(--nys-green-dark);
+  letter-spacing: 0.12em;
+  font-size: 0.64rem;
+}
+
+.nav-link-custom {
+  color: var(--nys-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.35rem 0.15rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nav-link-custom:hover {
+  color: var(--nys-text);
+  text-decoration: none;
+}
+
+.active-link {
+  color: var(--nys-green-dark);
+  font-weight: 700;
+}
+
+.nav-pill-btn {
+  border-radius: 999px;
+  padding: 0.72rem 1.25rem;
+  font-weight: 700;
+}
+
+.avatar-chip {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+/* -------------------------------
+   HERO / FEATURE PANELS
+-------------------------------- */
+.hero-shell {
+  min-height: 760px;
+  padding: 5rem 0 4rem;
+  background:
+    linear-gradient(rgba(14, 21, 39, 0.48), rgba(14, 21, 39, 0.52)),
+    url("https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1600&q=80")
+    center / cover no-repeat;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: rgba(20, 184, 122, 0.92);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.text-accent {
+  color: var(--nys-teal);
+}
+
+.hero-subtitle {
+  max-width: 720px;
+}
+
+.search-shell {
+  max-width: 900px;
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 999px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.16);
+}
+
+.filter-pill {
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  background: rgba(31, 41, 55, 0.75);
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.filter-pill:hover {
+  color: #ffffff;
+  background: rgba(31, 41, 55, 0.94);
+}
+
+.feature-panel {
+  background: linear-gradient(135deg, var(--nys-navy), #0c214c 55%, #11355f);
+  color: #ffffff;
+  border-radius: var(--nys-radius-xl);
+  box-shadow: var(--nys-shadow);
+}
+
+/* -------------------------------
+   SHARED CARD STYLES
+-------------------------------- */
+.soft-card {
+  background: var(--nys-surface);
+  border: 1px solid rgba(233, 238, 245, 0.9);
+  border-radius: var(--nys-radius-lg);
+  box-shadow: var(--nys-shadow);
+}
+
+.simple-card {
+  background: #ffffff;
+  border: 1px solid var(--nys-border);
+  border-radius: 1.2rem;
+}
+
+.image-card {
+  background: #ffffff;
+  border-radius: 1.3rem;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(15, 24, 52, 0.08);
+  border: 1px solid rgba(233, 238, 245, 0.9);
+}
+
+.image-cover-sm {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.image-cover-md {
+  width: 100%;
+  height: 260px;
+  object-fit: cover;
+}
+
+.image-cover-event {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+}
+
+.map-link {
+  color: var(--nys-green-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.map-link:hover {
+  color: var(--nys-green-dark);
+  text-decoration: underline;
+}
+
+.stat-card {
+  background: #ffffff;
+  border: 1px solid var(--nys-border);
+  border-radius: 1.2rem;
+  padding: 1.2rem;
+  min-height: 120px;
+  box-shadow: 0 10px 24px rgba(15, 24, 52, 0.05);
+}
+
+.stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.stat-icon.green { background: rgba(20, 184, 122, 0.12); color: var(--nys-green-dark); }
+.stat-icon.blue { background: rgba(59, 130, 246, 0.12); color: #2563eb; }
+.stat-icon.purple { background: rgba(168, 85, 247, 0.12); color: #9333ea; }
+.stat-icon.gold { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+
+.section-kicker {
+  color: var(--nys-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* -------------------------------
+   FEATURED CHART / BAR MOCKS
+   These are simple CSS visuals.
+-------------------------------- */
+.fake-chart {
+  min-height: 280px;
+  background:
+    linear-gradient(180deg, rgba(20,184,122,0.12), rgba(20,184,122,0) 75%),
+    linear-gradient(to right, rgba(99,102,241,0.18), rgba(99,102,241,0.02));
+  border: 1px solid var(--nys-border);
+  border-radius: 1.35rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.fake-chart::after {
+  content: "";
+  position: absolute;
+  inset: 12% 6% 12% 6%;
+  background: linear-gradient(180deg, rgba(20,184,122,0.65), rgba(20,184,122,0.08));
+  clip-path: polygon(0 78%, 15% 72%, 33% 58%, 50% 49%, 67% 42%, 82% 28%, 100% 10%, 100% 100%, 0 100%);
+  border-radius: 1rem;
+}
+
+.bar-chart {
+  min-height: 280px;
+  border: 1px solid var(--nys-border);
+  border-radius: 1.35rem;
+  padding: 1.5rem;
+  background: #ffffff;
+}
+
+.bar-row {
+  min-height: 190px;
+  align-items: end;
+}
+
+.bar {
+  border-radius: 0.9rem 0.9rem 0 0;
+  background: linear-gradient(180deg, #18d38f, #0fb679);
+  min-height: 30px;
+}
+
+/* -------------------------------
+   TABLES / LIST BLOCKS
+-------------------------------- */
+.list-shell {
+  background: #ffffff;
+  border: 1px solid var(--nys-border);
+  border-radius: 1.2rem;
+  overflow: hidden;
+}
+
+.list-row {
+  border-bottom: 1px solid var(--nys-border);
+}
+
+.list-row:last-child {
+  border-bottom: 0;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.status-pending { background: rgba(245, 158, 11, 0.12); color: #b45309; }
+.status-approved,
+.status-active,
+.status-published { background: rgba(20, 184, 122, 0.12); color: var(--nys-green-dark); }
+.status-denied,
+.status-cancelled { background: rgba(239, 68, 68, 0.12); color: #b91c1c; }
+.status-draft { background: rgba(99,102,241,0.10); color: #4338ca; }
+
+/* -------------------------------
+   PAGE-SPECIFIC COMPONENTS
+-------------------------------- */
+.event-card {
+  border: 1px solid var(--nys-border);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 24, 52, 0.06);
+}
+
+.event-date-badge {
+  width: 56px;
+  border-radius: 0.95rem;
+  background: #ffffff;
+  border: 1px solid var(--nys-border);
+  box-shadow: 0 8px 18px rgba(15,24,52,0.08);
+}
+
+.category-badge {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--nys-green-dark);
+}
+
+.profile-banner {
+  min-height: 120px;
+  border-radius: 1.5rem 1.5rem 0 0;
+  background: linear-gradient(90deg, #14b87a, #12c39f);
+}
+
+.profile-photo-lg {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #ffffff;
+  margin-top: -48px;
+  box-shadow: 0 10px 20px rgba(15,24,52,0.14);
+}
+
+.chat-bubble {
+  border-radius: 1rem;
+  padding: 1rem;
+  font-size: 0.94rem;
+}
+
+.chat-bubble.assistant {
+  background: rgba(255,255,255,0.12);
+  color: #ffffff;
+}
+
+.chat-bubble.user {
+  background: linear-gradient(135deg, #18d38f, #10b77a);
+  color: #ffffff;
+}
+
+.form-panel {
+  background: #ffffff;
+  border-radius: 1.35rem;
+  border: 1px solid var(--nys-border);
+  box-shadow: var(--nys-shadow);
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--nys-muted);
+}
+
+.page-hero-mini {
+  padding: 4rem 0 2rem;
+  background: linear-gradient(180deg, #f5fbf8, #ffffff);
+}
+
+.map-frame {
+  width: 100%;
+  min-height: 580px;
+  border: 0;
+  border-radius: 1.35rem;
+  box-shadow: var(--nys-shadow);
+}
+
+.footer-shell {
+  border-top: 1px solid var(--nys-border);
+  background: #ffffff;
+}
+
+/* -------------------------------
+   LOGIN / SIGNUP FORMS
+-------------------------------- */
+.auth-panel {
+  max-width: 520px;
+  margin: 0 auto;
+  border-radius: 1.5rem;
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(255,255,255,0.6);
+  box-shadow: 0 18px 40px rgba(15,24,52,0.12);
+}
+
+.auth-shell {
+  min-height: calc(100vh - 81px);
+  background:
+    linear-gradient(rgba(14, 21, 39, 0.45), rgba(14, 21, 39, 0.52)),
+    url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80")
+    center / cover no-repeat;
+}
+
+/* -------------------------------
+   RESPONSIVE ADJUSTMENTS
+-------------------------------- */
+@media (max-width: 991px) {
+  .hero-shell {
+    min-height: 680px;
+  }
+
+  .search-shell {
+    border-radius: 1.5rem;
+  }
+
+  .profile-photo-lg {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-shell {
+    min-height: 620px;
+    padding-top: 4rem;
+  }
+
+  .image-cover-sm,
+  .image-cover-md {
+    height: 210px;
+  }
+
+  .map-frame {
+    min-height: 420px;
+  }
+}
