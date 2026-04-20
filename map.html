@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Page title -->
-  <title>NYS Parks - Login</title>
+  <title>NYS Parks - Map</title>
 
   <!-- Bootstrap core CSS -->
   <link
@@ -23,7 +23,7 @@
   <!-- Shared site stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-page="login">
+<body data-page="map">
   <!-- =====================================================
        PUBLIC SITE HEADER
        - Shared top navigation for guest-facing pages
@@ -57,29 +57,44 @@
     </nav>
   </header>
 
-  <main class="auth-shell d-flex align-items-center">
-    <section class="container py-5">
-      <section class="auth-panel p-4 p-lg-5">
-        <header class="text-center mb-4">
-          <p class="section-kicker mb-2">Secure access</p>
-          <h1 class="h2 fw-bold mb-2">Log in to your account</h1>
-          <p class="text-muted mb-0">Clients, employees, and admins can all start here.</p>
-        </header>
+  <main>
+    <section class="page-hero-mini">
+      <section class="container">
+        <p class="section-kicker mb-2">Interactive discovery</p>
+        <h1 class="display-6 fw-bold mb-3">Statewide park map</h1>
+        <p class="text-muted col-lg-8 mb-0">
+          This simple starter uses a live OpenStreetMap embed. Later, your real map API can replace it with park markers and filters.
+        </p>
+      </section>
+    </section>
 
-        <form>
-          <label class="form-label">Email / Username</label>
-          <input type="email" class="form-control form-control-lg mb-3" placeholder="you@example.com" />
+    <section class="py-5">
+      <section class="container">
+        <section class="row g-4">
+          <article class="col-xl-9">
+            <iframe
+              class="map-frame"
+              title="New York State map"
+              src="https://www.openstreetmap.org/export/embed.html?bbox=-80.7%2C40.1%2C-71.5%2C45.4&layer=mapnik">
+            </iframe>
+          </article>
 
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control form-control-lg mb-4" placeholder="Enter password" />
+          <aside class="col-xl-3">
+            <section class="soft-card p-4">
+              <h2 class="h5 fw-bold mb-3">Map Notes</h2>
+              <p class="text-muted mb-3">
+                Select a park on the map in the future version to view park details, amenities, and events.
+              </p>
 
-          <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-semibold mb-3">
-            Sign In
-          </button>
-
-          <p class="text-center mb-2"><a href="#" class="map-link">Forgot Password?</a></p>
-          <p class="text-center mb-0">New here? <a href="signup.html" class="map-link">Create an account</a></p>
-        </form>
+              <ul class="list-unstyled m-0">
+                <li class="mb-3"><strong>Jones Beach</strong><br /><span class="text-muted">Long Island</span></li>
+                <li class="mb-3"><strong>Letchworth</strong><br /><span class="text-muted">Western New York</span></li>
+                <li class="mb-3"><strong>Watkins Glen</strong><br /><span class="text-muted">Finger Lakes</span></li>
+                <li><strong>Minnewaska</strong><br /><span class="text-muted">Hudson Valley</span></li>
+              </ul>
+            </section>
+          </aside>
+        </section>
       </section>
     </section>
   </main>

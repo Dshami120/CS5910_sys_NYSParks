@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Page title -->
-  <title>NYS Parks - Login</title>
+  <title>NYS Parks - About Us</title>
 
   <!-- Bootstrap core CSS -->
   <link
@@ -23,7 +23,7 @@
   <!-- Shared site stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-page="login">
+<body data-page="about">
   <!-- =====================================================
        PUBLIC SITE HEADER
        - Shared top navigation for guest-facing pages
@@ -57,29 +57,88 @@
     </nav>
   </header>
 
-  <main class="auth-shell d-flex align-items-center">
-    <section class="container py-5">
-      <section class="auth-panel p-4 p-lg-5">
-        <header class="text-center mb-4">
-          <p class="section-kicker mb-2">Secure access</p>
-          <h1 class="h2 fw-bold mb-2">Log in to your account</h1>
-          <p class="text-muted mb-0">Clients, employees, and admins can all start here.</p>
-        </header>
+  <main>
+    <section class="page-hero-mini">
+      <section class="container">
+        <p class="section-kicker mb-2">About the department</p>
+        <h1 class="display-6 fw-bold mb-3">About NYS Parks &amp; Recreation</h1>
+        <p class="text-muted col-lg-8 mb-0">
+          A simple public information page that can later be filled from a CMS or database content table.
+        </p>
+      </section>
+    </section>
 
-        <form>
-          <label class="form-label">Email / Username</label>
-          <input type="email" class="form-control form-control-lg mb-3" placeholder="you@example.com" />
+    <section class="py-5">
+      <section class="container">
+        <section class="row g-4">
+          <article class="col-lg-7">
+            <section class="soft-card p-4 p-lg-5 h-100">
+              <h2 class="h4 fw-bold mb-3">Our Mission</h2>
+              <p class="text-muted">
+                We aim to modernize how residents and visitors access park information, events, maps, and services across New York State.
+              </p>
 
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control form-control-lg mb-4" placeholder="Enter password" />
+              <h2 class="h4 fw-bold mt-5 mb-3">Our History</h2>
+              <p class="text-muted mb-0">
+                What started as a more fragmented experience is being reimagined into a modern, centralized platform for public access and internal operations.
+              </p>
+            </section>
+          </article>
 
-          <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-semibold mb-3">
-            Sign In
-          </button>
+          <article class="col-lg-5">
+            <section class="soft-card p-4 p-lg-5 h-100">
+              <h2 class="h4 fw-bold mb-3">Core Values</h2>
+              <ul class="list-unstyled m-0">
+                <li class="mb-3"><strong>Accessibility:</strong> clear navigation and inclusive design</li>
+                <li class="mb-3"><strong>Community:</strong> increased participation in events and public programs</li>
+                <li class="mb-3"><strong>Efficiency:</strong> better workflows for bookings, schedules, and PTO</li>
+                <li><strong>Stewardship:</strong> protecting parks while improving digital services</li>
+              </ul>
+            </section>
+          </article>
+        </section>
 
-          <p class="text-center mb-2"><a href="#" class="map-link">Forgot Password?</a></p>
-          <p class="text-center mb-0">New here? <a href="signup.html" class="map-link">Create an account</a></p>
-        </form>
+        <section class="pt-5">
+          <header class="mb-4">
+            <h2 class="fw-bold mb-1">Meet the Team</h2>
+            <p class="text-muted mb-0">Starter placeholder content based on your existing about page idea</p>
+          </header>
+
+          <section class="row g-4">
+            <article class="col-md-4">
+              <section class="image-card h-100">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80" alt="Director Sarah Johnson" class="image-cover-sm" />
+                <section class="p-4">
+                  <h3 class="h5 fw-bold mb-1">Sarah Johnson</h3>
+                  <p class="text-success fw-semibold mb-2">Director</p>
+                  <p class="text-muted mb-0">Leads modernization strategy, public service delivery, and department planning.</p>
+                </section>
+              </section>
+            </article>
+
+            <article class="col-md-4">
+              <section class="image-card h-100">
+                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=80" alt="Deputy Director Mike Chen" class="image-cover-sm" />
+                <section class="p-4">
+                  <h3 class="h5 fw-bold mb-1">Mike Chen</h3>
+                  <p class="text-success fw-semibold mb-2">Deputy Director</p>
+                  <p class="text-muted mb-0">Supports operations, staff coordination, and program planning across parks.</p>
+                </section>
+              </section>
+            </article>
+
+            <article class="col-md-4">
+              <section class="image-card h-100">
+                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=900&q=80" alt="Recreation Coordinator Lisa Rodriguez" class="image-cover-sm" />
+                <section class="p-4">
+                  <h3 class="h5 fw-bold mb-1">Lisa Rodriguez</h3>
+                  <p class="text-success fw-semibold mb-2">Recreation Coordinator</p>
+                  <p class="text-muted mb-0">Coordinates public programming, seasonal activities, and outreach.</p>
+                </section>
+              </section>
+            </article>
+          </section>
+        </section>
       </section>
     </section>
   </main>

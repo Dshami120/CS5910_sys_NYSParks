@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Page title -->
-  <title>NYS Parks - Login</title>
+  <title>NYS Parks - Events</title>
 
   <!-- Bootstrap core CSS -->
   <link
@@ -23,7 +23,7 @@
   <!-- Shared site stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-page="login">
+<body data-page="events">
   <!-- =====================================================
        PUBLIC SITE HEADER
        - Shared top navigation for guest-facing pages
@@ -57,29 +57,48 @@
     </nav>
   </header>
 
-  <main class="auth-shell d-flex align-items-center">
-    <section class="container py-5">
-      <section class="auth-panel p-4 p-lg-5">
-        <header class="text-center mb-4">
-          <p class="section-kicker mb-2">Secure access</p>
-          <h1 class="h2 fw-bold mb-2">Log in to your account</h1>
-          <p class="text-muted mb-0">Clients, employees, and admins can all start here.</p>
-        </header>
+  <main>
+    <section class="page-hero-mini">
+      <section class="container">
+        <p class="section-kicker mb-2">Upcoming events</p>
+        <h1 class="display-6 fw-bold mb-3">Events across New York State</h1>
+        <p class="text-muted col-lg-8 mb-0">
+          Browse featured public events and use lightweight filters. Later, this can connect to your events table.
+        </p>
+      </section>
+    </section>
 
-        <form>
-          <label class="form-label">Email / Username</label>
-          <input type="email" class="form-control form-control-lg mb-3" placeholder="you@example.com" />
+    <section class="py-4">
+      <section class="container">
+        <section class="soft-card p-3 p-lg-4">
+          <section class="row g-3 align-items-center">
+            <article class="col-lg-4">
+              <input type="text" class="form-control" placeholder="Search events..." />
+            </article>
 
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control form-control-lg mb-4" placeholder="Enter password" />
+            <article class="col-lg-5">
+              <ul class="list-unstyled d-flex flex-wrap gap-3 m-0">
+                <li><button type="button" class="btn btn-link nav-link-custom active-link p-0" data-category="All">All</button></li>
+                <li><button type="button" class="btn btn-link nav-link-custom p-0" data-category="Music">Music</button></li>
+                <li><button type="button" class="btn btn-link nav-link-custom p-0" data-category="Wellness">Wellness</button></li>
+                <li><button type="button" class="btn btn-link nav-link-custom p-0" data-category="Food">Food</button></li>
+                <li><button type="button" class="btn btn-link nav-link-custom p-0" data-category="Sports">Sports</button></li>
+              </ul>
+            </article>
 
-          <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-semibold mb-3">
-            Sign In
-          </button>
+            <article class="col-lg-3 text-lg-end">
+              <a href="client-create-event.html" class="btn btn-dark rounded-pill px-4">Book / Create Request</a>
+            </article>
+          </section>
+        </section>
+      </section>
+    </section>
 
-          <p class="text-center mb-2"><a href="#" class="map-link">Forgot Password?</a></p>
-          <p class="text-center mb-0">New here? <a href="signup.html" class="map-link">Create an account</a></p>
-        </form>
+    <section class="pb-5">
+      <section class="container">
+        <section class="row g-4" id="events-grid">
+          <!-- Event cards are injected by app.js -->
+        </section>
       </section>
     </section>
   </main>

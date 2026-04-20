@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Page title -->
-  <title>NYS Parks - Login</title>
+  <title>NYS Parks - Explore Parks</title>
 
   <!-- Bootstrap core CSS -->
   <link
@@ -23,7 +23,7 @@
   <!-- Shared site stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-page="login">
+<body data-page="parks">
   <!-- =====================================================
        PUBLIC SITE HEADER
        - Shared top navigation for guest-facing pages
@@ -57,29 +57,68 @@
     </nav>
   </header>
 
-  <main class="auth-shell d-flex align-items-center">
-    <section class="container py-5">
-      <section class="auth-panel p-4 p-lg-5">
-        <header class="text-center mb-4">
-          <p class="section-kicker mb-2">Secure access</p>
-          <h1 class="h2 fw-bold mb-2">Log in to your account</h1>
-          <p class="text-muted mb-0">Clients, employees, and admins can all start here.</p>
-        </header>
+  <main>
+    <section class="page-hero-mini">
+      <section class="container">
+        <p class="section-kicker mb-2">Discover parks</p>
+        <h1 class="display-6 fw-bold mb-3">Explore parks across New York State</h1>
+        <p class="text-muted col-lg-8 mb-0">
+          Browse featured destinations, compare regions, and discover the types of outdoor experiences available statewide.
+        </p>
+      </section>
+    </section>
 
-        <form>
-          <label class="form-label">Email / Username</label>
-          <input type="email" class="form-control form-control-lg mb-3" placeholder="you@example.com" />
+    <section class="py-5">
+      <section class="container">
+        <section class="row g-4 align-items-start">
+          <article class="col-lg-4">
+            <section class="soft-card p-4">
+              <h2 class="h5 fw-bold mb-3">Park Filters</h2>
 
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control form-control-lg mb-4" placeholder="Enter password" />
+              <form>
+                <label class="form-label">Search by keyword</label>
+                <input type="text" class="form-control mb-3" placeholder="Waterfalls, beaches, trails..." />
 
-          <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-semibold mb-3">
-            Sign In
-          </button>
+                <label class="form-label">Region</label>
+                <select class="form-select mb-3">
+                  <option>All Regions</option>
+                  <option>Long Island</option>
+                  <option>Hudson Valley</option>
+                  <option>Finger Lakes</option>
+                  <option>Western New York</option>
+                </select>
 
-          <p class="text-center mb-2"><a href="#" class="map-link">Forgot Password?</a></p>
-          <p class="text-center mb-0">New here? <a href="signup.html" class="map-link">Create an account</a></p>
-        </form>
+                <label class="form-label">Experience type</label>
+                <select class="form-select mb-4">
+                  <option>All Types</option>
+                  <option>Beach</option>
+                  <option>Hiking</option>
+                  <option>Waterfalls</option>
+                  <option>Historic</option>
+                </select>
+
+                <button type="button" class="btn btn-success rounded-pill w-100 fw-semibold">
+                  Apply Filters
+                </button>
+              </form>
+            </section>
+          </article>
+
+          <article class="col-lg-8">
+            <header class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+              <section>
+                <h2 class="fw-bold mb-1">Featured Parks</h2>
+                <p class="text-muted mb-0">A simple starter layout that can later be filled from SQL data</p>
+              </section>
+
+              <a href="map.html" class="map-link">Open map view →</a>
+            </header>
+
+            <section class="row g-4" id="parks-grid">
+              <!-- Park cards are injected by app.js -->
+            </section>
+          </article>
+        </section>
       </section>
     </section>
   </main>

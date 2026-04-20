@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Page title -->
-  <title>NYS Parks - Login</title>
+  <title>NYS Parks - AI Guide</title>
 
   <!-- Bootstrap core CSS -->
   <link
@@ -23,7 +23,7 @@
   <!-- Shared site stylesheet -->
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-page="login">
+<body data-page="ai">
   <!-- =====================================================
        PUBLIC SITE HEADER
        - Shared top navigation for guest-facing pages
@@ -57,29 +57,68 @@
     </nav>
   </header>
 
-  <main class="auth-shell d-flex align-items-center">
-    <section class="container py-5">
-      <section class="auth-panel p-4 p-lg-5">
-        <header class="text-center mb-4">
-          <p class="section-kicker mb-2">Secure access</p>
-          <h1 class="h2 fw-bold mb-2">Log in to your account</h1>
-          <p class="text-muted mb-0">Clients, employees, and admins can all start here.</p>
-        </header>
+  <main>
+    <section class="py-5">
+      <section class="container">
+        <section class="feature-panel p-4 p-lg-5">
+          <section class="row align-items-center g-4">
+            <article class="col-lg-6">
+              <p class="section-kicker text-white-50 mb-2">AI Assistant</p>
+              <h1 class="display-6 fw-bold mb-3">Your personal park guide, powered by AI</h1>
+              <p class="text-white-50 mb-4">
+                Ask about hiking trails, events, quiet picnic spots, accessibility, or suggested parks by region.
+              </p>
 
-        <form>
-          <label class="form-label">Email / Username</label>
-          <input type="email" class="form-control form-control-lg mb-3" placeholder="you@example.com" />
+              <ul class="list-unstyled d-flex flex-wrap gap-2 mb-0">
+                <li><a href="#" class="btn btn-success rounded-pill px-4 fw-semibold">Try AI Guide</a></li>
+                <li><a href="faq.html" class="btn btn-outline-light rounded-pill px-4 fw-semibold">Learn More</a></li>
+              </ul>
+            </article>
 
-          <label class="form-label">Password</label>
-          <input type="password" class="form-control form-control-lg mb-4" placeholder="Enter password" />
+            <article class="col-lg-6">
+              <section class="soft-card bg-transparent border border-light-subtle p-4">
+                <p class="chat-bubble assistant mb-3">
+                  Hi! I'm the NYS Parks guide. Looking for a quiet park with scenic trails and family-friendly areas?
+                </p>
 
-          <button type="submit" class="btn btn-success w-100 rounded-pill py-3 fw-semibold mb-3">
-            Sign In
-          </button>
+                <p class="chat-bubble user mb-3">
+                  Yes — somewhere near the Hudson Valley with water views and picnic areas.
+                </p>
 
-          <p class="text-center mb-2"><a href="#" class="map-link">Forgot Password?</a></p>
-          <p class="text-center mb-0">New here? <a href="signup.html" class="map-link">Create an account</a></p>
-        </form>
+                <p class="chat-bubble assistant mb-0">
+                  Try Minnewaska State Park Preserve or Hudson Highlands for scenic overlooks, trails, and outdoor spaces.
+                </p>
+              </section>
+            </article>
+          </section>
+        </section>
+      </section>
+    </section>
+
+    <section class="pb-5">
+      <section class="container">
+        <section class="row g-4">
+          <article class="col-md-4">
+            <section class="simple-card p-4 h-100">
+              <h2 class="h5 fw-bold mb-2">Find parks faster</h2>
+              <p class="text-muted mb-0">The assistant helps reduce search friction and supports the project's goal of better discoverability.</p>
+            </section>
+          </article>
+
+          <article class="col-md-4">
+            <section class="simple-card p-4 h-100">
+              <h2 class="h5 fw-bold mb-2">Plan around events</h2>
+              <p class="text-muted mb-0">Visitors can ask event-related questions without manually browsing multiple pages.</p>
+            </section>
+          </article>
+
+          <article class="col-md-4">
+            <section class="simple-card p-4 h-100">
+              <h2 class="h5 fw-bold mb-2">Ready for APIs later</h2>
+              <p class="text-muted mb-0">This page is visually complete now and can later connect to ChatGPT, Gemini, or another API.</p>
+            </section>
+          </article>
+        </section>
       </section>
     </section>
   </main>
