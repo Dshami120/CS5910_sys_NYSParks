@@ -1,327 +1,152 @@
-// =========================================================
-// NYS PARKS & RECREATION - SHARED JAVASCRIPT
-// ---------------------------------------------------------
-// This file keeps the demo data and a few small UI behaviors
-// in one place so the HTML files stay simple.
-//
-// Later, when PHP / SQL is added, these arrays can be replaced
-// with values coming from the database.
-// =========================================================
-
-// ----------------------------------------------------------
-// DEMO PARK DATA
-// ----------------------------------------------------------
-const parks = [
-  {
-    name: "Jones Beach State Park",
-    region: "Long Island",
-    type: "Beach",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
-    description: "Oceanfront boardwalk, summer concerts, family activities, and wide sandy beaches."
-  },
-  {
-    name: "Letchworth State Park",
-    region: "Western New York",
-    type: "Waterfalls",
-    image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-    description: "Dramatic gorge views, trails, scenic overlooks, and some of the state's most iconic waterfalls."
-  },
-  {
-    name: "Niagara Falls State Park",
-    region: "Western New York",
-    type: "Landmark",
-    image: "https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=1200&q=80",
-    description: "World-famous waterfalls, observation decks, and unforgettable sightseeing experiences."
-  },
-  {
-    name: "Watkins Glen State Park",
-    region: "Finger Lakes",
-    type: "Hiking",
-    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
-    description: "Stone bridges, layered waterfalls, gorge trails, and one of New York's signature hikes."
-  },
-  {
-    name: "Montauk Point State Park",
-    region: "Long Island",
-    type: "Coastal",
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80",
-    description: "Clifftop views, striped lighthouse scenery, fishing spots, and dramatic coastal landscapes."
-  },
-  {
-    name: "Minnewaska State Park Preserve",
-    region: "Hudson Valley",
-    type: "Trails",
-    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80",
-    description: "Ridge-top views, lakes, cliffs, carriage roads, and peaceful hiking routes."
+// Shared UI helper for the PHP build
+document.addEventListener("DOMContentLoaded", () => {
+  const pageName = document.body.getAttribute("data-page");
+  if (pageName) {
+    document.querySelectorAll("[data-page-link]").forEach((link) => {
+      if (link.getAttribute("data-page-link") === pageName) {
+        link.classList.add("active-link");
+      }
+    });
   }
-];
 
-// ----------------------------------------------------------
-// DEMO EVENT DATA
-// ----------------------------------------------------------
-const events = [
-  {
-    title: "Summer Concert Series: Rock the Beach",
-    category: "Music",
-    park: "Jones Beach State Park",
-    region: "Long Island",
-    dateLabel: "JUL",
-    dateDay: "15",
-    price: "$45",
-    time: "7:00 PM",
-    image: "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Sunrise Yoga by the Lighthouse",
-    category: "Wellness",
-    park: "Montauk Point State Park",
-    region: "Long Island",
-    dateLabel: "JUN",
-    dateDay: "20",
-    price: "$15",
-    time: "6:00 AM",
-    image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Food Truck Festival",
-    category: "Food",
-    park: "Eisenhower Park",
-    region: "Long Island",
-    dateLabel: "AUG",
-    dateDay: "05",
-    price: "$5",
-    time: "11:00 AM",
-    image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Cross Country 5K",
-    category: "Sports",
-    park: "Sunken Meadow State Park",
-    region: "Long Island",
-    dateLabel: "SEP",
-    dateDay: "10",
-    price: "$30",
-    time: "8:30 AM",
-    image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Autumn Leaves Guided Walk",
-    category: "Nature",
-    park: "Letchworth State Park",
-    region: "Western New York",
-    dateLabel: "OCT",
-    dateDay: "12",
-    price: "Free",
-    time: "2:00 PM",
-    image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    title: "Family Stargazing Night",
-    category: "Family",
-    park: "Watkins Glen State Park",
-    region: "Finger Lakes",
-    dateLabel: "AUG",
-    dateDay: "18",
-    price: "$12",
-    time: "8:00 PM",
-    image: "https://images.unsplash.com/photo-1532968961962-8a0cb3a2d4f5?auto=format&fit=crop&w=1200&q=80"
-  }
-];
-
-// ----------------------------------------------------------
-// SMALL HELPER: EVENT CATEGORY CLASS
-// Used to normalize classes later if needed.
-// ----------------------------------------------------------
-function normalizeText(value) {
-  return String(value).toLowerCase().replace(/\s+/g, "-");
-}
-
-// ----------------------------------------------------------
-// RENDER FEATURED PARKS
-// If a page contains an element with the ID "parks-grid",
-// we fill it with demo park cards automatically.
-// ----------------------------------------------------------
-function renderParks() {
-  const grid = document.getElementById("parks-grid");
-  if (!grid) return;
-
-  grid.innerHTML = parks.map((park) => `
-    <article class="col-md-6 col-xl-4">
-      <figure class="image-card h-100 mb-0">
-        <img src="${park.image}" alt="${park.name}" class="image-cover-md" />
-        <figcaption class="p-4">
-          <p class="section-kicker mb-2">${park.region} · ${park.type}</p>
-          <h3 class="h5 fw-bold mb-2">${park.name}</h3>
-          <p class="text-muted mb-0">${park.description}</p>
-        </figcaption>
-      </figure>
-    </article>
-  `).join("");
-}
-
-// ----------------------------------------------------------
-// RENDER EVENTS
-// This works on the Events page and also on the homepage
-// if those containers exist.
-// ----------------------------------------------------------
-function renderEvents(filteredEvents = events) {
-  const grid = document.getElementById("events-grid");
-  if (!grid) return;
-
-  grid.innerHTML = filteredEvents.map((event) => `
-    <article class="col-md-6 col-xl-4">
-      <article class="event-card h-100">
-        <img src="${event.image}" alt="${event.title}" class="image-cover-event" />
-        <section class="p-3 p-lg-4">
-          <section class="d-flex justify-content-between align-items-start gap-3 mb-3">
-            <section class="event-date-badge text-center py-2 px-1">
-              <p class="small text-uppercase text-muted fw-bold mb-1">${event.dateLabel}</p>
-              <h3 class="h5 fw-bold mb-0">${event.dateDay}</h3>
-            </section>
-            <section class="text-end">
-              <p class="category-badge mb-1">${event.category}</p>
-              <p class="small text-muted mb-0">From ${event.price}</p>
-            </section>
-          </section>
-
-          <h3 class="h5 fw-bold mb-2">${event.title}</h3>
-          <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i>${event.park}, ${event.region}</p>
-          <p class="small text-muted mb-3"><i class="bi bi-clock me-1"></i>${event.time}</p>
-
-          <a href="client-create-event.html" class="btn btn-success w-100 rounded-pill fw-semibold">
-            View Details & Book
-          </a>
-        </section>
-      </article>
-    </article>
-  `).join("");
-}
-
-// ----------------------------------------------------------
-// SIMPLE EVENT FILTERING
-// The Events page contains buttons with data-category.
-// Clicking them re-renders the event list.
-// ----------------------------------------------------------
-function setupEventFilters() {
-  const buttons = document.querySelectorAll("[data-category]");
-  if (!buttons.length) return;
-
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      buttons.forEach((item) => item.classList.remove("active-link"));
-      button.classList.add("active-link");
-
-      const category = button.getAttribute("data-category");
-      if (category === "All") {
-        renderEvents(events);
-      } else {
-        renderEvents(events.filter((event) => event.category === category));
+  document.querySelectorAll('form[data-confirm], button[data-confirm]').forEach((el) => {
+    el.addEventListener('click', (event) => {
+      const message = el.getAttribute('data-confirm') || 'Are you sure?';
+      if (!window.confirm(message)) {
+        event.preventDefault();
       }
     });
   });
-}
 
-// ----------------------------------------------------------
-// ACTIVE NAV LINK HELPER
-// Adds the highlight style to the current page automatically
-// when a link has a matching data-page attribute.
-// ----------------------------------------------------------
-function setupActivePage() {
-  const pageName = document.body.getAttribute("data-page");
-  if (!pageName) return;
-
-  document.querySelectorAll("[data-page-link]").forEach((link) => {
-    if (link.getAttribute("data-page-link") === pageName) {
-      link.classList.add("active-link");
-    }
-  });
-}
-
-// ----------------------------------------------------------
-// PAGE INITIALIZATION
-// Run all the small page features after the DOM is loaded.
-// ----------------------------------------------------------
-document.addEventListener("DOMContentLoaded", () => {
-  setupActivePage();
-  renderParks();
-  renderEvents(events.slice(0, 3)); // homepage default if container exists
-
-  if (document.getElementById("events-grid")) {
-    renderEvents(events);
+  const newsSearch = document.getElementById('newsSearch');
+  const newsButtons = document.querySelectorAll('[data-news-topic]');
+  const newsItems = document.querySelectorAll('.news-item');
+  const newsResultsText = document.getElementById('newsResultsText');
+  const newsCount = document.getElementById('newsCount');
+  const noNewsMessage = document.getElementById('noNewsMessage');
+  const resetNews = document.getElementById('resetNewsFilters');
+  if (newsItems.length) {
+    let activeTopic = 'all';
+    const filterNews = () => {
+      const query = (newsSearch?.value || '').toLowerCase().trim();
+      let visible = 0;
+      newsItems.forEach((item) => {
+        const topic = item.dataset.topic || '';
+        const haystack = item.dataset.search || '';
+        const matchTopic = activeTopic === 'all' || topic === activeTopic;
+        const matchSearch = !query || haystack.includes(query);
+        const show = matchTopic && matchSearch;
+        item.classList.toggle('d-none', !show);
+        if (show) visible++;
+      });
+      if (newsResultsText) newsResultsText.textContent = `Showing ${visible} update${visible === 1 ? '' : 's'}`;
+      if (newsCount) newsCount.textContent = String(visible);
+      if (noNewsMessage) noNewsMessage.classList.toggle('d-none', visible !== 0);
+    };
+    newsButtons.forEach((btn) => btn.addEventListener('click', () => {
+      activeTopic = btn.dataset.newsTopic || 'all';
+      newsButtons.forEach((b) => b.classList.toggle('active', b === btn));
+      filterNews();
+    }));
+    newsSearch?.addEventListener('input', filterNews);
+    resetNews?.addEventListener('click', () => {
+      activeTopic = 'all';
+      if (newsSearch) newsSearch.value = '';
+      newsButtons.forEach((b) => b.classList.toggle('active', (b.dataset.newsTopic || '') === 'all'));
+      filterNews();
+    });
   }
 
-  setupEventFilters();
-  renderNews();
+  const faqSearch = document.getElementById('faqSearch');
+  const faqButtons = document.querySelectorAll('[data-faq-topic]');
+  const faqItems = document.querySelectorAll('.faq-item');
+  const faqResultsText = document.getElementById('faqResultsText');
+  const noFaqMessage = document.getElementById('noFaqMessage');
+  const resetFaq = document.getElementById('resetFaqFilters');
+  if (faqItems.length) {
+    let activeTopic = 'all';
+    const filterFaq = () => {
+      const query = (faqSearch?.value || '').toLowerCase().trim();
+      let visible = 0;
+      faqItems.forEach((item) => {
+        const topic = item.dataset.faqTopic || '';
+        const haystack = item.dataset.search || '';
+        const show = (activeTopic === 'all' || topic === activeTopic) && (!query || haystack.includes(query));
+        item.classList.toggle('d-none', !show);
+        if (show) visible++;
+      });
+      if (faqResultsText) faqResultsText.textContent = `Showing ${visible} question${visible === 1 ? '' : 's'}`;
+      if (noFaqMessage) noFaqMessage.classList.toggle('d-none', visible !== 0);
+    };
+    faqButtons.forEach((btn) => btn.addEventListener('click', () => {
+      activeTopic = btn.dataset.faqTopic || 'all';
+      faqButtons.forEach((b) => b.classList.toggle('active', b === btn));
+      filterFaq();
+    }));
+    faqSearch?.addEventListener('input', filterFaq);
+    resetFaq?.addEventListener('click', () => {
+      activeTopic = 'all';
+      if (faqSearch) faqSearch.value = '';
+      faqButtons.forEach((b) => b.classList.toggle('active', (b.dataset.faqTopic || '') === 'all'));
+      filterFaq();
+    });
+  }
+
+  const donateForm = document.getElementById('donateForm');
+  const cardBlock = document.getElementById('cardDetailsBlock');
+  if (donateForm && cardBlock) {
+    const toggleCardBlock = () => {
+      const method = donateForm.querySelector('input[name="payment_method"]:checked')?.value || 'card';
+      const show = method === 'card';
+      cardBlock.classList.toggle('d-none', !show);
+      cardBlock.querySelectorAll('input').forEach((input) => input.required = show);
+    };
+    donateForm.querySelectorAll('input[name="payment_method"]').forEach((el) => el.addEventListener('change', toggleCardBlock));
+    toggleCardBlock();
+  }
+
+  const aiForm = document.getElementById('aiChatForm');
+  const aiInput = document.getElementById('aiChatInput');
+  const aiMessages = document.getElementById('aiChatMessages');
+  const aiStatus = document.getElementById('aiChatStatus');
+  const clearAiChat = document.getElementById('clearAiChat');
+  const promptButtons = document.querySelectorAll('.ai-prompt-chip');
+  if (aiForm && aiInput && aiMessages) {
+    const starter = aiMessages.innerHTML;
+    const addMessage = (role, text) => {
+      const wrap = document.createElement('div');
+      wrap.className = `ai-message ${role === 'user' ? 'ai-message-user' : 'ai-message-assistant'}`;
+      wrap.innerHTML = `<div class="ai-message-label">${role === 'user' ? 'You' : 'AI Guide'}</div><div class="ai-message-bubble"></div>`;
+      wrap.querySelector('.ai-message-bubble').textContent = text;
+      aiMessages.appendChild(wrap);
+      aiMessages.scrollTop = aiMessages.scrollHeight;
+    };
+    const respond = (prompt) => {
+      const text = prompt.toLowerCase();
+      let reply = 'A good next step is to browse the Parks page by region, then compare Events and Map to narrow down the best destination.';
+      if (text.includes('waterfall')) reply = 'For waterfall-focused trips, start with Letchworth State Park and Watkins Glen State Park. Both are strong picks for scenery, short hikes, and photography.';
+      else if (text.includes('albany')) reply = 'Near Albany, consider Saratoga Spa State Park for families, trails, and easy planning. You can also compare parks on the Map page for distance.';
+      else if (text.includes('finger lakes')) reply = 'A Finger Lakes weekend could combine Watkins Glen for scenic trails, a picnic stop, and a public event if one is listed on the Events page.';
+      else if (text.includes('beach')) reply = 'For a Jones Beach outing, bring water, sunscreen, towels, a light layer, and check the weather before you go.';
+      else if (text.includes('map') || text.includes('events') || text.includes('pages')) reply = 'Use Parks to browse destinations, Events for public programming, Map for location planning, FAQ for quick answers, and Donate if you want to support the system.';
+      addMessage('assistant', reply);
+      if (aiStatus) aiStatus.textContent = 'Demo response generated locally in the page. This can be replaced later with a live AI backend.';
+    };
+    aiForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const prompt = aiInput.value.trim();
+      if (!prompt) return;
+      addMessage('user', prompt);
+      aiInput.value = '';
+      window.setTimeout(() => respond(prompt), 250);
+    });
+    promptButtons.forEach((btn) => btn.addEventListener('click', () => {
+      aiInput.value = btn.dataset.prompt || '';
+      aiInput.focus();
+    }));
+    clearAiChat?.addEventListener('click', () => {
+      aiMessages.innerHTML = starter;
+      if (aiStatus) aiStatus.textContent = 'Tip: try one of the suggested prompts below to test the chatbot quickly.';
+    });
+  }
 });
-
-
-// ----------------------------------------------------------
-// DEMO NEWS DATA
-// ----------------------------------------------------------
-const newsItems = [
-  {
-    title: "Summer trail restoration projects begin statewide",
-    category: "Operations",
-    date: "June 21, 2026",
-    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80",
-    excerpt: "Crews are improving trail signage, drainage, and accessibility features at major park destinations."
-  },
-  {
-    title: "Family adventure weekends return to select parks",
-    category: "Programs",
-    date: "June 18, 2026",
-    image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
-    excerpt: "New seasonal programming includes guided hikes, outdoor skills workshops, and kid-friendly discovery events."
-  },
-  {
-    title: "New waterfront safety updates announced for peak season",
-    category: "Safety",
-    date: "June 12, 2026",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
-    excerpt: "Updated swim hours, weather alert messaging, and beach operations plans are now available for visitors."
-  }
-];
-
-// ----------------------------------------------------------
-// RENDER NEWS CARDS
-// ----------------------------------------------------------
-function renderNews() {
-  const container = document.getElementById("news-grid");
-  if (!container) return;
-
-  container.innerHTML = newsItems.map((item) => `
-    <article class="col-md-6 col-xl-4">
-      <article class="news-card">
-        <img src="${item.image}" alt="${item.title}" />
-        <section class="p-4">
-          <section class="d-flex justify-content-between align-items-center gap-2 mb-3">
-            <span class="news-tag"><i class="bi bi-newspaper"></i>${item.category}</span>
-            <span class="small text-muted">${item.date}</span>
-          </section>
-          <h2 class="h5 fw-bold mb-2">${item.title}</h2>
-          <p class="text-muted mb-3">${item.excerpt}</p>
-          <a href="events.html" class="map-link text-decoration-none">Read more</a>
-        </section>
-      </article>
-    </article>
-  `).join("");
-}
-
-
-// ----------------------------------------------------------
-// DEMO PORTAL DATA
-// ----------------------------------------------------------
-const portalMetrics = {
-  adminBookingsByMonth: [42, 56, 64, 78, 88, 71],
-  adminSiteTraffic: [1800, 2200, 2600, 3100, 3400, 2900],
-  clientBookings: [
-    { title: "Sunset Wellness Series", park: "Jones Beach", status: "Approved" },
-    { title: "Community Food Fair", park: "Niagara Falls", status: "Pending" },
-    { title: "Youth Sports Day", park: "Letchworth", status: "Approved" }
-  ],
-  employeeShifts: [
-    { park: "Jones Beach State Park", date: "06/14/2026", hours: "8:00 AM – 4:00 PM" },
-    { park: "Jones Beach State Park", date: "06/15/2026", hours: "9:00 AM – 5:00 PM" },
-    { park: "Letchworth State Park", date: "06/18/2026", hours: "7:30 AM – 3:30 PM" }
-  ]
-};

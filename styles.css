@@ -937,3 +937,62 @@ main {
   box-shadow: 0 14px 30px rgba(15, 24, 52, 0.08);
   border-color: #d7e4dc;
 }
+
+/* merged faq/news/donate/ai page enhancements */
+.subpage-hero {
+  min-height: 360px;
+  position: relative;
+  background: linear-gradient(135deg, var(--nys-navy), #13355a);
+}
+.subpage-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(rgba(14,21,39,.48), rgba(14,21,39,.56));
+}
+.subpage-hero-news { background: linear-gradient(135deg, #0f1834, #214d69); }
+.subpage-hero-faq { background: linear-gradient(135deg, #0f1834, #1a4160); }
+.subpage-hero-donate { background: linear-gradient(135deg, #0f1834, #174c44); }
+.ai-guide-hero { background: linear-gradient(135deg, #0f1834, #214d69); }
+.hero-kicker {
+  display:inline-block; padding:.5rem 1rem; border-radius:999px; background:rgba(20,184,122,.92);
+  color:#fff; font-size:.82rem; font-weight:700; letter-spacing:.08em; margin-bottom:1rem;
+}
+.section-label { font-size:.76rem; font-weight:800; letter-spacing:.1em; color: var(--nys-green-dark); text-transform: uppercase; }
+.news-info-card,.faq-info-card,.mini-stat-card,.donate-summary-card,.news-filter-card,.faq-filter-card,.ai-guide-side-card,.donate-form-card,.faq-hero-card {
+  background:#fff; border:1px solid var(--nys-border); border-radius:1.25rem; box-shadow: var(--nys-shadow);
+}
+.news-highlight-card {
+  border-radius: 1.5rem; background: linear-gradient(135deg, var(--nys-navy), #13355a); color: #fff; box-shadow: var(--nys-shadow);
+}
+.news-card { border-radius: 1.25rem; box-shadow: var(--nys-shadow); overflow: hidden; }
+.news-card-image { min-height: 240px; background-size: cover; background-position: center; }
+.news-meta { display:flex; flex-wrap:wrap; gap:1rem; color: var(--nys-muted); font-size:.92rem; }
+.news-topic-grid,.faq-topic-grid { display:flex; flex-wrap:wrap; gap:.55rem; }
+.news-topic-button.active,.faq-topic-button.active { background: var(--nys-green); color:#fff; border-color: var(--nys-green); }
+.ai-chat-shell,.ai-guide-side-card { border-radius: 1.4rem; }
+.ai-chat-messages { min-height: 320px; max-height: 480px; overflow:auto; background:#f8fafc; border:1px solid var(--nys-border); border-radius:1rem; padding:1rem; }
+.ai-message { margin-bottom: 1rem; }
+.ai-message-label { font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--nys-muted); margin-bottom:.3rem; }
+.ai-message-bubble { display:inline-block; max-width:85%; padding:.85rem 1rem; border-radius:1rem; background:#fff; border:1px solid var(--nys-border); }
+.ai-message-user { text-align:right; }
+.ai-message-user .ai-message-bubble { background: var(--nys-green); color:#fff; border-color: var(--nys-green); }
+.ai-guide-mini-list { padding-left: 1rem; }
+.amount-choice-card { display:block; position:relative; border:1px solid var(--nys-border); border-radius:1rem; padding:1rem; background:#fff; cursor:pointer; box-shadow: 0 8px 20px rgba(15,24,52,.04); }
+.amount-choice-input { position:absolute; top:1rem; right:1rem; }
+.amount-choice-value { display:block; font-weight:800; font-size:1.2rem; color:#0f274e; }
+.amount-choice-copy { display:block; color:var(--nys-muted); font-size:.9rem; }
+.donate-pill-group { display:flex; flex-wrap:wrap; gap:.6rem; }
+.pill-option { position:relative; }
+.pill-option input { position:absolute; opacity:0; pointer-events:none; }
+.pill-option span { display:inline-flex; padding:.65rem 1rem; border-radius:999px; border:1px solid var(--nys-border); background:#fff; font-weight:600; cursor:pointer; }
+.pill-option input:checked + span { background: var(--nys-green); color:#fff; border-color:var(--nys-green); }
+.impact-card { background:#fff; border:1px solid var(--nys-border); border-radius:1.25rem; box-shadow: var(--nys-shadow); padding:1.5rem; }
+.impact-icon { width:48px; height:48px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; background:#e9fbf3; color: var(--nys-green-dark); font-size:1.35rem; margin-bottom:1rem; }
+.summary-line,.impact-list-item { display:flex; justify-content:space-between; gap:1rem; padding:.65rem 0; border-top:1px solid var(--nys-border); }
+.summary-line:first-child,.impact-list-item:first-child { border-top:0; padding-top:0; }
+.impact-dollar { min-width:56px; font-weight:800; color:#0f274e; }
+.xml-preview { white-space:pre-wrap; font-size:.82rem; background:#f8fafc; padding:1rem; border-radius:1rem; border:1px solid var(--nys-border); }
+.section-soft-green { background: linear-gradient(180deg, #f5fcf8, #ffffff); }
+@media (max-width: 767.98px) {
+  .news-card-image { min-height: 200px; }
+  .ai-message-bubble { max-width: 100%; }
+}

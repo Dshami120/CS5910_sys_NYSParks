@@ -1,333 +1,169 @@
-# NYS Parks & Recreation Portal
-Capstone Project
+# NYS Parks & Recreation Portal — Flat PHP/MySQL Build
 
-## Project Overview
-This project is a multi-role web portal prototype for New York State Parks & Recreation. It is designed as a capstone project to demonstrate full-stack planning, role-based workflows, shared UI design, dashboard logic, and database-driven feature structure.
+This version is rebuilt for simple local use in XAMPP and easy handoff for a capstone submission.
 
-The site supports three primary user roles:
-- Client
-- Employee
-- Admin
+## Folder shape
 
-It also includes a set of public-facing pages for general visitors.
+Only these files/folders are used:
 
-At its current stage, the project is a front-end prototype with page structure, navigation, styling, dashboard layouts, and placeholder workflow logic already in place. It is designed so PHP and SQL can be connected next to power authentication, CRUD actions, search/filtering, approvals, charts, and real user data.
-
-## Project Goals
-The main goals of this capstone are:
-- Build a professional multi-page website with a consistent UI
-- Support multiple user roles with different permissions and page access
-- Simulate real business workflows for parks, events, staffing, and booking approvals
-- Prepare the project for future backend integration using PHP and SQL
-- Demonstrate dashboard design, admin workflows, and role-based navigation
-
-## Current Roles and Permissions
-
-### Public Visitor
-A general site visitor can:
-- View the homepage
-- Browse parks
-- Browse events
-- View the map
-- Use the AI page
-- Read news
-- View About and FAQ pages
-- Access donate page
-- Access login, register, and forgot password pages
-
-### Client
-A client can:
-- Register for an account
-- Log in through the shared login page
-- View the client dashboard
-- View booked events and booking request status
-- Open the create-event request page and submit a booking request form
-
-### Employee
-An employee can:
-- Log in through the shared login page
-- View the employee dashboard
-- View their schedule
-- Create PTO requests
-
-### Admin
-An admin can:
-- Log in through the shared login page
-- View analytics and notifications on the admin dashboard
-- Create, update, delete, and reset employee account information from the admin dashboard
-- Manage employee schedules through the admin employee schedule page
-- Approve or deny employee PTO requests
-- Approve or deny client booking requests
-
-Important role rules in the current design:
-- Only clients register through the register page
-- Admin accounts are intended to be created by the developer/backend
-- Admin manages employee accounts
-- There is no separate admin-schedule page in the final intended logic; schedule management is handled through `admin-employee-schedule.html`
-
-## Current Site Structure
-
-### Public Pages
-- `index.html`
-- `parks.html`
-- `events.html`
-- `map.html`
-- `ai.html`
-- `news.html`
-- `about.html`
-- `faq.html`
-- `donate.html`
-- `login.html`
-- `forgot-password.html`
-- `register.html`
-- `logout.html`
-- `account.html`
-
-### Client Pages
-- `client-dashboard.html`
-- `client-create-event.html`
-
-### Admin Pages
-- `admin-dashboard.html`
-- `admin-employee-schedule.html`
-- `admin-pto.html`
-- `admin-bookings.html`
-- `admin-xml.html`
-
-### Employee Pages
-- `employee-dashboard.html`
-- `employee-schedule.html`
-- `employee-pto.html`
-
-### Shared Files
+- root `*.php` page files
 - `styles.css`
 - `app.js`
+- `schema.sql`
+- `seed.sql`
+- `README.md`
+- `bootstrap.php` for DB connection, auth/session, and helper functions
 
-## Key Features Currently Implemented
+There are no controller folders, view folders, storage folders, XML write folders, or public subfolders.
 
-### Shared Site Features
-- Consistent global navigation
-- Shared footer
-- Shared stylesheet
-- Shared JavaScript file
-- Responsive Bootstrap-based layout
-- Public site structure for main informational pages
+## Main upgrades in this build
 
-### Client Features
-- Dashboard for booked events and booking status
-- Create event request form page
-- Booking activity chart section
-- Chart filter UI ready for backend wiring
+- Root-level PHP pages that keep the original static page structure as closely as possible
+- Original class names, Bootstrap layout, navigation, footer, and shared stylesheet/script retained
+- Dynamic PHP/MySQL wiring added only where needed
+- Shared account/profile page unified for all roles
+- Password reset simplified to a verify-user then reset flow using the `users` table and session state
+- Dashboard metrics are query-driven
+- Booking/PTO approvals write review metadata
+- Booking and schedule overlap validation added
+- Payments kept as mock / card-validation-only / in-person support
+- XML export works as a direct download and does not require file-system write permissions
+- Database simplified to 9 tables
 
-### Admin Features
-- Admin dashboard with:
-  - analytics cards
-  - bookings chart
-  - notification panels
-  - employee account CRUD UI
-- Admin employee schedule management page
-- PTO approval page
-- Client booking approval page
-- Chart filter UI ready for backend wiring
+## Database tables
 
-### Employee Features
-- Employee dashboard
-- Employee schedule page
-- Employee PTO page
-- Quick actions and internal navigation
+This build uses 9 tables:
 
-### Auth Pages
-- Login page
-- Register page
-- Forgot password page
+1. `parks`
+2. `users`
+3. `fields`
+4. `events`
+5. `bookings`
+6. `employee_schedules`
+7. `pto_requests`
+8. `payments`
+9. `attendance`
 
-These auth pages were intentionally restored to a preferred visual version and should be treated as the design reference for authentication screens.
+Removed from the earlier draft:
+- saved parks
+- news posts
+- password reset tokens
+- XML export log table
 
-## Technologies Used
-- HTML5
-- CSS3
-- Bootstrap 5
-- Bootstrap Icons
-- JavaScript
-- Planned: PHP
-- Planned: MySQL / SQL database
+## Default seeded accounts
 
-## How the Project Works Right Now
-Right now, the project functions as a static front-end prototype.
+Password for all seeded accounts:
 
-This means:
-- pages load and navigate correctly
-- dashboards display UI components
-- forms and buttons exist visually
-- charts are visual mockups
-- filters are visual UI placeholders
-- CRUD actions are represented in the interface
-- approval workflows are represented in the interface
+`Password123!`
 
-However, the following are not yet fully functional unless connected to backend logic:
-- authentication
-- authorization
-- client-only registration enforcement
-- saving account information
-- creating real employee accounts
-- schedule CRUD persistence
-- PTO request persistence
-- booking request persistence
-- admin approvals
-- chart data from the database
-- filter queries against SQL data
+Users:
+- admin: `admin@nysparks.local`
+- employee: `employee@nysparks.local`
+- client: `client@nysparks.local`
 
-## What Is Still Needed to Fully Run as a Real Application
+## Setup in XAMPP
 
-### Backend
-The next major step is building the backend in PHP so the forms and workflows actually work.
+1. Copy the folder into `htdocs`, for example:
+   `C:\xampp\htdocs\nys-parks-final-flat`
 
-Recommended backend work:
-- create login authentication logic
-- create session-based role access control
-- enforce client-only registration
-- connect forms to SQL tables
-- validate user input
-- handle CRUD actions for employee accounts
-- handle CRUD actions for schedules
-- handle PTO request submission and approval
-- handle booking request submission and approval
-- populate charts from database queries
-- wire filters to SQL-based results
+2. Start Apache and MySQL in XAMPP.
 
-### Database
-A SQL database is needed to store and manage:
-- users
-- clients
-- employees
-- admins
-- schedules
-- PTO requests
-- booking requests
-- events
-- parks
-- analytics-related counts if desired
+3. Open phpMyAdmin and import `schema.sql`.
 
-The exact schema should follow the capstone design/concept docs and database planning documents already created for the project.
+4. Import `seed.sql`.
 
-### Suggested PHP Features
-- `login.php`
-- `register.php`
-- `logout.php`
-- `forgot-password.php`
-- `create-booking.php`
-- `approve-booking.php`
-- `approve-pto.php`
-- `employee-account-crud.php`
-- `employee-schedule-crud.php`
+5. Edit DB settings in:
 
-## How to Run the Project Right Now
+   `bootstrap.phpdb.php`
 
-### Option 1: Open as Static Files
-Because the current site is still front-end based, it can be run simply by opening `index.html` in a browser.
+   Default values are:
 
-Best simple workflow:
-1. Extract the project zip
-2. Open the project folder
-3. Open `index.html` in a browser
+   - host: `127.0.0.1`
+   - port: `3306`
+   - dbname: `nys_parks`
+   - username: `root`
+   - password: empty string
 
-### Option 2: Use a Local Development Server
-For cleaner local testing, use a simple local server.
+6. Open:
 
-Examples:
-- VS Code Live Server
-- XAMPP
-- MAMP
-- WAMP
-- Python simple server
+   `http://localhost/nys-parks-final-flat/index.php`
 
-If using Python:
-```bash
-python -m http.server 8000
-```
+## Main workflows
 
-Then open:
-```bash
-http://localhost:8000
-```
+### Public
+- Browse parks
+- Browse events
+- Read news/about/faq
+- Donate with mock payment validation
 
-### Option 3: Use a PHP Local Server Later
-Once backend files are added, use:
-```bash
-php -S localhost:8000
-```
+### Client
+- Register
+- Log in
+- Update account
+- Submit booking requests
+- View booking statuses on dashboard
 
-Then open:
-```bash
-http://localhost:8000
-```
+### Employee
+- Log in
+- View dashboard
+- View schedule
+- Submit PTO requests
 
-## File Notes
+### Admin
+- Log in
+- View query-driven dashboard stats
+- Create/update/disable employee accounts
+- Create/delete employee schedules
+- Approve/deny PTO requests
+- Approve/deny booking requests
+- Download XML exports directly
 
-### `styles.css`
-This is the shared stylesheet for the entire site.
-It includes:
-- theme variables
-- nav styles
-- auth page styles
-- dashboard cards
-- charts
-- quick actions
-- footer layout
-- shared components
+## Validation and backend notes
 
-The project uses Bootstrap plus custom CSS. It is not pure Bootstrap.
+### Password reset
+This build does **not** send email.
+Instead:
+- user enters email + first name + last name on `forgot-password.php`
+- if that matches a user record, session verification is set
+- user is redirected to `reset-password.php`
+- password is updated directly in `users`
 
-### `app.js`
-This is the shared JavaScript file.
-At the current stage, JavaScript is mostly used for light front-end behavior and placeholder/demo support. It is not yet handling real backend workflows.
+### Payments
+Payments are mock-only for class/project use:
+- card numbers are validated by digit length only
+- expiration must be this month or later
+- only last 4 digits are stored
+- CVV is not stored
+- in-person / pledge option is supported
 
-## Current Project Strengths
-- Clear multi-role structure
-- Strong visual consistency
-- Good separation of client, employee, and admin workflows
-- Dashboard and capstone-style business logic are already planned in the UI
-- Easy to connect to PHP/SQL later
-- Includes admin operational workflows, not just public pages
+### Approvals and audit data
+- bookings store `reviewed_by`, `reviewed_at`, and `admin_notes`
+- PTO requests store `reviewed_by`, `reviewed_at`, and `admin_notes`
 
-## Current Project Limitations
-- Mostly static front-end right now
-- No live database connection yet
-- No actual authentication yet
-- No real CRUD persistence yet
-- Chart filters are UI only
-- Approve/deny buttons are UI only
-- Some values in dashboards are demo values
-- Some features depend on future backend implementation
+### Overlap checks
+- booking requests check for overlapping field reservations
+- employee schedules check for overlapping shifts for the same employee
+- PTO requests check for overlapping pending/approved requests
 
-## Recommended Next Development Steps
-1. Connect the project to a local PHP environment
-2. Build the SQL schema based on the design/database docs
-3. Implement authentication and session handling
-4. Restrict pages by role
-5. Connect all forms to backend handlers
-6. Populate dashboard values from SQL queries
-7. Implement filtering for charts and tables
-8. Add validation, error handling, and success messages
-9. Clean final naming and deployment structure if needed
+## Still worth testing manually before submission
 
-## Capstone Framing
-This project is intended to demonstrate:
-- planning and design thinking
-- database-oriented feature architecture
-- user-role separation
-- dashboard design
-- administrative workflows
-- front-end implementation quality
-- readiness for backend integration
+Because this was generated as a project rebuild, click-test these in your XAMPP setup:
 
-It should be presented as a structured prototype that already solves the UI/UX and workflow side of the system, while leaving live server/database behavior as the next implementation phase.
+- register
+- login/logout
+- forgot password → reset password
+- client booking request
+- employee PTO request
+- admin schedule create/delete
+- admin booking approval
+- admin PTO approval
+- account/profile update
+- XML export download
 
-## Suggested Presentation Summary
-This capstone project is a role-based parks and recreation management portal for New York State Parks. It includes public informational pages, a client booking workflow, an employee schedule and PTO workflow, and an administrative dashboard for analytics, account management, scheduling, and approvals. The current version is a front-end prototype built with HTML, CSS, Bootstrap, and JavaScript, and it is prepared for backend expansion with PHP and SQL.
+## Submission note
 
-## Author
-Capstone project by the student/developer.
-
-## License / Use
-This project is intended for academic/capstone use unless otherwise specified.
+This build is intentionally optimized for:
+- simpler file layout
+- easier XAMPP use
+- clearer PHP/SQL review
+- closer alignment to the original static front end
