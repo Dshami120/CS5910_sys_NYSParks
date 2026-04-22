@@ -1,1 +1,0 @@
-Added missing .action-card styles back into styles.css so client and employee dashboard quick actions render as boxed cards instead of blue links.
