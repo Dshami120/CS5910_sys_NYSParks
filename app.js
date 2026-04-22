@@ -251,4 +251,77 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   setupEventFilters();
+  renderNews();
 });
+
+
+// ----------------------------------------------------------
+// DEMO NEWS DATA
+// ----------------------------------------------------------
+const newsItems = [
+  {
+    title: "Summer trail restoration projects begin statewide",
+    category: "Operations",
+    date: "June 21, 2026",
+    image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80",
+    excerpt: "Crews are improving trail signage, drainage, and accessibility features at major park destinations."
+  },
+  {
+    title: "Family adventure weekends return to select parks",
+    category: "Programs",
+    date: "June 18, 2026",
+    image: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1200&q=80",
+    excerpt: "New seasonal programming includes guided hikes, outdoor skills workshops, and kid-friendly discovery events."
+  },
+  {
+    title: "New waterfront safety updates announced for peak season",
+    category: "Safety",
+    date: "June 12, 2026",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80",
+    excerpt: "Updated swim hours, weather alert messaging, and beach operations plans are now available for visitors."
+  }
+];
+
+// ----------------------------------------------------------
+// RENDER NEWS CARDS
+// ----------------------------------------------------------
+function renderNews() {
+  const container = document.getElementById("news-grid");
+  if (!container) return;
+
+  container.innerHTML = newsItems.map((item) => `
+    <article class="col-md-6 col-xl-4">
+      <article class="news-card">
+        <img src="${item.image}" alt="${item.title}" />
+        <section class="p-4">
+          <section class="d-flex justify-content-between align-items-center gap-2 mb-3">
+            <span class="news-tag"><i class="bi bi-newspaper"></i>${item.category}</span>
+            <span class="small text-muted">${item.date}</span>
+          </section>
+          <h2 class="h5 fw-bold mb-2">${item.title}</h2>
+          <p class="text-muted mb-3">${item.excerpt}</p>
+          <a href="events.html" class="map-link text-decoration-none">Read more</a>
+        </section>
+      </article>
+    </article>
+  `).join("");
+}
+
+
+// ----------------------------------------------------------
+// DEMO PORTAL DATA
+// ----------------------------------------------------------
+const portalMetrics = {
+  adminBookingsByMonth: [42, 56, 64, 78, 88, 71],
+  adminSiteTraffic: [1800, 2200, 2600, 3100, 3400, 2900],
+  clientBookings: [
+    { title: "Sunset Wellness Series", park: "Jones Beach", status: "Approved" },
+    { title: "Community Food Fair", park: "Niagara Falls", status: "Pending" },
+    { title: "Youth Sports Day", park: "Letchworth", status: "Approved" }
+  ],
+  employeeShifts: [
+    { park: "Jones Beach State Park", date: "06/14/2026", hours: "8:00 AM – 4:00 PM" },
+    { park: "Jones Beach State Park", date: "06/15/2026", hours: "9:00 AM – 5:00 PM" },
+    { park: "Letchworth State Park", date: "06/18/2026", hours: "7:30 AM – 3:30 PM" }
+  ]
+};

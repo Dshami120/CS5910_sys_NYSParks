@@ -1,0 +1,7 @@
+Replaced only these files with the user-provided versions:
+- login.html
+- register.html
+- forgot-password.html
+- styles.css
+
+All other files remain from staticv4_chart_filters_ready.zip.

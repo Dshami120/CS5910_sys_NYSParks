@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parks>
+  <park>
+    <park_name>Letchworth State Park</park_name>
+    <region>Finger Lakes</region>
+    <park_type>Nature</park_type>
+    <address>1 Letchworth State Park</address>
+    <city>Mount Morris</city>
+    <state>NY</state>
+    <zip_code>14510</zip_code>
+    <hours>6:00 AM - 11:00 PM</hours>
+    <amenities>Waterfalls, Trails, Camping, Scenic Overlooks</amenities>
+    <summary>Known as the Grand Canyon of the East and famous for its gorge and waterfall views.</summary>
+    <image_url>https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80</image_url>
+    <latitude>42.6461</latitude>
+    <longitude>-77.9817</longitude>
+  </park>
+  <park>
+    <park_name>Jones Beach State Park</park_name>
+    <region>Long Island</region>
+    <park_type>Beach</park_type>
+    <address>1 Ocean Parkway</address>
+    <city>Wantagh</city>
+    <state>NY</state>
+    <zip_code>11793</zip_code>
+    <hours>6:00 AM - Sunset</hours>
+    <amenities>Beach, Boardwalk, Concerts, Fishing</amenities>
+    <summary>An iconic oceanfront destination with beach access, concerts, and family attractions.</summary>
+    <image_url>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80</image_url>
+    <latitude>40.5968</latitude>
+    <longitude>-73.5085</longitude>
+  </park>
+  <park>
+    <park_name>Watkins Glen State Park</park_name>
+    <region>Southern Tier</region>
+    <park_type>Nature</park_type>
+    <address>1009 N Franklin St</address>
+    <city>Watkins Glen</city>
+    <state>NY</state>
+    <zip_code>14891</zip_code>
+    <hours>8:00 AM - Dusk</hours>
+    <amenities>Gorge Trail, Waterfalls, Photography, Picnics</amenities>
+    <summary>A dramatic gorge park with trails, stone bridges, and waterfalls.</summary>
+    <image_url>https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1200&q=80</image_url>
+    <latitude>42.3809</latitude>
+    <longitude>-76.873</longitude>
+  </park>
+  <park>
+    <park_name>Bear Mountain State Park</park_name>
+    <region>Hudson Valley</region>
+    <park_type>Mountain</park_type>
+    <address>3006 Seven Lakes Dr</address>
+    <city>Bear Mountain</city>
+    <state>NY</state>
+    <zip_code>10911</zip_code>
+    <hours>6:00 AM - 9:00 PM</hours>
+    <amenities>Hiking, Zoo, Picnic Areas, Scenic Drives</amenities>
+    <summary>A Hudson Valley favorite with trails, river views, and year-round recreation.</summary>
+    <image_url>https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80</image_url>
+    <latitude>41.3129</latitude>
+    <longitude>-73.9882</longitude>
+  </park>
+  <park>
+    <park_name>Saratoga Spa State Park</park_name>
+    <region>Capital Region</region>
+    <park_type>Family</park_type>
+    <address>19 Roosevelt Dr</address>
+    <city>Saratoga Springs</city>
+    <state>NY</state>
+    <zip_code>12866</zip_code>
+    <hours>6:00 AM - 10:00 PM</hours>
+    <amenities>Pools, Golf, Performing Arts, Trails</amenities>
+    <summary>A cultural and recreation destination with pools, performing arts, and mineral springs.</summary>
+    <image_url>https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=80</image_url>
+    <latitude>43.0327</latitude>
+    <longitude>-73.7679</longitude>
+  </park>
+  <park>
+    <park_name>Niagara Falls State Park</park_name>
+    <region>Western New York</region>
+    <park_type>Landmark</park_type>
+    <address>332 Prospect St</address>
+    <city>Niagara Falls</city>
+    <state>NY</state>
+    <zip_code>14303</zip_code>
+    <hours>Open Daily</hours>
+    <amenities>Waterfalls, Observation Areas, Tours, Family Attractions</amenities>
+    <summary>A world-famous park anchored by iconic waterfalls and visitor experiences.</summary>
+    <image_url>https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?auto=format&fit=crop&w=1200&q=80</image_url>
+    <latitude>43.0962</latitude>
+    <longitude>-79.0377</longitude>
+  </park>
+</parks>

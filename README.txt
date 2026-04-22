@@ -9,7 +9,7 @@ Files included:
 - about.html
 - faq.html
 - login.html
-- signup.html
+- register.html
 - client-dashboard.html
 - client-create-event.html
 - admin-dashboard.html
