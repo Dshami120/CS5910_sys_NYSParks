@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NYS Parks - Admin Schedule</title>
+  <title>NYS Parks - Admin Bookings</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body data-page="admin-schedule">
+<body data-page="admin-bookings">
   <header class="site-header">
     <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
       <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
@@ -26,9 +26,9 @@
           <li><a href="ai.html" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
           <li><a href="news.html" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
           <li><a href="admin-dashboard.html" class="nav-link-custom" data-page-link="admin-dashboard"><i class="bi bi-speedometer2"></i>Admin Dash</a></li>
-          <li><a href="admin-employee-schedule.html" class="nav-link-custom active" data-page-link="admin-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
+          <li><a href="admin-employee-schedule.html" class="nav-link-custom" data-page-link="admin-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
           <li><a href="admin-pto.html" class="nav-link-custom" data-page-link="admin-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
-          <li><a href="admin-bookings.html" class="nav-link-custom" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i>Bookings</a></li>
+          <li><a href="admin-bookings.html" class="nav-link-custom active" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i>Bookings</a></li>
         </ul>
       </section>
       <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
@@ -41,49 +41,30 @@
     <section class="container">
       <header class="mb-4">
         <p class="section-kicker mb-2">Admin portal</p>
-        <h1 class="h2 fw-bold mb-1">Employee Schedule Creation</h1>
-        <p class="text-muted mb-0">Create, review, and update employee shift assignments by park and date.</p>
+        <h1 class="h2 fw-bold mb-1">Client Booking Approval Queue</h1>
+        <p class="text-muted mb-0">Approve or deny client event booking requests and monitor related fees.</p>
       </header>
 
-      <section class="row g-4">
-        <article class="col-xl-4">
-          <section class="form-panel p-4 h-100">
-            <h2 class="h5 fw-bold mb-3">Create / Update Shift</h2>
-            <form>
-              <label class="form-label">Employee</label>
-              <select class="form-select mb-3"><option>Jordan Rivera</option><option>Casey Morgan</option><option>Taylor Brooks</option></select>
-              <label class="form-label">Park</label>
-              <select class="form-select mb-3"><option>Jones Beach State Park</option><option>Letchworth State Park</option><option>Watkins Glen State Park</option></select>
-              <label class="form-label">Shift date</label>
-              <input type="date" class="form-control mb-3" />
-              <section class="row g-3">
-                <article class="col-6"><label class="form-label">Start</label><input type="time" class="form-control" /></article>
-                <article class="col-6"><label class="form-label">End</label><input type="time" class="form-control" /></article>
-              </section>
-              <label class="form-label mt-3">Role / assignment</label>
-              <input type="text" class="form-control mb-4" placeholder="Events support, ranger duty, maintenance" />
-              <button type="submit" class="btn btn-success rounded-pill w-100 fw-semibold">Save Schedule</button>
-            <div class="col-12 d-flex flex-wrap gap-3"><button type="button" class="btn btn-outline-danger btn-lg">Delete Selected Shift</button></div></form>
-          </section>
-        </article>
+      <section class="row g-4 mb-4">
+        <article class="col-md-4"><section class="stats-card h-100"><p class="small text-uppercase text-muted mb-1">Pending</p><h2 class="h3 fw-bold mb-2">4</h2><p class="text-muted mb-0">Requests waiting for staff approval.</p></section></article>
+        <article class="col-md-4"><section class="stats-card h-100"><p class="small text-uppercase text-muted mb-1">Approved today</p><h2 class="h3 fw-bold mb-2">2</h2><p class="text-muted mb-0">Moved to confirmed status.</p></section></article>
+        <article class="col-md-4"><section class="stats-card h-100"><p class="small text-uppercase text-muted mb-1">Fees queued</p><h2 class="h3 fw-bold mb-2">$2,480</h2><p class="text-muted mb-0">Reservation charges tied to open requests.</p></section></article>
+      </section>
 
-        <article class="col-xl-8">
-          <section class="list-shell mb-4">
-            <section class="p-4 border-bottom">
-              <section class="row g-3">
-                <article class="col-md-3 fw-bold">Employee</article>
-                <article class="col-md-3 fw-bold">Park</article>
-                <article class="col-md-2 fw-bold">Date</article>
-                <article class="col-md-2 fw-bold">Hours</article>
-                <article class="col-md-2 fw-bold">Assignment</article>
-              </section>
-            </section>
-            <section class="list-row p-4"><section class="row g-3"><article class="col-md-3">Jordan Rivera</article><article class="col-md-3">Jones Beach</article><article class="col-md-2 text-muted">06/14/2026</article><article class="col-md-2 text-muted">8–4</article><article class="col-md-2 text-muted">Events support</article></section></section>
-            <section class="list-row p-4"><section class="row g-3"><article class="col-md-3">Casey Morgan</article><article class="col-md-3">Letchworth</article><article class="col-md-2 text-muted">06/14/2026</article><article class="col-md-2 text-muted">9–5</article><article class="col-md-2 text-muted">Ranger duty</article></section></section>
-            <section class="p-4"><section class="row g-3"><article class="col-md-3">Taylor Brooks</article><article class="col-md-3">Niagara Falls</article><article class="col-md-2 text-muted">06/15/2026</article><article class="col-md-2 text-muted">7–3</article><article class="col-md-2 text-muted">Guest services</article></section></section>
+      <section class="list-shell">
+        <section class="p-4 border-bottom">
+          <section class="row g-3">
+            <article class="col-lg-2 fw-bold">Requester</article>
+            <article class="col-lg-2 fw-bold">Event</article>
+            <article class="col-lg-2 fw-bold">Park</article>
+            <article class="col-lg-2 fw-bold">Date</article>
+            <article class="col-lg-2 fw-bold">Fee</article>
+            <article class="col-lg-2 fw-bold">Actions</article>
           </section>
-          <section class="note-box">Employees can only view this schedule on their side. Editing stays in the admin portal.</section>
-        </article>
+        </section>
+        <section class="list-row p-4"><section class="row g-3 align-items-center"><article class="col-lg-2">Dev User</article><article class="col-lg-2">Community Food Fair</article><article class="col-lg-2 text-muted">Niagara Falls</article><article class="col-lg-2 text-muted">07/02/2026</article><article class="col-lg-2 text-muted">$620</article><article class="col-lg-2"><section class="d-flex gap-2"><button class="btn btn-sm btn-success rounded-pill" type="button">Approve</button><button class="btn btn-sm btn-outline-danger rounded-pill" type="button">Deny</button></section></article></section></section>
+        <section class="list-row p-4"><section class="row g-3 align-items-center"><article class="col-lg-2">Harbor Events LLC</article><article class="col-lg-2">Sunset Jazz Festival</article><article class="col-lg-2 text-muted">Jones Beach</article><article class="col-lg-2 text-muted">08/11/2026</article><article class="col-lg-2 text-muted">$780</article><article class="col-lg-2"><section class="d-flex gap-2"><button class="btn btn-sm btn-success rounded-pill" type="button">Approve</button><button class="btn btn-sm btn-outline-danger rounded-pill" type="button">Deny</button></section></article></section></section>
+        <section class="p-4"><section class="row g-3 align-items-center"><article class="col-lg-2">Green Youth Sports</article><article class="col-lg-2">Youth Sports Day</article><article class="col-lg-2 text-muted">Letchworth</article><article class="col-lg-2 text-muted">08/14/2026</article><article class="col-lg-2 text-muted">$520</article><article class="col-lg-2"><section class="d-flex gap-2"><button class="btn btn-sm btn-success rounded-pill" type="button">Approve</button><button class="btn btn-sm btn-outline-danger rounded-pill" type="button">Deny</button></section></article></section></section>
       </section>
     </section>
   </main>
