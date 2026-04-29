@@ -72,21 +72,280 @@ $bookingStatusCounts = array_count_values(array_map(fn($b) => $b['booking_status
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-page="client-dashboard">
-<header class="site-header"><nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3"><section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4"><a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2"><span class="brand-badge">NY</span><span class="brand-mark text-dark">NYS Parks<br /><small>&amp; RECREATION</small></span></a><ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center"><li><a href="parks.php" class="nav-link-custom">Parks</a></li><li><a href="events.php" class="nav-link-custom">Events</a></li><li><a href="map.php" class="nav-link-custom">Map</a></li><li><a href="news.php" class="nav-link-custom">News</a></li><li><a href="donate.php" class="nav-link-custom">Donate</a></li><li><a href="client-dashboard.php" class="nav-link-custom active">Client Dash</a></li><li><a href="client-create-event.php" class="nav-link-custom">Create Event</a></li></ul></section><ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center"><li><a href="account.php" class="nav-link-custom">Account</a></li><li><a href="logout.php" class="nav-link-custom"><i class="bi bi-box-arrow-right"></i>Logout</a></li></ul></nav></header>
-<main class="py-5"><section class="container">
-<?php if ($flash): ?><div class="alert alert-<?= $flash['type']==='error'?'danger':'success' ?> mb-4"><?= e($flash['message']) ?></div><?php endif; ?>
-<section class="row g-4 mb-4"><article class="col-xl-8"><section class="soft-card p-4 p-lg-5 h-100"><div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-start"><div><p class="section-kicker mb-2">Client portal</p><h1 class="h2 fw-bold mb-1">Client Dashboard</h1><p class="text-muted mb-0">Track booking requests, approval status, reservation fees, and private event visibility.</p></div><a href="client-create-event.php" class="btn btn-success rounded-pill"><i class="bi bi-plus-circle me-1"></i>Create Event Request</a></div><section class="row g-3 mt-4"><article class="col-md-4"><section class="stats-card h-100"><p class="small text-uppercase text-muted mb-1">Approved / Confirmed</p><h2 class="h3 fw-bold mb-2"><?= $confirmedCount ?></h2><p class="text-muted mb-0">These become public-facing private events.</p></section></article><article class="col-md-4"><section class="stats-card h-100"><p class="small text-uppercase text-muted mb-1">Pending requests</p><h2 class="h3 fw-bold mb-2"><?= $pendingCount ?></h2><p class="text-muted mb-0">Pending requests block overlapping slots.</p></section></article><article class="col-md-4"><section class="stats-card h-100"><p class="small text-uppercase text-muted mb-1">Next event</p><h2 class="h5 fw-bold mb-2"><?= $nextBooking ? date('M d', strtotime($nextBooking['start_datetime'])) : '—' ?></h2><p class="text-muted mb-0"><?= $nextBooking ? e($nextBooking['title']) . ' at ' . e($nextBooking['park_name']) : 'No upcoming approved event.' ?></p></section></article></section></section></article><article class="col-xl-4"><section class="soft-card p-4 h-100"><h2 class="h5 fw-bold mb-3">Payment rules</h2><p class="text-muted mb-3">Reservation fees can be paid after admin approval by mock card or marked pending for in-person payment. You still bring ID in person.</p><a href="events.php" class="action-card text-decoration-none d-block"><strong>Browse public calendar</strong><span>Approved private bookings appear with a Private label.</span></a></section></article></section>
-<section class="client-chart-panel mb-4 p-4 rounded-4 bg-light border"><div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-4"><div><p class="client-section-kicker mb-1">Bookings Overview</p><h2 class="client-section-title mb-0">My Booking Activity</h2></div><div class="client-chart-filters d-flex flex-wrap gap-3"><div><label class="form-label small text-uppercase text-muted mb-1" for="clientChartRange">View By</label><select class="form-select client-filter-select" id="clientChartRange"><option value="day">Day</option><option value="week">Week</option><option value="month" selected>Month</option><option value="year">Year</option></select></div><div><label class="form-label small text-uppercase text-muted mb-1" for="clientChartStatus">Status</label><select class="form-select client-filter-select" id="clientChartStatus"><option value="all" selected>All Statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="confirmed">Confirmed</option><option value="completed">Completed</option><option value="denied">Denied</option><option value="cancelled">Cancelled</option></select></div></div></div><div class="client-chart-box mb-4 p-3 bg-white rounded-4 border"><canvas id="clientBookingsChart" height="130"></canvas></div><div class="row g-3"><div class="col-md-4"><article class="client-metric-card"><span class="client-metric-label">Pending</span><strong class="client-metric-value"><?= (int)($bookingStatusCounts['pending'] ?? 0) ?></strong></article></div><div class="col-md-4"><article class="client-metric-card"><span class="client-metric-label">Approved / Confirmed</span><strong class="client-metric-value"><?= (int)(($bookingStatusCounts['approved'] ?? 0) + ($bookingStatusCounts['confirmed'] ?? 0)) ?></strong></article></div><div class="col-md-4"><article class="client-metric-card"><span class="client-metric-label">Completed / Closed</span><strong class="client-metric-value"><?= (int)(($bookingStatusCounts['completed'] ?? 0) + ($bookingStatusCounts['denied'] ?? 0) + ($bookingStatusCounts['cancelled'] ?? 0)) ?></strong></article></div></div></section>
-<section class="list-shell mb-4"><section class="p-4 border-bottom"><section class="row g-3"><article class="col-lg-2 fw-bold">Event</article><article class="col-lg-2 fw-bold">Park</article><article class="col-lg-2 fw-bold">Date / Time</article><article class="col-lg-1 fw-bold">Status</article><article class="col-lg-1 fw-bold">Fee</article><article class="col-lg-2 fw-bold">Payment</article><article class="col-lg-2 fw-bold">Pay Reservation</article></section></section><?php foreach ($bookings as $booking): ?><section class="list-row p-4"><section class="row g-3 align-items-start"><article class="col-lg-2 fw-semibold"><?= e($booking['title']) ?></article><article class="col-lg-2 text-muted"><?= e($booking['park_name']) ?></article><article class="col-lg-2 text-muted"><?= date('m/d/Y g:i A', strtotime($booking['start_datetime'])) ?></article><article class="col-lg-1"><span class="status-pill <?= booking_status_class($booking['booking_status']) ?>"><?= e(ucfirst($booking['booking_status'])) ?></span></article><article class="col-lg-1 text-muted">$<?= number_format((float)$booking['reservation_fee'], 0) ?></article><article class="col-lg-2 text-muted"><?php if ($booking['payment_status']): ?><span class="status-pill <?= booking_status_class($booking['payment_status']) ?>"><?= e(ucfirst($booking['payment_status'])) ?></span><br><small><?= e(str_replace('_',' ', (string)$booking['payment_method'])) ?></small><?php else: ?>Not paid<?php endif; ?></article><article class="col-lg-2"><?php if (!$booking['payment_status'] && in_array($booking['booking_status'], ['approved','confirmed'], true)): ?><form method="post" class="small reservation-pay-form"><input type="hidden" name="action" value="pay_reservation"><input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>"><select name="payment_method" class="form-select form-select-sm mb-2 reservation-method"><option value="card">Mock card</option><option value="in_person">In person</option></select><div class="reservation-card-fields"><input name="card_number" class="form-control form-control-sm mb-1" placeholder="Card number"><section class="d-flex gap-1"><input name="exp_month" class="form-control form-control-sm" placeholder="MM"><input name="exp_year" class="form-control form-control-sm" placeholder="YYYY"><input name="cvv" class="form-control form-control-sm" placeholder="CVV"></section></div><button class="btn btn-sm btn-success rounded-pill mt-2" type="submit">Submit</button></form><?php elseif (!$booking['payment_status']): ?><span class="text-muted small">Available after approval.</span><?php else: ?><span class="text-muted small">Payment recorded.</span><?php endif; ?></article></section></section><?php endforeach; ?><?php if (!$bookings): ?><section class="p-4 text-muted">No booking requests yet.</section><?php endif; ?></section>
-</section></main>
-<footer class="footer-shell py-5 mt-5"><section class="container"><p class="text-muted mb-0">NYS Parks &amp; Recreation</p></section></footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="js/dashboard-charts.js"></script>
-<script>
-window.initClientBookingChart(<?= json_encode($bookingChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>);
-window.initReservationPaymentForms();
-</script>
-<script src="js/app.js"></script>
+  <header class="site-header">
+    <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+      <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
+        <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2">
+          <span class="brand-badge">NY</span>
+          <span class="brand-mark text-dark">
+            NYS Parks<br />
+            <small>&amp; RECREATION</small>
+          </span>
+        </a>
+        <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
+          <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
+          <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
+          <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
+          <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
+          <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+            <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
+            <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
+            <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
+          <li><a href="client-dashboard.php" class="nav-link-custom active" data-page-link="client-dashboard"><i class="bi bi-speedometer2"></i>Client Dash</a></li>
+          <li><a href="client-create-event.php" class="nav-link-custom" data-page-link="client-create-event"><i class="bi bi-plus-circle"></i>Create Event</a></li>
+        </ul>
+      </section>
+      <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
+        <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
+        <li><a href="logout.php" class="nav-link-custom" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container py-5">
+    <?php if ($flash): ?><div class="alert alert-<?= $flash['type']==='error'?'danger':'success' ?> mb-4"><?= e($flash['message']) ?></div><?php endif; ?>
+
+    <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+      <div>
+        <p class="eyebrow mb-2">Client Workspace</p>
+        <h1 class="display-6 fw-bold mb-2">Client Dashboard</h1>
+        <p class="text-muted mb-0">Track booking requests, approval status, reservation fees, and private event visibility.</p>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-success" href="client-create-event.php"><i class="bi bi-plus-circle me-1"></i>Create Event Request</a>
+        <a class="btn btn-outline-dark" href="events.php"><i class="bi bi-calendar-event me-1"></i>Public Calendar</a>
+      </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+      <div class="col-md-6 col-xl-3">
+        <article class="admin-stat-card">
+          <span class="admin-stat-icon icon-green"><i class="bi bi-check2-circle"></i></span>
+          <p class="admin-stat-label mb-1">Approved / Confirmed</p>
+          <h2 class="admin-stat-value mb-0"><?= $confirmedCount ?></h2>
+          <p class="text-muted small mb-0">Public-facing private events.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="admin-stat-card">
+          <span class="admin-stat-icon icon-orange"><i class="bi bi-hourglass-split"></i></span>
+          <p class="admin-stat-label mb-1">Pending requests</p>
+          <h2 class="admin-stat-value mb-0"><?= $pendingCount ?></h2>
+          <p class="text-muted small mb-0">Awaiting admin review.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="admin-stat-card">
+          <span class="admin-stat-icon icon-blue"><i class="bi bi-calendar2-week"></i></span>
+          <p class="admin-stat-label mb-1">Next event</p>
+          <h2 class="admin-stat-value mb-0"><?= $nextBooking ? date('M d', strtotime($nextBooking['start_datetime'])) : '—' ?></h2>
+          <p class="text-muted small mb-0"><?= $nextBooking ? e($nextBooking['title']) . ' · ' . e($nextBooking['park_name']) : 'No upcoming approved event.' ?></p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="admin-stat-card">
+          <span class="admin-stat-icon icon-purple"><i class="bi bi-credit-card"></i></span>
+          <p class="admin-stat-label mb-1">Payment rules</p>
+          <h2 class="h5 fw-bold mb-1">After approval</h2>
+          <p class="text-muted small mb-0">Pay by mock card or mark in-person payment pending.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+      <div class="col-lg-7">
+        <article class="admin-panel h-100">
+          <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
+            <div>
+              <h2 class="h3 fw-bold mb-1">My booking activity</h2>
+              <p class="text-muted mb-0">Chart.js renders database-backed booking rows for this client account.</p>
+            </div>
+            <div class="admin-chart-filters">
+              <div>
+                <label class="form-label small text-uppercase text-muted mb-1" for="clientChartRange">View By</label>
+                <select class="form-select admin-filter-select" id="clientChartRange">
+                  <option value="day">Day</option>
+                  <option value="week">Week</option>
+                  <option value="month" selected>Month</option>
+                  <option value="year">Year</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label small text-uppercase text-muted mb-1" for="clientChartStatus">Status</label>
+                <select class="form-select admin-filter-select" id="clientChartStatus">
+                  <option value="all" selected>All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                  <option value="denied">Denied</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="admin-chart bg-white rounded-4 border p-3">
+            <canvas id="clientBookingsChart" height="150"></canvas>
+          </div>
+        </article>
+      </div>
+      <div class="col-lg-5">
+        <article class="admin-panel h-100">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h3 fw-bold mb-0">Booking summary</h2>
+            <span class="admin-badge"><?= count($bookings) ?> total</span>
+          </div>
+          <div class="vstack gap-3">
+            <article class="admin-note-card">
+              <h3 class="h5 fw-bold mb-2"><?= (int)($bookingStatusCounts['pending'] ?? 0) ?> pending</h3>
+              <p class="text-muted mb-0">Pending requests remain visible here while admins review availability.</p>
+            </article>
+            <article class="admin-note-card">
+              <h3 class="h5 fw-bold mb-2"><?= (int)(($bookingStatusCounts['approved'] ?? 0) + ($bookingStatusCounts['confirmed'] ?? 0)) ?> approved / confirmed</h3>
+              <p class="text-muted mb-0">Approved and confirmed bookings are eligible for reservation payment.</p>
+            </article>
+            <article class="admin-note-card">
+              <h3 class="h5 fw-bold mb-2"><?= (int)(($bookingStatusCounts['completed'] ?? 0) + ($bookingStatusCounts['denied'] ?? 0) + ($bookingStatusCounts['cancelled'] ?? 0)) ?> completed / closed</h3>
+              <p class="text-muted mb-0">Completed, denied, and cancelled requests are kept for history.</p>
+            </article>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="card shadow-sm border-0 rounded-4 mb-4">
+      <div class="card-body p-4 p-lg-5">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+          <div>
+            <p class="eyebrow mb-1">Reservation Requests</p>
+            <h2 class="h3 fw-bold mb-1">My Bookings</h2>
+            <p class="text-muted mb-0">Database-backed list of your event requests, statuses, fees, and reservation payment records.</p>
+          </div>
+          <div class="pill-note">Client only · bookings and payments tables</div>
+        </div>
+
+        <section class="list-shell mb-0">
+          <section class="p-4 border-bottom">
+            <section class="row g-3">
+              <article class="col-lg-2 fw-bold">Event</article>
+              <article class="col-lg-2 fw-bold">Park</article>
+              <article class="col-lg-2 fw-bold">Date / Time</article>
+              <article class="col-lg-1 fw-bold">Status</article>
+              <article class="col-lg-1 fw-bold">Fee</article>
+              <article class="col-lg-2 fw-bold">Payment</article>
+              <article class="col-lg-2 fw-bold">Pay Reservation</article>
+            </section>
+          </section>
+          <?php foreach ($bookings as $booking): ?>
+          <section class="list-row p-4">
+            <section class="row g-3 align-items-start">
+              <article class="col-lg-2 fw-semibold"><?= e($booking['title']) ?></article>
+              <article class="col-lg-2 text-muted"><?= e($booking['park_name']) ?></article>
+              <article class="col-lg-2 text-muted"><?= date('m/d/Y g:i A', strtotime($booking['start_datetime'])) ?></article>
+              <article class="col-lg-1"><span class="status-pill <?= booking_status_class($booking['booking_status']) ?>"><?= e(ucfirst($booking['booking_status'])) ?></span></article>
+              <article class="col-lg-1 text-muted">$<?= number_format((float)$booking['reservation_fee'], 0) ?></article>
+              <article class="col-lg-2 text-muted">
+                <?php if ($booking['payment_status']): ?>
+                  <span class="status-pill <?= booking_status_class($booking['payment_status']) ?>"><?= e(ucfirst($booking['payment_status'])) ?></span><br />
+                  <small><?= e(str_replace('_',' ', (string)$booking['payment_method'])) ?></small>
+                <?php else: ?>
+                  Not paid
+                <?php endif; ?>
+              </article>
+              <article class="col-lg-2">
+                <?php if (!$booking['payment_status'] && in_array($booking['booking_status'], ['approved','confirmed'], true)): ?>
+                  <form method="post" class="small reservation-pay-form">
+                    <input type="hidden" name="action" value="pay_reservation" />
+                    <input type="hidden" name="booking_id" value="<?= (int)$booking['id'] ?>" />
+                    <select name="payment_method" class="form-select form-select-sm mb-2 reservation-method">
+                      <option value="card">Mock card</option>
+                      <option value="in_person">In person</option>
+                    </select>
+                    <div class="reservation-card-fields">
+                      <input name="card_number" class="form-control form-control-sm mb-1" placeholder="Card number" />
+                      <section class="d-flex gap-1">
+                        <input name="exp_month" class="form-control form-control-sm" placeholder="MM" />
+                        <input name="exp_year" class="form-control form-control-sm" placeholder="YYYY" />
+                        <input name="cvv" class="form-control form-control-sm" placeholder="CVV" />
+                      </section>
+                    </div>
+                    <button class="btn btn-sm btn-success rounded-pill mt-2" type="submit">Submit</button>
+                  </form>
+                <?php elseif (!$booking['payment_status']): ?>
+                  <span class="text-muted small">Available after approval.</span>
+                <?php else: ?>
+                  <span class="text-muted small">Payment recorded.</span>
+                <?php endif; ?>
+              </article>
+            </section>
+          </section>
+          <?php endforeach; ?>
+          <?php if (!$bookings): ?><section class="p-4 text-muted">No booking requests yet.</section><?php endif; ?>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer-shell py-5 mt-5">
+    <section class="container">
+      <section class="footer-five">
+        <article class="footer-block footer-brand">
+          <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2 mb-3">
+            <span class="brand-badge">NY</span>
+            <span class="brand-mark text-dark">
+              NYS Parks<br />
+              <small>&amp; RECREATION</small>
+            </span>
+          </a>
+          <p class="text-muted mb-0">
+            A modern gateway to New York State parks, events, maps, news, and role-based operations.
+          </p>
+        </article>
+        <article class="footer-block">
+          <h2 class="h6 fw-bold mb-3">Explore</h2>
+          <ul class="list-unstyled m-0">
+            <li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li>
+            <li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li>
+            <li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li>
+            <li class="mb-2"><a href="ai.php" class="text-muted text-decoration-none">AI</a></li>
+            <li class="mb-2"><a href="news.php" class="text-muted text-decoration-none">News</a></li>
+          </ul>
+        </article>
+        <article class="footer-block">
+          <h2 class="h6 fw-bold mb-3">Account</h2>
+          <ul class="list-unstyled m-0">
+            <li class="mb-2"><a href="about.php" class="text-muted text-decoration-none">About</a></li>
+            <li class="mb-2"><a href="faq.php" class="text-muted text-decoration-none">FAQ</a></li>
+            <li class="mb-2"><a href="donate.php" class="text-muted text-decoration-none">Donate</a></li>
+            <li class="mb-2"><a href="login.php" class="text-muted text-decoration-none">Log In</a></li>
+            <li class="mb-2"><a href="register.php" class="text-muted text-decoration-none">Register</a></li>
+            <li class="mb-2"><a href="account.php" class="text-muted text-decoration-none">Account</a></li>
+          </ul>
+        </article>
+        <article class="footer-block">
+          <h2 class="h6 fw-bold mb-3">Portals</h2>
+          <ul class="list-unstyled m-0">
+            <li class="mb-2"><a href="client-dashboard.php" class="text-muted text-decoration-none">Client Dashboard</a></li>
+            <li class="mb-2"><a href="admin-dashboard.php" class="text-muted text-decoration-none">Admin Dashboard</a></li>
+            <li class="mb-2"><a href="employee-dashboard.php" class="text-muted text-decoration-none">Employee Dashboard</a></li>
+          </ul>
+        </article>
+        <article class="footer-block">
+          <h2 class="h6 fw-bold mb-3">Contact</h2>
+          <p class="text-muted mb-2">info@nysparks.gov</p>
+          <p class="text-muted mb-2">(555) 123-4567</p>
+          <p class="text-muted mb-0">Albany, New York</p>
+        </article>
+      </section>
+    </section>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/dashboard-charts.js"></script>
+  <script>
+    window.initClientBookingChart(<?= json_encode($bookingChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>);
+    window.initReservationPaymentForms();
+  </script>
+  <script src="js/app.js"></script>
 </body>
 </html>
