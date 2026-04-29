@@ -60,7 +60,7 @@ if (!$selected && $employees) { $selected = $employees[0]; }
   <title>NYS Parks - Admin Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-page="admin-dashboard">
   <header class="site-header">
@@ -369,32 +369,10 @@ if (!$selected && $employees) { $selected = $employees[0]; }
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="js/dashboard-charts.js"></script>
   <script>
-    const adminBookingData = <?= json_encode($adminBookingChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>;
-    const adminRange = document.getElementById('adminChartRange');
-    const adminPark = document.getElementById('adminChartPark');
-    const adminCtx = document.getElementById('adminBookingsChart');
-    function adminGroupKey(dateString, range) {
-      const d = new Date(dateString + 'T00:00:00');
-      if (range === 'day') return d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
-      if (range === 'week') { const first = new Date(d); first.setDate(d.getDate() - d.getDay()); return 'Week of ' + first.toLocaleDateString(undefined, {month:'short', day:'numeric'}); }
-      if (range === 'year') return String(d.getFullYear());
-      return d.toLocaleDateString(undefined, {month:'short', year:'numeric'});
-    }
-    function adminPayload() {
-      const range = adminRange.value;
-      const park = adminPark.value;
-      const grouped = new Map();
-      adminBookingData.filter(row => park === 'all' || row.park === park).forEach(row => {
-        const key = adminGroupKey(row.date, range);
-        grouped.set(key, (grouped.get(key) || 0) + 1);
-      });
-      return { labels: [...grouped.keys()], values: [...grouped.values()] };
-    }
-    const adminChart = new Chart(adminCtx, { type: 'bar', data: { labels: [], datasets: [{ label: 'Approved bookings', data: [] }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
-    function renderAdminChart(){ const p = adminPayload(); adminChart.data.labels = p.labels; adminChart.data.datasets[0].data = p.values; adminChart.update(); }
-    adminRange.addEventListener('change', renderAdminChart); adminPark.addEventListener('change', renderAdminChart); renderAdminChart();
+    window.initAdminBookingChart(<?= json_encode($adminBookingChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>);
   </script>
-  <script src="app.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

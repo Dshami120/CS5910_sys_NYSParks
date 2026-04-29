@@ -49,8 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $overlap->execute([$fieldId, $startDt, $endDt]);
         $eventOverlap = $db->prepare("SELECT COUNT(*) FROM events WHERE field_id=? AND event_status IN ('draft','published','closed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $eventOverlap->execute([$fieldId, $startDt, $endDt]);
-        if (((int)$overlap->fetchColumn() + (int)$eventOverlap->fetchColumn()) > 0) {
-            flash_set('error', 'That field already has an overlapping booking or event. Pending requests also block the same time slot.');
+        $wholeParkBookingOverlap = $db->prepare("SELECT COUNT(*) FROM bookings WHERE park_id=? AND field_id IS NULL AND booking_status IN ('pending','approved','confirmed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
+        $wholeParkBookingOverlap->execute([$parkId, $startDt, $endDt]);
+        $wholeParkEventOverlap = $db->prepare("SELECT COUNT(*) FROM events WHERE park_id=? AND field_id IS NULL AND event_status IN ('draft','published','closed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
+        $wholeParkEventOverlap->execute([$parkId, $startDt, $endDt]);
+        if (((int)$overlap->fetchColumn() + (int)$eventOverlap->fetchColumn() + (int)$wholeParkBookingOverlap->fetchColumn() + (int)$wholeParkEventOverlap->fetchColumn()) > 0) {
+            flash_set('error', 'That field or the whole park already has an overlapping booking or event. Pending requests also block the same time slot.');
             redirect('client-create-event.php');
         }
     } else {
@@ -78,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <title>NYS Parks - Client Create Event</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-page="client-create-event">
   <header class="site-header">
@@ -127,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </article>
                 <article class="col-lg-6">
                   <label class="form-label">Park location</label>
-                  <select name="park_id" class="form-select form-select-lg" required>
+                  <select name="park_id" id="park_id" class="form-select form-select-lg" required>
                     <?php foreach ($parks as $park): ?>
                     <option value="<?= $park['id'] ?>"><?= e($park['name']) ?></option>
                     <?php endforeach; ?>
@@ -170,10 +174,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </article>
                 <article class="col-12">
                   <label class="form-label">Preferred field or area</label>
-                  <select name="field_id" class="form-select form-select-lg">
+                  <select name="field_id" id="field_id" class="form-select form-select-lg">
                     <option value="">No specific field</option>
                     <?php foreach ($fields as $field): ?>
-                    <option value="<?= $field['id'] ?>"><?= e($field['park_name']) ?> — <?= e($field['name']) ?></option>
+                    <option value="<?= $field['id'] ?>" data-park="<?= $field['park_id'] ?>"><?= e($field['park_name']) ?> — <?= e($field['name']) ?></option>
                     <?php endforeach; ?>
                   </select>
                 </article>
@@ -265,6 +269,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </section>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="app.js"></script>
+  <script>
+    const parkSelect = document.getElementById('park_id');
+    const fieldSelect = document.getElementById('field_id');
+    function filterFieldsByPark() {
+      const selectedPark = parkSelect.value;
+      Array.from(fieldSelect.options).forEach(option => {
+        if (!option.value) { option.hidden = false; return; }
+        option.hidden = option.dataset.park !== selectedPark;
+      });
+      if (fieldSelect.selectedOptions.length && fieldSelect.selectedOptions[0].hidden) {
+        fieldSelect.value = '';
+      }
+    }
+    parkSelect.addEventListener('change', filterFieldsByPark);
+    filterFieldsByPark();
+  </script>
+  <script src="js/app.js"></script>
 </body>
 </html>

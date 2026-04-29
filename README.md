@@ -7,10 +7,10 @@ This version is rebuilt for simple local use in XAMPP and easy handoff for a cap
 Only these files/folders are used:
 
 - root `*.php` page files
-- `styles.css`
-- `app.js`
-- `schema.sql`
-- `seed.sql`
+- `css/styles.css`
+- `js/app.js`
+- `db/schema.sql`
+- `db/seed.sql`
 - `README.md`
 - `bootstrap.php` for DB connection, auth/session, and helper functions
 
@@ -68,9 +68,9 @@ Users:
 
 2. Start Apache and MySQL in XAMPP.
 
-3. Open phpMyAdmin and import `schema.sql`.
+3. Open phpMyAdmin and import `db/schema.sql`.
 
-4. Import `seed.sql`.
+4. Import `db/seed.sql`.
 
 5. Edit DB settings in:
 

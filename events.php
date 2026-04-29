@@ -21,7 +21,7 @@
   />
 
   <!-- Shared site stylesheet -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <?php require 'bootstrap.php';
 $search = get('q');
@@ -207,6 +207,6 @@ $categories = $db->query("SELECT DISTINCT category FROM events WHERE event_statu
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Shared site JavaScript -->
-  <script src="app.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

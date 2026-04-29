@@ -166,6 +166,7 @@ function validate_card(string $number, string $month, string $year, string $cvv=
     }
     $m = (int) $month; $y = (int) $year;
     if ($m < 1 || $m > 12) return 'Expiration month must be between 1 and 12.';
+    if ($y > 2100) return 'Expiration year must be 2100 or earlier.';
     $currentYear = (int) date('Y');
     $currentMonth = (int) date('n');
     if ($y < $currentYear || ($y === $currentYear && $m < $currentMonth)) {

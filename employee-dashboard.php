@@ -17,7 +17,7 @@ $stmt->execute([$user['id']]); $shifts = $stmt->fetchAll();
   <title>NYS Parks - Employee Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-page="employee-dashboard">
   <header class="site-header">
@@ -137,6 +137,6 @@ $stmt->execute([$user['id']]); $shifts = $stmt->fetchAll();
     </section>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="app.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

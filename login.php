@@ -1,6 +1,13 @@
 <?php
 require 'bootstrap.php';
-if ($currentUser) { redirect($currentUser['role'] === 'admin' ? 'admin-dashboard.php' : ($currentUser['role'] === 'employee' ? 'employee-dashboard.php' : 'client-dashboard.php')); }
+$next = (string)($_GET['next'] ?? $_POST['next'] ?? '');
+if ($next !== '' && (preg_match('/^[a-z][a-z0-9+.-]*:/i', $next) || str_starts_with($next, '//'))) {
+    $next = '';
+}
+if ($currentUser) {
+    if ($next !== '') { redirect($next); }
+    redirect($currentUser['role'] === 'admin' ? 'admin-dashboard.php' : ($currentUser['role'] === 'employee' ? 'employee-dashboard.php' : 'client-dashboard.php'));
+}
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = strtolower(post('email'));
     $password = post('password');
@@ -10,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($user && password_verify($password, $user['password_hash'])) {
         login_user($user);
         $db->prepare("UPDATE users SET last_login_at = NOW() WHERE id = ?")->execute([$user['id']]);
+        if ($next !== '') { redirect($next); }
         redirect($user['role'] === 'admin' ? 'admin-dashboard.php' : ($user['role'] === 'employee' ? 'employee-dashboard.php' : 'client-dashboard.php'));
     }
     flash_set('error', 'Invalid email or password.');
@@ -38,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   />
 
   <!-- Shared site stylesheet -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-page="login">
   <!-- =====================================================
@@ -86,6 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </header>
 
         <form method="post">
+          <?php if ($next !== ''): ?><input type="hidden" name="next" value="<?= e($next) ?>"><?php endif; ?>
           <label class="form-label">Email / Username</label>
           <input type="email" name="email" class="form-control form-control-lg mb-3" placeholder="you@example.com" required />
 
@@ -168,6 +177,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Shared site JavaScript -->
-  <script src="app.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

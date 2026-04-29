@@ -53,8 +53,7 @@ INSERT INTO attendance (event_id, user_id, attendee_email, guest_count, attendan
 
 INSERT INTO payments (user_id, booking_id, payment_type, payer_name, payer_email, amount, payment_method, card_num, exp_month, exp_year, cvv, payment_status, transaction_ref) VALUES
 (3, 2, 'reservation', 'Dev User', 'client@nysparks.local', 180.00, 'card', '4242424242424242', 12, 2027, '123', 'completed', 'RES-2026-0001'),
-(3, NULL, 'donation', 'Dev User', 'client@nysparks.local', 50.00, 'card', '4111111111111111', 11, 2027, '321', 'completed', 'DON-2026-0001'),
-(NULL, NULL, 'donation', 'Walk-in Donor', 'donor@example.com', 25.00, 'in_person', NULL, NULL, NULL, NULL, 'completed', 'DON-2026-0002');
+(3, NULL, 'donation', 'Dev User', 'client@nysparks.local', 50.00, 'card', '4111111111111111', 11, 2027, '321', 'completed', 'DON-2026-0001');
 
 INSERT INTO employee_schedules (employee_id, park_id, shift_date, start_time, end_time, assignment, schedule_status, notes, created_by) VALUES
 (2, 1, '2026-06-14', '08:00:00', '16:00:00', 'Events support', 'scheduled', NULL, 1),

@@ -21,7 +21,7 @@
   />
 
   <!-- Shared site stylesheet -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <?php require 'bootstrap.php';
 $search = get('q');
@@ -214,6 +214,6 @@ $types = $db->query("SELECT DISTINCT park_type FROM parks ORDER BY park_type")->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Shared site JavaScript -->
-  <script src="app.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
