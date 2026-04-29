@@ -45,7 +45,7 @@ if (!$bookingByMonth) {
 $pendingBookings = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status='pending'")->fetchColumn();
 $pendingPto = (int) $db->query("SELECT COUNT(*) FROM pto_requests WHERE pto_status='pending'")->fetchColumn();
 $employeeActions = (int) $db->query("SELECT COUNT(*) FROM users WHERE role='employee' AND account_status='active'")->fetchColumn();
-$adminBookingChartRows = $db->query("SELECT DATE(b.start_datetime) AS date, p.name AS park FROM bookings b JOIN parks p ON p.id=b.park_id WHERE b.booking_status='approved' ORDER BY b.start_datetime")->fetchAll();
+$adminBookingChartRows = $db->query("SELECT DATE(b.start_datetime) AS date, p.name AS park FROM bookings b JOIN parks p ON p.id=b.park_id WHERE b.booking_status IN ('approved','confirmed') ORDER BY b.start_datetime")->fetchAll();
 $employees = user_options($db, 'employee');
 $parks = park_options($db);
 $selectedId = (int) get('employee_id');
@@ -166,7 +166,6 @@ if (!$selected && $employees) { $selected = $employees[0]; }
           </div>
           <div class="admin-chart bg-white rounded-4 border p-3">
             <canvas id="adminBookingsChart" height="150"></canvas>
-          </div>
           </div>
         </article>
       </div>
@@ -369,6 +368,33 @@ if (!$selected && $employees) { $selected = $employees[0]; }
     </section>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    const adminBookingData = <?= json_encode($adminBookingChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>;
+    const adminRange = document.getElementById('adminChartRange');
+    const adminPark = document.getElementById('adminChartPark');
+    const adminCtx = document.getElementById('adminBookingsChart');
+    function adminGroupKey(dateString, range) {
+      const d = new Date(dateString + 'T00:00:00');
+      if (range === 'day') return d.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+      if (range === 'week') { const first = new Date(d); first.setDate(d.getDate() - d.getDay()); return 'Week of ' + first.toLocaleDateString(undefined, {month:'short', day:'numeric'}); }
+      if (range === 'year') return String(d.getFullYear());
+      return d.toLocaleDateString(undefined, {month:'short', year:'numeric'});
+    }
+    function adminPayload() {
+      const range = adminRange.value;
+      const park = adminPark.value;
+      const grouped = new Map();
+      adminBookingData.filter(row => park === 'all' || row.park === park).forEach(row => {
+        const key = adminGroupKey(row.date, range);
+        grouped.set(key, (grouped.get(key) || 0) + 1);
+      });
+      return { labels: [...grouped.keys()], values: [...grouped.values()] };
+    }
+    const adminChart = new Chart(adminCtx, { type: 'bar', data: { labels: [], datasets: [{ label: 'Approved bookings', data: [] }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+    function renderAdminChart(){ const p = adminPayload(); adminChart.data.labels = p.labels; adminChart.data.datasets[0].data = p.values; adminChart.update(); }
+    adminRange.addEventListener('change', renderAdminChart); adminPark.addEventListener('change', renderAdminChart); renderAdminChart();
+  </script>
   <script src="app.js"></script>
 </body>
 </html>

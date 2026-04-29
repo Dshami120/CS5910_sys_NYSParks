@@ -23,7 +23,7 @@ if (isset($_GET['download']) && $_GET['download'] === '1') {
 }
 $recent = array_map(fn($name) => ['name'=>csv_title($name),'dataset'=>ucwords(str_replace('_',' ',$name)),'date'=>date('m/d/Y'),'status'=>'Ready'], $allowed);
 ?>
-?><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />

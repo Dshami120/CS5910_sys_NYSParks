@@ -53,6 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash_set('error', 'That field already has an overlapping booking or event. Pending requests also block the same time slot.');
             redirect('client-create-event.php');
         }
+    } else {
+        $parkOverlap = $db->prepare("SELECT COUNT(*) FROM bookings WHERE park_id=? AND booking_status IN ('pending','approved','confirmed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
+        $parkOverlap->execute([$parkId, $startDt, $endDt]);
+        $parkEventOverlap = $db->prepare("SELECT COUNT(*) FROM events WHERE park_id=? AND event_status IN ('draft','published','closed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
+        $parkEventOverlap->execute([$parkId, $startDt, $endDt]);
+        if (((int)$parkOverlap->fetchColumn() + (int)$parkEventOverlap->fetchColumn()) > 0) {
+            flash_set('error', 'That park already has an overlapping booking or event. Choose a field, date, or time that does not clash.');
+            redirect('client-create-event.php');
+        }
     }
     $fee = max(25, $guestCount * 4);
     $db->prepare("INSERT INTO bookings (client_id, park_id, field_id, title, booking_type, attendee_email, start_datetime, end_datetime, guest_count, requested_setup, event_description, special_requests, reservation_fee, booking_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?, 'pending')")

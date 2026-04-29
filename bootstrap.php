@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
     'httponly' => true,
     'samesite' => 'Lax',
 ]);
@@ -29,7 +31,15 @@ function db(): PDO {
 }
 
 function login_user(array $user): void {
+    session_regenerate_id(true);
     $_SESSION['user_id'] = (int) $user['id'];
+}
+
+function prevent_private_cache(): void {
+    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    header('Cache-Control: post-check=0, pre-check=0', false);
+    header('Pragma: no-cache');
+    header('Expires: Thu, 01 Jan 1970 00:00:00 GMT');
 }
 
 function logout_user(): void {
@@ -45,13 +55,18 @@ function current_user(PDO $db): ?array {
     if (empty($_SESSION['user_id'])) {
         return null;
     }
-    $stmt = $db->prepare("SELECT u.*, p.name AS park_name FROM users u LEFT JOIN parks p ON p.id = u.park_id WHERE u.id = ?");
+    $stmt = $db->prepare("SELECT u.*, p.name AS park_name FROM users u LEFT JOIN parks p ON p.id = u.park_id WHERE u.id = ? AND u.account_status='active'");
     $stmt->execute([(int) $_SESSION['user_id']]);
     $user = $stmt->fetch();
-    return $user ?: null;
+    if (!$user) {
+        logout_user();
+        return null;
+    }
+    return $user;
 }
 
 function require_login(PDO $db): array {
+    prevent_private_cache();
     $user = current_user($db);
     if (!$user) {
         flash_set('error', 'Please log in first.');
@@ -137,10 +152,14 @@ function booking_status_class(string $status): string {
 function number_only(string $value): string {
     return preg_replace('/\D+/', '', $value) ?? '';
 }
-function validate_card(string $number, string $month, string $year): ?string {
+function validate_card(string $number, string $month, string $year, string $cvv=''): ?string {
     $digits = number_only($number);
     if (strlen($digits) < 13 || strlen($digits) > 19) {
         return 'Card number must be 13 to 19 digits.';
+    }
+    $cvvDigits = number_only($cvv);
+    if (!preg_match('/^[0-9]{3,4}$/', $cvvDigits)) {
+        return 'CVV must be 3 or 4 digits.';
     }
     if (!ctype_digit($month) || !ctype_digit($year)) {
         return 'Expiration month and year are required.';
@@ -157,12 +176,20 @@ function validate_card(string $number, string $month, string $year): ?string {
 function csv_title(string $dataset): string {
     return match($dataset){
         'parks' => 'parks_export.xml',
+        'users' => 'users_export.xml',
+        'fields' => 'fields_export.xml',
         'events' => 'events_export.xml',
+        'news' => 'news_export.xml',
         'bookings' => 'bookings_export.xml',
+        'attendance' => 'attendance_export.xml',
+        'payments' => 'payments_export.xml',
+        'employee_schedules' => 'employee_schedules_export.xml',
+        'pto_requests' => 'pto_requests_export.xml',
         'employees' => 'employees_export.xml',
-        default => 'export.xml',
+        default => preg_replace('/[^a-z0-9_]+/i', '_', $dataset) . '_export.xml',
     };
 }
+
 
 $db = db();
 $currentUser = current_user($db);
