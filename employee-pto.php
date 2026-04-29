@@ -2,6 +2,13 @@
 require 'bootstrap.php';
 $user = require_role($db, 'employee');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = post('action', 'create');
+    if ($action === 'cancel') {
+        $requestId = (int) post('pto_id');
+        $db->prepare("UPDATE pto_requests SET pto_status='cancelled' WHERE id=? AND employee_id=? AND pto_status='pending'")->execute([$requestId, $user['id']]);
+        flash_set('success', 'Pending PTO request cancelled.');
+        redirect('employee-pto.php');
+    }
     $leave = post('leave_type');
     $start = post('start_date');
     $end = post('end_date');
@@ -80,6 +87,7 @@ $requests = $stmt->fetchAll();
             <h2 class="h5 fw-bold mb-3">New PTO Request</h2>
             <?php if ($flash): ?><div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?>"><?= e($flash['message']) ?></div><?php endif; ?>
             <form method="post">
+              <input type="hidden" name="action" value="create">
               <label class="form-label">Leave type</label>
               <select name="leave_type" class="form-select mb-3"><option>Vacation</option><option>Sick Leave</option><option>Personal Leave</option><option>Bereavement</option></select>
               <label class="form-label">Start date</label>
@@ -97,14 +105,15 @@ $requests = $stmt->fetchAll();
           <section class="list-shell">
             <section class="p-4 border-bottom">
               <section class="row g-3">
-                <article class="col-md-3 fw-bold">Dates</article>
-                <article class="col-md-3 fw-bold">Type</article>
-                <article class="col-md-3 fw-bold">Submitted</article>
-                <article class="col-md-3 fw-bold">Status</article>
+                <article class="col-md-2 fw-bold">Dates</article>
+                <article class="col-md-2 fw-bold">Type</article>
+                <article class="col-md-2 fw-bold">Submitted</article>
+                <article class="col-md-2 fw-bold">Status</article>
+                <article class="col-md-4 fw-bold">Actions</article>
               </section>
             </section>
             <?php foreach ($requests as $i => $row): ?>
-            <section class="<?= $i < count($requests) - 1 ? 'list-row' : '' ?> p-4"><section class="row g-3 align-items-center"><article class="col-md-3"><?= format_date($row['start_date']) ?><?= $row['start_date'] !== $row['end_date'] ? '–' . format_date($row['end_date']) : '' ?></article><article class="col-md-3 text-muted"><?= e($row['leave_type']) ?></article><article class="col-md-3 text-muted"><?= format_date($row['created_at']) ?></article><article class="col-md-3"><span class="status-pill <?= booking_status_class($row['pto_status']) ?>"><?= e(ucfirst($row['pto_status'])) ?></span></article></section></section>
+            <section class="<?= $i < count($requests) - 1 ? 'list-row' : '' ?> p-4"><section class="row g-3 align-items-center"><article class="col-md-2"><?= format_date($row['start_date']) ?><?= $row['start_date'] !== $row['end_date'] ? '–' . format_date($row['end_date']) : '' ?></article><article class="col-md-2 text-muted"><?= e($row['leave_type']) ?></article><article class="col-md-2 text-muted"><?= format_date($row['created_at']) ?></article><article class="col-md-2"><span class="status-pill <?= booking_status_class($row['pto_status']) ?>"><?= e(ucfirst($row['pto_status'])) ?></span></article><article class="col-md-4"><?php if ($row['pto_status'] === 'pending'): ?><form method="post" class="mb-0"><input type="hidden" name="action" value="cancel"><input type="hidden" name="pto_id" value="<?= (int)$row['id'] ?>"><button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Cancel request</button></form><?php else: ?><span class="text-muted small">No action</span><?php endif; ?></article></section></section>
             <?php endforeach; ?>
             <?php if (!$requests): ?><section class="p-4"><section class="row g-3 align-items-center"><article class="col-12 text-muted">No PTO requests yet.</article></section></section><?php endif; ?>
           </section>

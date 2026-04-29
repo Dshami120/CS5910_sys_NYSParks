@@ -45,6 +45,7 @@ if (!$bookingByMonth) {
 $pendingBookings = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status='pending'")->fetchColumn();
 $pendingPto = (int) $db->query("SELECT COUNT(*) FROM pto_requests WHERE pto_status='pending'")->fetchColumn();
 $employeeActions = (int) $db->query("SELECT COUNT(*) FROM users WHERE role='employee' AND account_status='active'")->fetchColumn();
+$adminBookingChartRows = $db->query("SELECT DATE(b.start_datetime) AS date, p.name AS park FROM bookings b JOIN parks p ON p.id=b.park_id WHERE b.booking_status='approved' ORDER BY b.start_datetime")->fetchAll();
 $employees = user_options($db, 'employee');
 $parks = park_options($db);
 $selectedId = (int) get('employee_id');
@@ -147,37 +148,28 @@ if (!$selected && $employees) { $selected = $employees[0]; }
             <div class="admin-chart-filters">
               <div>
                 <label class="form-label small text-uppercase text-muted mb-1">View By</label>
-                <select class="form-select admin-filter-select">
-                  <option>Week</option>
-                  <option selected>Month</option>
-                  <option>Quarter</option>
-                  <option>Year</option>
+                <select class="form-select admin-filter-select" id="adminChartRange">
+                  <option value="day">Day</option>
+                  <option value="week">Week</option>
+                  <option value="month" selected>Month</option>
+                  <option value="year">Year</option>
                 </select>
               </div>
               <div>
                 <label class="form-label small text-uppercase text-muted mb-1">Park</label>
-                <select class="form-select admin-filter-select">
-                  <option selected>All Parks</option>
-                  <option>Bear Mountain</option>
-                  <option>Letchworth</option>
-                  <option>Saratoga Spa</option>
-                  <option>Niagara Falls</option>
+                <select class="form-select admin-filter-select" id="adminChartPark">
+                  <option value="all" selected>All Parks</option>
+                  <?php foreach ($parks as $park): ?><option value="<?= e($park['name']) ?>"><?= e($park['name']) ?></option><?php endforeach; ?>
                 </select>
               </div>
             </div>
           </div>
-
-          <div class="admin-chart">
-            <?php foreach ($bookingByMonth as $bar): $height = max(30, min(95, (int)$bar['total'] * 10)); ?>
-            <div class="admin-chart-item">
-              <div class="admin-chart-bar" style="height: <?= $height ?>%;"></div>
-              <span class="admin-chart-label"><?= e($bar['month_label']) ?></span>
-            </div>
-            <?php endforeach; ?>
+          <div class="admin-chart bg-white rounded-4 border p-3">
+            <canvas id="adminBookingsChart" height="150"></canvas>
+          </div>
           </div>
         </article>
       </div>
-
       <div class="col-lg-5">
         <article class="admin-panel h-100">
           <div class="d-flex justify-content-between align-items-center mb-3">

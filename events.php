@@ -26,13 +26,13 @@
 <?php require 'bootstrap.php';
 $search = get('q');
 $category = get('category');
-$sql = "SELECT e.*, p.name AS park_name, p.region, COALESCE(p.image_url,'') AS image_url FROM events e JOIN parks p ON p.id=e.park_id WHERE e.event_status='published'";
+$sql = "SELECT e.*, p.name AS park_name, p.region, COALESCE(e.image_url, p.image_url, '') AS image_url, COALESCE(e.image_alt, p.image_alt, e.title) AS image_alt FROM events e JOIN parks p ON p.id=e.park_id WHERE e.event_status='published'";
 $params = [];
 if ($search !== '') { $sql .= " AND (e.title LIKE ? OR e.description LIKE ? OR p.name LIKE ?)"; $like = "%{$search}%"; array_push($params,$like,$like,$like); }
 if ($category !== '') { $sql .= " AND e.category = ?"; $params[] = $category; }
 $sql .= " ORDER BY e.start_datetime";
 $stmt = $db->prepare($sql); $stmt->execute($params); $events = $stmt->fetchAll();
-$categories = $db->query("SELECT DISTINCT category FROM events ORDER BY category")->fetchAll(PDO::FETCH_COLUMN);
+$categories = $db->query("SELECT DISTINCT category FROM events WHERE event_status='published' ORDER BY category")->fetchAll(PDO::FETCH_COLUMN);
 ?>
 <body data-page="events">
   <!-- =====================================================
@@ -76,7 +76,7 @@ $categories = $db->query("SELECT DISTINCT category FROM events ORDER BY category
         <p class="section-kicker mb-2">Upcoming events</p>
         <h1 class="display-6 fw-bold mb-3">Events across New York State</h1>
         <p class="text-muted col-lg-8 mb-0">
-          Browse featured public events and use lightweight filters. Later, this can connect to your events table.
+          Browse all published public and private events, ordered by soonest date first.
         </p>
       </section>
     </section>
@@ -113,7 +113,7 @@ $categories = $db->query("SELECT DISTINCT category FROM events ORDER BY category
 <?php foreach ($events as $event): ?>
 <article class="col-md-6 col-xl-4">
   <article class="event-card h-100">
-    <img src="<?= e($event['image_url']) ?>" alt="<?= e($event['title']) ?>" class="image-cover-event" />
+    <img src="<?= e($event['image_url']) ?>" alt="<?= e($event['image_alt']) ?>" class="image-cover-event" />
     <section class="p-3 p-lg-4">
       <section class="d-flex justify-content-between align-items-start gap-3 mb-3">
         <section class="event-date-badge text-center py-2 px-1">
@@ -122,12 +122,15 @@ $categories = $db->query("SELECT DISTINCT category FROM events ORDER BY category
         </section>
         <section class="text-end">
           <p class="category-badge mb-1"><?= e($event['category']) ?></p>
-          <p class="small text-muted mb-0">From <?= ((float)$event['ticket_price'] > 0 ? '$' . number_format((float)$event['ticket_price'], 0) : 'Free') ?></p>
+          <p class="small text-muted mb-1"><?= e(ucfirst($event['event_type'])) ?> event</p>
+          <p class="small text-muted mb-0"><?= ((float)$event['fee_amount'] > 0 ? '$' . number_format((float)$event['fee_amount'], 0) : 'Free') ?></p>
         </section>
       </section>
       <h3 class="h5 fw-bold mb-2"><?= e($event['title']) ?></h3>
       <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i><?= e($event['park_name']) ?>, <?= e($event['region']) ?></p>
-      <p class="small text-muted mb-3"><i class="bi bi-clock me-1"></i><?= date('g:i A', strtotime($event['start_datetime'])) ?></p>
+      <p class="small text-muted mb-2"><i class="bi bi-clock me-1"></i><?= date('g:i A', strtotime($event['start_datetime'])) ?></p>
+      <p class="small text-muted mb-2"><i class="bi bi-people me-1"></i>Capacity: <?= (int)$event['capacity'] ?></p>
+      <p class="small text-muted mb-3"><?= e($event['card_summary'] ?: mb_strimwidth($event['description'], 0, 120, '…')) ?></p>
       <a href="client-create-event.php" class="btn btn-success w-100 rounded-pill fw-semibold">View Details & Book</a>
     </section>
   </article>

@@ -34,10 +34,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect('client-create-event.php');
     }
     if ($fieldId > 0) {
+        $fieldStmt = $db->prepare("SELECT * FROM fields WHERE id=? AND park_id=? AND availability_status='available'");
+        $fieldStmt->execute([$fieldId, $parkId]);
+        $selectedField = $fieldStmt->fetch();
+        if (!$selectedField) {
+            flash_set('error', 'Please choose an available field for the selected park.');
+            redirect('client-create-event.php');
+        }
+        if ($guestCount > (int)$selectedField['capacity']) {
+            flash_set('error', 'Guest count cannot exceed the selected field capacity of ' . (int)$selectedField['capacity'] . '.');
+            redirect('client-create-event.php');
+        }
         $overlap = $db->prepare("SELECT COUNT(*) FROM bookings WHERE field_id=? AND booking_status IN ('pending','approved','confirmed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $overlap->execute([$fieldId, $startDt, $endDt]);
-        if ((int) $overlap->fetchColumn() > 0) {
-            flash_set('error', 'That field already has an overlapping booking.');
+        $eventOverlap = $db->prepare("SELECT COUNT(*) FROM events WHERE field_id=? AND event_status IN ('draft','published','closed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
+        $eventOverlap->execute([$fieldId, $startDt, $endDt]);
+        if (((int)$overlap->fetchColumn() + (int)$eventOverlap->fetchColumn()) > 0) {
+            flash_set('error', 'That field already has an overlapping booking or event. Pending requests also block the same time slot.');
             redirect('client-create-event.php');
         }
     }

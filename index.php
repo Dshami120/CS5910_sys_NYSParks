@@ -25,7 +25,7 @@
 </head>
 <?php require 'bootstrap.php';
 $featuredParks = $db->query("SELECT * FROM parks WHERE is_featured=1 ORDER BY id LIMIT 6")->fetchAll();
-$featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image_url AS park_image FROM events e JOIN parks p ON p.id=e.park_id WHERE e.event_status='published' AND e.start_datetime >= NOW() ORDER BY e.start_datetime LIMIT 3")->fetchAll();
+$featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image_url AS park_image, p.image_alt AS park_image_alt, COALESCE(e.image_url, p.image_url) AS card_image, COALESCE(e.image_alt, p.image_alt, e.title) AS card_image_alt FROM events e JOIN parks p ON p.id=e.park_id WHERE e.event_status='published' AND e.start_datetime >= NOW() ORDER BY e.start_datetime LIMIT 6")->fetchAll();
 ?>
 <body data-page="home">
   <!-- =====================================================
@@ -144,18 +144,18 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
       <section class="container">
         <header class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
           <section>
-            <h2 class="fw-bold mb-1">Featured Events</h2>
-            <p class="text-muted mb-0">Browse public events happening across the state</p>
+            <h2 class="fw-bold mb-1">Upcoming Events</h2>
+            <p class="text-muted mb-0">Browse the next events happening across the state</p>
           </section>
 
-          <a href="events.php" class="map-link">Explore all events →</a>
+          <a href="events.php" class="map-link">See more →</a>
         </header>
 
         <section class="row g-4" id="events-grid">
 <?php foreach ($featuredEvents as $event): ?>
   <article class="col-md-6 col-xl-4">
     <article class="event-card h-100">
-      <img src="<?= e($event['park_image']) ?>" alt="<?= e($event['title']) ?>" class="image-cover-event" />
+      <img src="<?= e($event['card_image']) ?>" alt="<?= e($event['card_image_alt']) ?>" class="image-cover-event" />
       <section class="p-3 p-lg-4">
         <section class="d-flex justify-content-between align-items-start gap-3 mb-3">
           <section class="event-date-badge text-center py-2 px-1">
@@ -164,12 +164,13 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
           </section>
           <section class="text-end">
             <p class="category-badge mb-1"><?= e($event['category']) ?></p>
-            <p class="small text-muted mb-0">From $<?= number_format((float)$event['ticket_price'], 0) ?></p>
+            <p class="small text-muted mb-0"><?= ((float)$event['fee_amount'] > 0 ? 'From $' . number_format((float)$event['fee_amount'], 0) : 'Free') ?></p>
           </section>
         </section>
         <h3 class="h5 fw-bold mb-2"><?= e($event['title']) ?></h3>
         <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i><?= e($event['park_name']) ?>, <?= e($event['region']) ?></p>
-        <p class="small text-muted mb-3"><i class="bi bi-clock me-1"></i><?= date('g:i A', strtotime($event['start_datetime'])) ?></p>
+        <p class="small text-muted mb-2"><i class="bi bi-clock me-1"></i><?= date('g:i A', strtotime($event['start_datetime'])) ?></p>
+        <p class="small text-muted mb-3"><?= e($event['card_summary'] ?: mb_strimwidth($event['description'], 0, 110, '…')) ?></p>
         <a href="client-create-event.php" class="btn btn-success w-100 rounded-pill fw-semibold">View Details & Book</a>
       </section>
     </article>

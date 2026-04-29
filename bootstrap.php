@@ -129,8 +129,8 @@ function park_options(PDO $db): array {
 }
 function booking_status_class(string $status): string {
     return match($status){
-        'approved','confirmed' => 'status-approved',
-        'denied','cancelled' => 'status-denied',
+        'approved','confirmed','completed','attended','registered' => 'status-approved',
+        'denied','cancelled','no_show' => 'status-denied',
         default => 'status-pending',
     };
 }

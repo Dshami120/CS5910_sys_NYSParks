@@ -4,10 +4,30 @@ $user = require_role($db, 'admin');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = (int) post('booking_id');
     $decision = post('decision');
-    if (in_array($decision, ['approved', 'denied'], true)) {
-        $db->prepare("UPDATE bookings SET booking_status=?, reviewed_by=?, reviewed_at=NOW(), admin_notes=? WHERE id=?")
-           ->execute([$decision, $user['id'], post('admin_notes') ?: null, $id]);
-        flash_set('success', 'Booking updated.');
+    if (in_array($decision, ['approved','denied'], true)) {
+        $db->beginTransaction();
+        try {
+            $stmt = $db->prepare("SELECT b.*, p.name AS park_name FROM bookings b JOIN parks p ON p.id=b.park_id WHERE b.id=? FOR UPDATE");
+            $stmt->execute([$id]);
+            $booking = $stmt->fetch();
+            if (!$booking) { throw new RuntimeException('Booking not found.'); }
+            $eventId = $booking['event_id'] ? (int)$booking['event_id'] : null;
+            if ($decision === 'approved' && !$eventId) {
+                $insert = $db->prepare("INSERT INTO events (park_id, field_id, title, description, card_summary, category, event_type, start_datetime, end_datetime, capacity, fee_amount, event_status, created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                $insert->execute([(int)$booking['park_id'], $booking['field_id'] ?: null, $booking['title'], $booking['event_description'], $booking['requested_setup'] ?: null, $booking['booking_type'], 'private', $booking['start_datetime'], $booking['end_datetime'], (int)$booking['guest_count'], (float)$booking['reservation_fee'], 'published', (int)$user['id']]);
+                $eventId = (int)$db->lastInsertId();
+            }
+            if ($decision === 'denied' && $eventId) {
+                $db->prepare("UPDATE events SET event_status='cancelled' WHERE id=?")->execute([$eventId]);
+            }
+            $db->prepare("UPDATE bookings SET booking_status=?, event_id=?, reviewed_by=?, reviewed_at=NOW(), admin_notes=? WHERE id=?")
+               ->execute([$decision, $eventId, $user['id'], post('admin_notes') ?: null, $id]);
+            $db->commit();
+            flash_set('success', $decision === 'approved' ? 'Booking approved and private event created.' : 'Booking denied and linked event cancelled if needed.');
+        } catch (Throwable $e) {
+            $db->rollBack();
+            flash_set('error', $e->getMessage());
+        }
     }
     redirect('admin-bookings.php');
 }

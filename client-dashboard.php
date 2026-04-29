@@ -9,6 +9,8 @@ $stmt = $db->prepare("SELECT * FROM bookings WHERE client_id=? AND booking_statu
 $stmt->execute([$user['id']]); $nextBooking = $stmt->fetch();
 $stmt = $db->prepare("SELECT b.*, p.name AS park_name FROM bookings b JOIN parks p ON p.id=b.park_id WHERE b.client_id=? ORDER BY b.created_at DESC");
 $stmt->execute([$user['id']]); $bookings = $stmt->fetchAll();
+$bookingChartRows = array_map(fn($b) => ['date' => substr((string)$b['start_datetime'], 0, 10), 'status' => $b['booking_status']], $bookings);
+$bookingStatusCounts = array_count_values(array_map(fn($b) => $b['booking_status'], $bookings));
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,9 +77,7 @@ $stmt->execute([$user['id']]); $bookings = $stmt->fetchAll();
             <a href="client-create-event.php" class="action-card mb-3 text-decoration-none d-block"><strong>New booking request</strong><span>Start a new event request for review.</span></a>
             <a href="account.php" class="action-card mb-3 text-decoration-none d-block"><strong>Update account</strong><span>Edit contact details and preferred parks.</span></a>
             <a href="events.php" class="action-card text-decoration-none d-block"><strong>Browse events</strong><span>See public events and inspiration for new requests.</span></a>
-          </section>
-        </article>
-      
+      </section>
       <section class="client-chart-panel mb-4">
         <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-start gap-3 mb-4">
           <div>
@@ -86,74 +86,37 @@ $stmt->execute([$user['id']]); $bookings = $stmt->fetchAll();
           </div>
           <div class="client-chart-filters">
             <div>
-              <label class="form-label small text-uppercase text-muted mb-1">View By</label>
-              <select class="form-select client-filter-select">
-                <option>Week</option>
-                <option selected>Month</option>
-                <option>Quarter</option>
-                <option>Year</option>
+              <label class="form-label small text-uppercase text-muted mb-1" for="clientChartRange">View By</label>
+              <select class="form-select client-filter-select" id="clientChartRange">
+                <option value="day">Day</option>
+                <option value="week">Week</option>
+                <option value="month" selected>Month</option>
+                <option value="year">Year</option>
               </select>
             </div>
             <div>
-              <label class="form-label small text-uppercase text-muted mb-1">Status</label>
-              <select class="form-select client-filter-select">
-                <option selected>All Statuses</option>
-                <option>Pending</option>
-                <option>Approved</option>
-                <option>Declined</option>
+              <label class="form-label small text-uppercase text-muted mb-1" for="clientChartStatus">Status</label>
+              <select class="form-select client-filter-select" id="clientChartStatus">
+                <option value="all" selected>All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="denied">Denied</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
           </div>
         </div>
-
-        <div class="client-chart-box mb-4">
-          <div class="client-chart-grid">
-            <div class="client-chart-item">
-              <span class="client-chart-label">Jan</span>
-              <div class="client-chart-track"><div class="client-chart-fill" style="height: 36%;"></div></div>
-            </div>
-            <div class="client-chart-item">
-              <span class="client-chart-label">Feb</span>
-              <div class="client-chart-track"><div class="client-chart-fill" style="height: 54%;"></div></div>
-            </div>
-            <div class="client-chart-item">
-              <span class="client-chart-label">Mar</span>
-              <div class="client-chart-track"><div class="client-chart-fill" style="height: 74%;"></div></div>
-            </div>
-            <div class="client-chart-item">
-              <span class="client-chart-label">Apr</span>
-              <div class="client-chart-track"><div class="client-chart-fill" style="height: 61%;"></div></div>
-            </div>
-            <div class="client-chart-item">
-              <span class="client-chart-label">May</span>
-              <div class="client-chart-track"><div class="client-chart-fill" style="height: 82%;"></div></div>
-            </div>
-            <div class="client-chart-item">
-              <span class="client-chart-label">Jun</span>
-              <div class="client-chart-track"><div class="client-chart-fill" style="height: 46%;"></div></div>
-            </div>
-          </div>
+        <div class="client-chart-box mb-4 p-3 bg-white rounded-4 border">
+          <canvas id="clientBookingsChart" height="130"></canvas>
         </div>
-
         <div class="row g-3">
-          <div class="col-md-4">
-            <article class="client-metric-card">
-              <span class="client-metric-label">Pending</span>
-              <strong class="client-metric-value">2</strong>
-            </article>
-          </div>
-          <div class="col-md-4">
-            <article class="client-metric-card">
-              <span class="client-metric-label">Approved</span>
-              <strong class="client-metric-value">6</strong>
-            </article>
-          </div>
-          <div class="col-md-4">
-            <article class="client-metric-card">
-              <span class="client-metric-label">Declined</span>
-              <strong class="client-metric-value">1</strong>
-            </article>
-          </div>
+          <div class="col-md-4"><article class="client-metric-card"><span class="client-metric-label">Pending</span><strong class="client-metric-value"><?= (int)($bookingStatusCounts['pending'] ?? 0) ?></strong></article></div>
+          <div class="col-md-4"><article class="client-metric-card"><span class="client-metric-label">Approved / Confirmed</span><strong class="client-metric-value"><?= (int)(($bookingStatusCounts['approved'] ?? 0) + ($bookingStatusCounts['confirmed'] ?? 0)) ?></strong></article></div>
+          <div class="col-md-4"><article class="client-metric-card"><span class="client-metric-label">Completed / Closed</span><strong class="client-metric-value"><?= (int)(($bookingStatusCounts['completed'] ?? 0) + ($bookingStatusCounts['denied'] ?? 0) + ($bookingStatusCounts['cancelled'] ?? 0)) ?></strong></article></div>
+        </div>
+      </section>
         </div>
       </section>
 
@@ -200,9 +163,9 @@ $stmt->execute([$user['id']]); $bookings = $stmt->fetchAll();
             A modern gateway to New York State parks, events, maps, news, and role-based operations.
           </p>
         </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Explore</h2>
-          <ul class="list-unstyled m-0">
+            <article class="col-lg-2 fw-bold">Time</article>
+            <article class="col-lg-2 fw-bold">Status</article>
+            <article class="col-lg-2 fw-bold">Fee</article>
             <li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li>
             <li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li>
             <li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li>

@@ -1,16 +1,11 @@
 <?php
 require 'bootstrap.php';
 $user = require_role($db, 'admin');
+$allowed = ['parks','users','fields','events','news','bookings','attendance','payments','employee_schedules','pto_requests','employees'];
 if (isset($_GET['download']) && $_GET['download'] === '1') {
     $dataset = get('dataset', 'events');
-    $allowed = ['events','bookings','parks','employees'];
     if (!in_array($dataset, $allowed, true)) { $dataset = 'events'; }
-    $table = match($dataset) {
-        'bookings' => 'bookings',
-        'parks' => 'parks',
-        'employees' => 'users',
-        default => 'events'
-    };
+    $table = $dataset === 'employees' ? 'users' : $dataset;
     $stmt = $db->query("SELECT * FROM {$table}");
     $rows = $stmt->fetchAll();
     header('Content-Type: application/xml; charset=utf-8');
@@ -26,10 +21,8 @@ if (isset($_GET['download']) && $_GET['download'] === '1') {
     echo $root->asXML();
     exit;
 }
-$recent = [
-    ['name'=>'events_export.xml','dataset'=>'Events','date'=>date('m/d/Y'),'status'=>'Ready'],
-    ['name'=>'bookings_export.xml','dataset'=>'Bookings','date'=>date('m/d/Y'),'status'=>'Ready'],
-];
+$recent = array_map(fn($name) => ['name'=>csv_title($name),'dataset'=>ucwords(str_replace('_',' ',$name)),'date'=>date('m/d/Y'),'status'=>'Ready'], $allowed);
+?>
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -100,10 +93,7 @@ $recent = [
             <form method="get">
               <label class="form-label">Dataset</label>
               <select name="dataset" class="form-select mb-3">
-                <option>Events</option>
-                <option>Bookings</option>
-                <option>Parks</option>
-                <option>Employees</option>
+                <?php foreach ($allowed as $datasetName): ?><option value="<?= e($datasetName) ?>"><?= e(ucwords(str_replace("_", " ", $datasetName))) ?></option><?php endforeach; ?>
               </select>
               <label class="form-label">Date range</label>
               <input type="date" class="form-control mb-3" />

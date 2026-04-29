@@ -132,11 +132,12 @@ $types = $db->query("SELECT DISTINCT park_type FROM parks ORDER BY park_type")->
 <?php foreach ($parks as $park): ?>
 <article class="col-md-6 col-xl-4">
   <figure class="image-card h-100 mb-0">
-    <img src="<?= e($park['image_url']) ?>" alt="<?= e($park['name']) ?>" class="image-cover-md" />
+    <img src="<?= e($park['image_url']) ?>" alt="<?= e($park['image_alt'] ?: $park['name']) ?>" class="image-cover-md" />
     <figcaption class="p-4">
       <p class="section-kicker mb-2"><?= e($park['region']) ?> · <?= e($park['park_type']) ?></p>
       <h3 class="h5 fw-bold mb-2"><?= e($park['name']) ?></h3>
-      <p class="text-muted mb-2"><?= e($park['description']) ?></p>
+      <p class="text-muted mb-2"><?= e($park['card_summary'] ?: $park['description']) ?></p>
+      <p class="small text-muted mb-2"><i class="bi bi-grid-3x3-gap me-1"></i><?= (int)$park['total_fields'] ?> fields · max <?= (int)$park['max_capacity'] ?> guests</p>
       <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1"></i><?= e($park['city']) ?>, <?= e($park['state']) ?></p>
     </figcaption>
   </figure>

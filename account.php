@@ -38,9 +38,9 @@ if ($user['role'] === 'client') {
     $stmt = $db->prepare("SELECT COUNT(*) FROM bookings WHERE client_id=? AND booking_status='pending'");
     $stmt->execute([$user['id']]);
     $stat1 = ['Open requests', (int) $stmt->fetchColumn(), 'Pending approval from the admin booking queue.'];
-    $stmt = $db->prepare("SELECT COUNT(*) FROM bookings WHERE client_id=? AND booking_status IN ('approved','confirmed')");
+    $stmt = $db->prepare("SELECT COUNT(*) FROM bookings WHERE client_id=? AND booking_status IN ('approved','confirmed','completed')");
     $stmt->execute([$user['id']]);
-    $stat2 = ['Confirmed events', (int) $stmt->fetchColumn(), 'Already approved and scheduled at NYS Parks locations.'];
+    $stat2 = ['Booking history', (int) $stmt->fetchColumn(), 'Approved, confirmed, and completed bookings tied to this account.'];
     $stat3 = ['Saved parks', (int) $db->query("SELECT COUNT(*) FROM parks WHERE is_featured=1")->fetchColumn(), 'Quick access to favorite parks and event venues.'];
     $detailsTitle = 'Client account details';
     $detailsText = 'Editable front-end profile fields for the future users table binding.';
