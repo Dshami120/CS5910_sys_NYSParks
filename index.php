@@ -82,15 +82,16 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
           Discover parks, browse events, and explore the outdoors across New York State.
         </p>
 
-        <form class="search-shell mx-auto p-2 d-flex flex-column flex-lg-row gap-2" action="parks.php" method="get">
+        <form class="search-shell mx-auto p-2 d-flex flex-column flex-lg-row gap-2" action="search.php" method="get">
           <input
             type="text"
             class="form-control border-0 shadow-none py-3"
-            placeholder="Search parks, events, and activities"
+            placeholder="Search parks, events, news, FAQ, map, donate, and more"
+            name="q"
           />
 
-          <select class="form-select border-0 shadow-none py-3">
-            <option>Any Region</option>
+          <select class="form-select border-0 shadow-none py-3" name="region">
+            <option value="">Any Region</option>
             <option>Long Island</option>
             <option>Hudson Valley</option>
             <option>Finger Lakes</option>
@@ -126,14 +127,16 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
         <section class="row g-4" id="parks-grid">
 <?php foreach ($featuredParks as $park): ?>
   <article class="col-md-6 col-xl-4">
-    <figure class="image-card h-100 mb-0">
+    <a href="parks.php" class="text-decoration-none text-reset d-block h-100">
+      <figure class="image-card h-100 mb-0">
       <img src="<?= e($park['image_url']) ?>" alt="<?= e($park['name']) ?>" class="image-cover-md" />
       <figcaption class="p-4">
         <p class="section-kicker mb-2"><?= e($park['region']) ?> · <?= e($park['park_type']) ?></p>
         <h3 class="h5 fw-bold mb-2"><?= e($park['name']) ?></h3>
         <p class="text-muted mb-0"><?= e($park['description']) ?></p>
       </figcaption>
-    </figure>
+      </figure>
+    </a>
   </article>
 <?php endforeach; ?>
 </section>
@@ -154,7 +157,8 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
         <section class="row g-4" id="events-grid">
 <?php foreach ($featuredEvents as $event): ?>
   <article class="col-md-6 col-xl-4">
-    <article class="event-card h-100">
+    <a href="events.php" class="text-decoration-none text-reset d-block h-100">
+      <article class="event-card h-100">
       <img src="<?= e($event['card_image']) ?>" alt="<?= e($event['card_image_alt']) ?>" class="image-cover-event" />
       <section class="p-3 p-lg-4">
         <section class="d-flex justify-content-between align-items-start gap-3 mb-3">
@@ -164,6 +168,7 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
           </section>
           <section class="text-end">
             <p class="category-badge mb-1"><?= e($event['category']) ?></p>
+            <?php if ($event['event_type'] === 'private'): ?><span class="badge text-bg-warning mb-1">Private</span><?php endif; ?>
             <p class="small text-muted mb-0"><?= ((float)$event['fee_amount'] > 0 ? 'From $' . number_format((float)$event['fee_amount'], 0) : 'Free') ?></p>
           </section>
         </section>
@@ -171,9 +176,10 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
         <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i><?= e($event['park_name']) ?>, <?= e($event['region']) ?></p>
         <p class="small text-muted mb-2"><i class="bi bi-clock me-1"></i><?= date('g:i A', strtotime($event['start_datetime'])) ?></p>
         <p class="small text-muted mb-3"><?= e($event['card_summary'] ?: mb_strimwidth($event['description'], 0, 110, '…')) ?></p>
-        <a href="client-create-event.php" class="btn btn-success w-100 rounded-pill fw-semibold">View Details & Book</a>
+        <span class="btn btn-success w-100 rounded-pill fw-semibold">View Events</span>
       </section>
-    </article>
+      </article>
+    </a>
   </article>
 <?php endforeach; ?>
 </section>
@@ -221,7 +227,7 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
               <p class="text-muted mb-4">
                 Donations help support programming, park improvements, recreation access, and environmental stewardship.
               </p>
-              <a href="register.php" class="btn btn-success rounded-pill px-4 fw-semibold">Donate / Get Involved</a>
+              <a href="donate.php" class="btn btn-success rounded-pill px-4 fw-semibold">Donate / Get Involved</a>
             </section>
           </article>
 

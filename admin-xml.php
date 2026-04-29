@@ -2,20 +2,66 @@
 require 'bootstrap.php';
 $user = require_role($db, 'admin');
 $allowed = ['parks','users','fields','events','news','bookings','attendance','payments','employee_schedules','pto_requests','employees'];
+$dateColumns = [
+    'parks'=>'created_at',
+    'users'=>'created_at',
+    'fields'=>'created_at',
+    'events'=>'start_datetime',
+    'news'=>'published_date',
+    'bookings'=>'start_datetime',
+    'attendance'=>'registered_at',
+    'payments'=>'created_at',
+    'employee_schedules'=>'shift_date',
+    'pto_requests'=>'start_date',
+    'employees'=>'created_at',
+];
+$itemNames = [
+    'parks'=>'park',
+    'users'=>'user',
+    'fields'=>'field',
+    'events'=>'event',
+    'news'=>'news_item',
+    'bookings'=>'booking',
+    'attendance'=>'attendance_record',
+    'payments'=>'payment',
+    'employee_schedules'=>'employee_schedule',
+    'pto_requests'=>'pto_request',
+    'employees'=>'employee',
+];
 if (isset($_GET['download']) && $_GET['download'] === '1') {
     $dataset = get('dataset', 'events');
     if (!in_array($dataset, $allowed, true)) { $dataset = 'events'; }
     $table = $dataset === 'employees' ? 'users' : $dataset;
-    $stmt = $db->query("SELECT * FROM {$table}");
+    $where = [];
+    $params = [];
+    if ($dataset === 'employees') {
+        $where[] = "role = 'employee'";
+    }
+    $dateColumn = $dateColumns[$dataset] ?? null;
+    $dateFrom = get('date_from');
+    $dateTo = get('date_to');
+    if ($dateColumn && $dateFrom !== '') {
+        $where[] = "{$dateColumn} >= ?";
+        $params[] = $dateFrom;
+    }
+    if ($dateColumn && $dateTo !== '') {
+        $where[] = "{$dateColumn} < DATE_ADD(?, INTERVAL 1 DAY)";
+        $params[] = $dateTo;
+    }
+    $sql = "SELECT * FROM {$table}" . ($where ? " WHERE " . implode(" AND ", $where) : "");
+    $stmt = $db->prepare($sql);
+    $stmt->execute($params);
     $rows = $stmt->fetchAll();
     header('Content-Type: application/xml; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . csv_title($dataset) . '"');
     $root = new SimpleXMLElement('<export/>');
     $root->addChild('dataset', $dataset);
+    $items = $root->addChild('items');
+    $itemName = $itemNames[$dataset] ?? 'row';
     foreach ($rows as $row) {
-        $item = $root->addChild(rtrim($dataset, 's'));
+        $item = $items->addChild($itemName);
         foreach ($row as $key => $value) {
-            $item->addChild($key, htmlspecialchars((string)$value));
+            $item->addChild(preg_replace('/[^A-Za-z0-9_\-]/', '_', (string)$key), htmlspecialchars((string)$value));
         }
     }
     echo $root->asXML();
@@ -96,8 +142,8 @@ $recent = array_map(fn($name) => ['name'=>csv_title($name),'dataset'=>ucwords(st
                 <?php foreach ($allowed as $datasetName): ?><option value="<?= e($datasetName) ?>"><?= e(ucwords(str_replace("_", " ", $datasetName))) ?></option><?php endforeach; ?>
               </select>
               <label class="form-label">Date range</label>
-              <input type="date" class="form-control mb-3" />
-              <input type="date" class="form-control mb-4" />
+              <input type="date" name="date_from" class="form-control mb-3" />
+              <input type="date" name="date_to" class="form-control mb-4" />
               <input type="hidden" name="download" value="1" /><button class="btn btn-success rounded-pill w-100">Generate XML</button>
             </form>
           </section>

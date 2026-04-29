@@ -19,19 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db->beginTransaction();
     try {
         $eventId = $booking['event_id'] ? (int)$booking['event_id'] : null;
-        if (in_array($decision, ['approved','confirmed','completed'], true) && !$eventId) {
-            $insert = $db->prepare("INSERT INTO events (park_id, field_id, title, description, card_summary, category, event_type, start_datetime, end_datetime, capacity, fee_amount, event_status, created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+        if (in_array($decision, ['approved','confirmed','completed'], true)) {
             $eventStatus = $decision === 'completed' ? 'completed' : 'published';
-            $insert->execute([(int)$booking['park_id'], $booking['field_id'] ?: null, $booking['title'], $booking['event_description'], $booking['requested_setup'] ?: null, $booking['booking_type'], 'private', $booking['start_datetime'], $booking['end_datetime'], (int)$booking['guest_count'], (float)$booking['reservation_fee'], $eventStatus, (int)$user['id']]);
-            $eventId = (int)$db->lastInsertId();
-        } elseif ($eventId) {
-            if (in_array($decision, ['approved','confirmed'], true)) {
-                $db->prepare("UPDATE events SET event_status='published', updated_at=NOW() WHERE id=?")->execute([$eventId]);
-            } elseif ($decision === 'completed') {
-                $db->prepare("UPDATE events SET event_status='completed', updated_at=NOW() WHERE id=?")->execute([$eventId]);
-            } elseif (in_array($decision, ['denied','cancelled'], true)) {
-                $db->prepare("UPDATE events SET event_status='cancelled', updated_at=NOW() WHERE id=?")->execute([$eventId]);
+            if (!$eventId) {
+                $insert = $db->prepare("INSERT INTO events (park_id, field_id, title, description, card_summary, category, event_type, start_datetime, end_datetime, capacity, fee_amount, event_status, created_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+                $insert->execute([(int)$booking['park_id'], $booking['field_id'] ?: null, $booking['title'], $booking['event_description'], $booking['requested_setup'] ?: null, $booking['booking_type'], 'private', $booking['start_datetime'], $booking['end_datetime'], (int)$booking['guest_count'], (float)$booking['reservation_fee'], $eventStatus, (int)$user['id']]);
+                $eventId = (int)$db->lastInsertId();
+            } else {
+                $update = $db->prepare("UPDATE events SET park_id=?, field_id=?, title=?, description=?, card_summary=?, category=?, event_type='private', start_datetime=?, end_datetime=?, capacity=?, fee_amount=?, event_status=?, updated_at=NOW() WHERE id=?");
+                $update->execute([(int)$booking['park_id'], $booking['field_id'] ?: null, $booking['title'], $booking['event_description'], $booking['requested_setup'] ?: null, $booking['booking_type'], $booking['start_datetime'], $booking['end_datetime'], (int)$booking['guest_count'], (float)$booking['reservation_fee'], $eventStatus, $eventId]);
             }
+        } elseif ($eventId && in_array($decision, ['denied','cancelled'], true)) {
+            $db->prepare("UPDATE events SET event_status='cancelled', updated_at=NOW() WHERE id=?")->execute([$eventId]);
         }
         $db->prepare("UPDATE bookings SET booking_status=?, event_id=?, reviewed_by=?, reviewed_at=NOW(), admin_notes=? WHERE id=?")
            ->execute([$decision, $eventId, $user['id'], post('admin_notes') ?: null, $id]);

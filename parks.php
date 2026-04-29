@@ -111,7 +111,7 @@ $types = $db->query("SELECT DISTINCT park_type FROM parks ORDER BY park_type")->
 <?php endforeach; ?>
 </select>
 
-                <button type="button" class="btn btn-success rounded-pill w-100 fw-semibold">
+                <button type="submit" class="btn btn-success rounded-pill w-100 fw-semibold">
                   Apply Filters
                 </button>
               </form>

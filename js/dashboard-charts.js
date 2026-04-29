@@ -58,40 +58,54 @@
     render();
   };
 
-  window.initAdminBookingChart = function initAdminBookingChart(rows) {
+  window.initAdminDashboardChart = function initAdminDashboardChart(rows) {
+    const metricSelect = document.getElementById('adminChartMetric');
     const rangeSelect = document.getElementById('adminChartRange');
     const parkSelect = document.getElementById('adminChartPark');
     const canvas = document.getElementById('adminBookingsChart');
-    if (!rangeSelect || !parkSelect || !canvas) return;
+    if (!metricSelect || !rangeSelect || !parkSelect || !canvas) return;
     if (typeof Chart === 'undefined') {
       showChartFallback(canvas, 'Chart.js did not load. Check your internet connection or bundle Chart.js locally.');
       return;
     }
 
+    const labels = {
+      bookings: 'Bookings',
+      events: 'Events',
+      attendance: 'Attendance',
+      donations: 'Donation dollars'
+    };
+
     const chart = new Chart(canvas, {
       type: 'bar',
-      data: { labels: [], datasets: [{ label: 'Approved bookings', data: [] }] },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+      data: { labels: [], datasets: [{ label: labels[metricSelect.value] || 'Metric', data: [] }] },
+      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
 
     function payload() {
+      const metric = metricSelect.value;
       const range = rangeSelect.value;
       const park = parkSelect.value;
       const grouped = new Map();
-      rows.filter(row => park === 'all' || row.park === park).forEach(row => {
-        const key = groupKey(row.date, range);
-        grouped.set(key, (grouped.get(key) || 0) + 1);
-      });
+      rows
+        .filter(row => row.metric === metric)
+        .filter(row => park === 'all' || row.park === park)
+        .forEach(row => {
+          const key = groupKey(row.date, range);
+          grouped.set(key, (grouped.get(key) || 0) + Number(row.value || 0));
+        });
       return { labels: [...grouped.keys()], values: [...grouped.values()] };
     }
 
     function render() {
       const p = payload();
       chart.data.labels = p.labels;
+      chart.data.datasets[0].label = labels[metricSelect.value] || 'Metric';
       chart.data.datasets[0].data = p.values;
       chart.update();
     }
 
+    metricSelect.addEventListener('change', render);
     rangeSelect.addEventListener('change', render);
     parkSelect.addEventListener('change', render);
     render();

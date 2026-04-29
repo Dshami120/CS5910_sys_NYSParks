@@ -30,22 +30,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash_set('success', 'Employee account disabled.');
         redirect('admin-dashboard.php');
     }
+    if (in_array($action, ['create_news','update_news','delete_news'], true)) {
+        $newsId = (int) post('news_id');
+        $allowedTopics = ['alerts','community','events','parks','safety','support','conservation','volunteer','maintenance','education','seasonal'];
+        $allowedStatuses = ['draft','published','archived'];
+        if ($action === 'delete_news') {
+            if ($newsId <= 0) {
+                flash_set('error', 'Select a news item to delete.');
+                redirect('admin-dashboard.php#news-manager');
+            }
+            $db->prepare("DELETE FROM news WHERE id=?")->execute([$newsId]);
+            flash_set('success', 'News item deleted.');
+            redirect('admin-dashboard.php#news-manager');
+        }
+        $topic = post('topic') ?: 'community';
+        $status = post('news_status') ?: 'draft';
+        if (!in_array($topic, $allowedTopics, true)) { $topic = 'community'; }
+        if (!in_array($status, $allowedStatuses, true)) { $status = 'draft'; }
+        if (post('title') === '' || post('summary') === '' || post('content') === '' || post('region') === '') {
+            flash_set('error', 'News title, summary, content, and region are required.');
+            redirect('admin-dashboard.php#news-manager');
+        }
+        $publishedDate = post('published_date') ?: date('Y-m-d');
+        $isFeatured = post('is_featured') === '1' ? 1 : 0;
+        if ($action === 'create_news') {
+            $db->prepare("INSERT INTO news (title, topic, published_date, region, summary, content, image_url, image_alt, card_summary, tag, is_featured, news_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
+               ->execute([post('title'), $topic, $publishedDate, post('region'), post('summary'), post('content'), post('image_url') ?: null, post('image_alt') ?: null, post('card_summary') ?: null, post('tag') ?: ucwords(str_replace('_',' ', $topic)), $isFeatured, $status]);
+            flash_set('success', 'News item created.');
+            redirect('admin-dashboard.php#news-manager');
+        }
+        if ($action === 'update_news') {
+            if ($newsId <= 0) {
+                flash_set('error', 'Select a news item to update.');
+                redirect('admin-dashboard.php#news-manager');
+            }
+            $db->prepare("UPDATE news SET title=?, topic=?, published_date=?, region=?, summary=?, content=?, image_url=?, image_alt=?, card_summary=?, tag=?, is_featured=?, news_status=? WHERE id=?")
+               ->execute([post('title'), $topic, $publishedDate, post('region'), post('summary'), post('content'), post('image_url') ?: null, post('image_alt') ?: null, post('card_summary') ?: null, post('tag') ?: ucwords(str_replace('_',' ', $topic)), $isFeatured, $status, $newsId]);
+            flash_set('success', 'News item updated.');
+            redirect('admin-dashboard.php?news_id=' . $newsId . '#news-manager');
+        }
+    }
 }
-$eventsBooked = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status IN ('approved','confirmed')")->fetchColumn();
-$siteVisits = max(12400, ((int) $db->query("SELECT COUNT(*) FROM attendance")->fetchColumn() * 37) + 12400);
-$employeesCount = (int) $db->query("SELECT COUNT(*) FROM users WHERE role='employee' AND account_status='active'")->fetchColumn();
-$openAlerts = (int) $db->query("SELECT (SELECT COUNT(*) FROM bookings WHERE booking_status='pending') + (SELECT COUNT(*) FROM pto_requests WHERE pto_status='pending')")->fetchColumn();
-$bookingByMonth = $db->query("SELECT DATE_FORMAT(created_at, '%b') AS month_label, COUNT(*) AS total FROM bookings GROUP BY YEAR(created_at), MONTH(created_at) ORDER BY YEAR(created_at), MONTH(created_at) LIMIT 6")->fetchAll();
-if (!$bookingByMonth) {
-    $bookingByMonth = [
-        ['month_label'=>'Jan','total'=>3],['month_label'=>'Feb','total'=>4],['month_label'=>'Mar','total'=>5],
-        ['month_label'=>'Apr','total'=>4],['month_label'=>'May','total'=>6],['month_label'=>'Jun','total'=>5]
-    ];
-}
-$pendingBookings = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status='pending'")->fetchColumn();
+$parksCount = (int) $db->query("SELECT COUNT(*) FROM parks")->fetchColumn();
+$publishedEventsCount = (int) $db->query("SELECT COUNT(*) FROM events WHERE event_status='published'")->fetchColumn();
+$approvedBookingsCount = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status='approved'")->fetchColumn();
+$pendingBookingsCount = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status='pending'")->fetchColumn();
+$pendingBookings = $pendingBookingsCount;
 $pendingPto = (int) $db->query("SELECT COUNT(*) FROM pto_requests WHERE pto_status='pending'")->fetchColumn();
 $employeeActions = (int) $db->query("SELECT COUNT(*) FROM users WHERE role='employee' AND account_status='active'")->fetchColumn();
-$adminBookingChartRows = $db->query("SELECT DATE(b.start_datetime) AS date, p.name AS park FROM bookings b JOIN parks p ON p.id=b.park_id WHERE b.booking_status IN ('approved','confirmed') ORDER BY b.start_datetime")->fetchAll();
+$openAlerts = $pendingBookings + $pendingPto;
+$adminChartRows = [];
+foreach ($db->query("SELECT DATE(b.start_datetime) AS date, p.name AS park, 'bookings' AS metric, 1 AS value FROM bookings b JOIN parks p ON p.id=b.park_id WHERE b.booking_status IN ('approved','confirmed') ORDER BY b.start_datetime")->fetchAll() as $row) { $adminChartRows[] = $row; }
+foreach ($db->query("SELECT DATE(e.start_datetime) AS date, p.name AS park, 'events' AS metric, 1 AS value FROM events e JOIN parks p ON p.id=e.park_id WHERE e.event_status='published' ORDER BY e.start_datetime")->fetchAll() as $row) { $adminChartRows[] = $row; }
+foreach ($db->query("SELECT DATE(a.registered_at) AS date, p.name AS park, 'attendance' AS metric, a.guest_count AS value FROM attendance a JOIN events e ON e.id=a.event_id JOIN parks p ON p.id=e.park_id WHERE a.attendance_status IN ('registered','attended') ORDER BY a.registered_at")->fetchAll() as $row) { $adminChartRows[] = $row; }
+foreach ($db->query("SELECT DATE(py.created_at) AS date, COALESCE(p.name, 'No park') AS park, 'donations' AS metric, py.amount AS value FROM payments py LEFT JOIN bookings b ON b.id=py.booking_id LEFT JOIN parks p ON p.id=b.park_id WHERE py.payment_type='donation' AND py.payment_status='completed' ORDER BY py.created_at")->fetchAll() as $row) { $adminChartRows[] = $row; }
+$trafficAvailable = false;
+$newsTopics = ['alerts','community','events','parks','safety','support','conservation','volunteer','maintenance','education','seasonal'];
+$newsStatuses = ['draft','published','archived'];
+$newsSearch = get('news_q');
+$newsParams = [];
+$newsSql = "SELECT * FROM news WHERE 1=1";
+if ($newsSearch !== '') {
+    $newsSql .= " AND (title LIKE ? OR summary LIKE ? OR content LIKE ? OR region LIKE ? OR tag LIKE ?)";
+    $like = "%{$newsSearch}%";
+    array_push($newsParams, $like, $like, $like, $like, $like);
+}
+$newsSql .= " ORDER BY published_date DESC, updated_at DESC LIMIT 20";
+$newsStmt = $db->prepare($newsSql);
+$newsStmt->execute($newsParams);
+$newsItems = $newsStmt->fetchAll();
+$selectedNewsId = (int) get('news_id');
+$selectedNews = null;
+if ($selectedNewsId) {
+    $stmt = $db->prepare("SELECT * FROM news WHERE id=?");
+    $stmt->execute([$selectedNewsId]);
+    $selectedNews = $stmt->fetch();
+}
+if (!$selectedNews && $newsItems) { $selectedNews = $newsItems[0]; }
 $employees = user_options($db, 'employee');
 $parks = park_options($db);
 $selectedId = (int) get('employee_id');
@@ -110,29 +171,29 @@ if (!$selected && $employees) { $selected = $employees[0]; }
       <div class="col-md-6 col-xl-3">
         <article class="admin-stat-card">
           <span class="admin-stat-icon icon-blue">☑</span>
-          <p class="admin-stat-label mb-1">Events booked</p>
-          <h2 class="admin-stat-value mb-0"><?= $eventsBooked ?></h2>
+          <p class="admin-stat-label mb-1">Parks</p>
+          <h2 class="admin-stat-value mb-0"><?= $parksCount ?></h2>
         </article>
       </div>
       <div class="col-md-6 col-xl-3">
         <article class="admin-stat-card">
           <span class="admin-stat-icon icon-green">↗</span>
-          <p class="admin-stat-label mb-1">Site visits</p>
-          <h2 class="admin-stat-value mb-0"><?= number_format($siteVisits/1000, 1) ?>k</h2>
+          <p class="admin-stat-label mb-1">Published events</p>
+          <h2 class="admin-stat-value mb-0"><?= $publishedEventsCount ?></h2>
         </article>
       </div>
       <div class="col-md-6 col-xl-3">
         <article class="admin-stat-card">
           <span class="admin-stat-icon icon-purple">◫</span>
-          <p class="admin-stat-label mb-1">Employees</p>
-          <h2 class="admin-stat-value mb-0"><?= $employeesCount ?></h2>
+          <p class="admin-stat-label mb-1">Approved bookings</p>
+          <h2 class="admin-stat-value mb-0"><?= $approvedBookingsCount ?></h2>
         </article>
       </div>
       <div class="col-md-6 col-xl-3">
         <article class="admin-stat-card">
           <span class="admin-stat-icon icon-orange">🔔</span>
-          <p class="admin-stat-label mb-1">Open alerts</p>
-          <h2 class="admin-stat-value mb-0"><?= $openAlerts ?></h2>
+          <p class="admin-stat-label mb-1">Pending bookings</p>
+          <h2 class="admin-stat-value mb-0"><?= $pendingBookingsCount ?></h2>
         </article>
       </div>
     </section>
@@ -142,10 +203,19 @@ if (!$selected && $employees) { $selected = $employees[0]; }
         <article class="admin-panel h-100">
           <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
             <div>
-              <h2 class="h3 fw-bold mb-1">Bookings by month</h2>
-              <p class="text-muted mb-0">SQL-ready analytics view</p>
+              <h2 class="h3 fw-bold mb-1">Dashboard metrics</h2>
+              <p class="text-muted mb-0">Database-backed bookings, events, attendance, and donation dollars.</p>
             </div>
             <div class="admin-chart-filters">
+              <div>
+                <label class="form-label small text-uppercase text-muted mb-1">Metric</label>
+                <select class="form-select admin-filter-select" id="adminChartMetric">
+                  <option value="bookings" selected>Bookings</option>
+                  <option value="events">Events</option>
+                  <option value="attendance">Attendance</option>
+                  <option value="donations">Donation dollars</option>
+                </select>
+              </div>
               <div>
                 <label class="form-label small text-uppercase text-muted mb-1">View By</label>
                 <select class="form-select admin-filter-select" id="adminChartRange">
@@ -167,6 +237,7 @@ if (!$selected && $employees) { $selected = $employees[0]; }
           <div class="admin-chart bg-white rounded-4 border p-3">
             <canvas id="adminBookingsChart" height="150"></canvas>
           </div>
+          <?php if (!$trafficAvailable): ?><p class="text-muted small mt-3 mb-0">Traffic is not available yet because there is no site_visits or page_views table.</p><?php endif; ?>
         </article>
       </div>
       <div class="col-lg-5">
@@ -313,6 +384,108 @@ if (!$selected && $employees) { $selected = $employees[0]; }
         </div>
       </div>
     </section>
+
+    <section class="card shadow-sm border-0 rounded-4 mb-4" id="news-manager">
+      <div class="card-body p-4 p-lg-5">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+          <div>
+            <p class="eyebrow mb-1">News Manager</p>
+            <h2 class="h3 fw-bold mb-1">Create, Edit, or Delete News</h2>
+            <p class="text-muted mb-0">Manage public news directly from the news table without leaving the dashboard.</p>
+          </div>
+          <form method="get" class="d-flex gap-2 align-items-start">
+            <input type="text" name="news_q" value="<?= e($newsSearch) ?>" class="form-control" placeholder="Search news..." />
+            <button class="btn btn-outline-dark" type="submit">Search</button>
+          </form>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-xl-5">
+            <div class="account-panel h-100">
+              <h3 class="h5 fw-bold mb-3">Existing News</h3>
+              <div class="vstack gap-2">
+                <?php foreach ($newsItems as $item): ?>
+                  <a class="text-decoration-none text-dark border rounded-3 p-3 <?= $selectedNews && (int)$selectedNews['id']===(int)$item['id'] ? 'bg-light' : '' ?>" href="admin-dashboard.php?news_id=<?= (int)$item['id'] ?>#news-manager">
+                    <strong class="d-block"><?= e($item['title']) ?></strong>
+                    <span class="small text-muted"><?= e(ucfirst($item['news_status'])) ?> · <?= e($item['region']) ?> · <?= e(format_date($item['published_date'])) ?></span>
+                  </a>
+                <?php endforeach; ?>
+                <?php if (!$newsItems): ?><p class="text-muted mb-0">No news items matched your search.</p><?php endif; ?>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-7">
+            <div class="account-panel h-100">
+              <h3 class="h5 fw-bold mb-3">News Form</h3>
+              <form class="row g-3" method="post">
+                <input type="hidden" name="news_id" value="<?= (int)($selectedNews['id'] ?? 0) ?>" />
+                <div class="col-md-8">
+                  <label class="form-label">Title</label>
+                  <input type="text" name="title" class="form-control form-control-lg" value="<?= e($selectedNews['title'] ?? '') ?>" required />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Published Date</label>
+                  <input type="date" name="published_date" class="form-control form-control-lg" value="<?= e((string)($selectedNews['published_date'] ?? date('Y-m-d'))) ?>" />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Topic</label>
+                  <select name="topic" class="form-select form-select-lg">
+                    <?php foreach ($newsTopics as $topic): ?><option value="<?= e($topic) ?>" <?= ($selectedNews['topic'] ?? '')===$topic ? 'selected' : '' ?>><?= e(ucwords(str_replace('_',' ', $topic))) ?></option><?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Region</label>
+                  <input type="text" name="region" class="form-control form-control-lg" value="<?= e($selectedNews['region'] ?? '') ?>" required />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Status</label>
+                  <select name="news_status" class="form-select form-select-lg">
+                    <?php foreach ($newsStatuses as $status): ?><option value="<?= e($status) ?>" <?= ($selectedNews['news_status'] ?? '')===$status ? 'selected' : '' ?>><?= e(ucfirst($status)) ?></option><?php endforeach; ?>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Tag</label>
+                  <input type="text" name="tag" class="form-control" value="<?= e($selectedNews['tag'] ?? '') ?>" />
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="is_featured" value="1" id="newsFeatured" <?= !empty($selectedNews['is_featured']) ? 'checked' : '' ?> />
+                    <label class="form-check-label" for="newsFeatured">Featured news</label>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Summary</label>
+                  <textarea name="summary" class="form-control" rows="2" required><?= e($selectedNews['summary'] ?? '') ?></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Article Content</label>
+                  <textarea name="content" class="form-control" rows="5" required><?= e($selectedNews['content'] ?? '') ?></textarea>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Image URL</label>
+                  <input type="text" name="image_url" class="form-control" value="<?= e($selectedNews['image_url'] ?? '') ?>" />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Image Alt Text</label>
+                  <input type="text" name="image_alt" class="form-control" value="<?= e($selectedNews['image_alt'] ?? '') ?>" />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Card Summary</label>
+                  <input type="text" name="card_summary" class="form-control" value="<?= e($selectedNews['card_summary'] ?? '') ?>" />
+                </div>
+                <div class="col-12 d-flex flex-wrap gap-3">
+                  <button type="submit" name="action" value="create_news" class="btn btn-success btn-lg">Create News</button>
+                  <button type="submit" name="action" value="update_news" class="btn btn-outline-dark btn-lg">Update News</button>
+                  <button type="submit" name="action" value="delete_news" class="btn btn-outline-danger btn-lg" data-confirm="Delete this news item?">Delete News</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
   <footer class="footer-shell py-5 mt-5">
     <section class="container">
@@ -371,7 +544,7 @@ if (!$selected && $employees) { $selected = $employees[0]; }
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="js/dashboard-charts.js"></script>
   <script>
-    window.initAdminBookingChart(<?= json_encode($adminBookingChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>);
+    window.initAdminDashboardChart(<?= json_encode($adminChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>);
   </script>
   <script src="js/app.js"></script>
 </body>

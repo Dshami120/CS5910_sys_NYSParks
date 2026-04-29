@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const newsSearch = document.getElementById('newsSearch');
   const newsButtons = document.querySelectorAll('[data-news-topic]');
+  const newsRegionFilter = document.getElementById('newsRegionFilter');
   const newsItems = document.querySelectorAll('.news-item');
   const newsResultsText = document.getElementById('newsResultsText');
   const newsCount = document.getElementById('newsCount');
@@ -27,15 +28,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const resetNews = document.getElementById('resetNewsFilters');
   if (newsItems.length) {
     let activeTopic = 'all';
+    let activeRegion = 'all';
     const filterNews = () => {
       const query = (newsSearch?.value || '').toLowerCase().trim();
       let visible = 0;
       newsItems.forEach((item) => {
         const topic = item.dataset.topic || '';
         const haystack = item.dataset.search || '';
+        const region = item.dataset.region || '';
         const matchTopic = activeTopic === 'all' || topic === activeTopic;
+        const matchRegion = activeRegion === 'all' || region === activeRegion;
         const matchSearch = !query || haystack.includes(query);
-        const show = matchTopic && matchSearch;
+        const show = matchTopic && matchRegion && matchSearch;
         item.classList.toggle('d-none', !show);
         if (show) visible++;
       });
@@ -49,16 +53,25 @@ document.addEventListener("DOMContentLoaded", () => {
       filterNews();
     }));
     newsSearch?.addEventListener('input', filterNews);
+    newsRegionFilter?.addEventListener('change', () => { activeRegion = newsRegionFilter.value || 'all'; filterNews(); });
+    document.querySelectorAll('.news-open-article').forEach((btn) => btn.addEventListener('click', () => {
+      const content = btn.closest('.card-body')?.querySelector('.news-article-content');
+      if (!content) return;
+      const isOpen = content.classList.toggle('show');
+      btn.textContent = isOpen ? 'Close article' : 'Open article';
+    }));
     resetNews?.addEventListener('click', () => {
       activeTopic = 'all';
+      activeRegion = 'all';
       if (newsSearch) newsSearch.value = '';
+      if (newsRegionFilter) newsRegionFilter.value = 'all';
       newsButtons.forEach((b) => b.classList.toggle('active', (b.dataset.newsTopic || '') === 'all'));
       filterNews();
     });
   }
 
   const faqSearch = document.getElementById('faqSearch');
-  const faqButtons = document.querySelectorAll('[data-faq-topic]');
+  const faqButtons = document.querySelectorAll('.faq-topic-button[data-faq-topic]');
   const faqItems = document.querySelectorAll('.faq-item');
   const faqResultsText = document.getElementById('faqResultsText');
   const noFaqMessage = document.getElementById('noFaqMessage');

@@ -26,14 +26,24 @@
 <?php require 'bootstrap.php';
 $search = get('q');
 $category = get('category');
+$eventType = get('event_type');
+$region = get('region');
 $sql = "SELECT e.*, p.name AS park_name, p.region, COALESCE(e.image_url, p.image_url, '') AS image_url, COALESCE(e.image_alt, p.image_alt, e.title) AS image_alt FROM events e JOIN parks p ON p.id=e.park_id WHERE e.event_status='published'";
 $params = [];
-if ($search !== '') { $sql .= " AND (e.title LIKE ? OR e.description LIKE ? OR p.name LIKE ?)"; $like = "%{$search}%"; array_push($params,$like,$like,$like); }
+if ($search !== '') {
+    $sql .= " AND (e.title LIKE ? OR e.description LIKE ? OR e.card_summary LIKE ? OR p.name LIKE ? OR p.region LIKE ?)";
+    $like = "%{$search}%";
+    array_push($params, $like, $like, $like, $like, $like);
+}
+if ($eventType !== '' && in_array($eventType, ['public','private'], true)) { $sql .= " AND e.event_type = ?"; $params[] = $eventType; }
+if ($region !== '') { $sql .= " AND p.region = ?"; $params[] = $region; }
 if ($category !== '') { $sql .= " AND e.category = ?"; $params[] = $category; }
-$sql .= " ORDER BY e.start_datetime";
+$sql .= " ORDER BY e.start_datetime ASC";
 $stmt = $db->prepare($sql); $stmt->execute($params); $events = $stmt->fetchAll();
 $categories = $db->query("SELECT DISTINCT category FROM events WHERE event_status='published' ORDER BY category")->fetchAll(PDO::FETCH_COLUMN);
+$regions = $db->query("SELECT DISTINCT p.region FROM events e JOIN parks p ON p.id=e.park_id WHERE e.event_status='published' ORDER BY p.region")->fetchAll(PDO::FETCH_COLUMN);
 ?>
+
 <body data-page="events">
   <!-- =====================================================
        PUBLIC SITE HEADER
@@ -83,27 +93,40 @@ $categories = $db->query("SELECT DISTINCT category FROM events WHERE event_statu
 
     <section class="py-4">
       <section class="container">
-        <section class="soft-card p-3 p-lg-4">
-          <section class="row g-3 align-items-center">
-            <article class="col-lg-4">
+        <form class="soft-card p-3 p-lg-4" method="get" action="events.php">
+          <section class="row g-3 align-items-end">
+            <article class="col-lg-3">
+              <label class="form-label">Search</label>
               <input type="text" name="q" value="<?= e($search) ?>" class="form-control" placeholder="Search events..." />
             </article>
-
-            <article class="col-lg-5">
-              <ul class="list-unstyled d-flex flex-wrap gap-3 m-0">
-                <li><button type="button" class="btn btn-link nav-link-custom active-link p-0" data-category="All">All</button></li>
-                <li><button type="button" class="btn btn-link nav-link-custom p-0" data-category="Music">Music</button></li>
-                <li><button type="button" class="btn btn-link nav-link-custom p-0" data-category="Wellness">Wellness</button></li>
-                <li><button type="button" class="btn btn-link nav-link-custom p-0" data-category="Food">Food</button></li>
-                <li><button type="button" class="btn btn-link nav-link-custom p-0" data-category="Sports">Sports</button></li>
-              </ul>
+            <article class="col-lg-2">
+              <label class="form-label">Event type</label>
+              <select name="event_type" class="form-select">
+                <option value="">All types</option>
+                <option value="public" <?= $eventType==='public'?'selected':'' ?>>Public</option>
+                <option value="private" <?= $eventType==='private'?'selected':'' ?>>Private</option>
+              </select>
             </article>
-
-            <article class="col-lg-3 text-lg-end">
-              <a href="client-create-event.php" class="btn btn-dark rounded-pill px-4">Book / Create Request</a>
+            <article class="col-lg-2">
+              <label class="form-label">Region</label>
+              <select name="region" class="form-select">
+                <option value="">All regions</option>
+                <?php foreach ($regions as $regionName): ?><option value="<?= e($regionName) ?>" <?= $region===$regionName?'selected':'' ?>><?= e($regionName) ?></option><?php endforeach; ?>
+              </select>
+            </article>
+            <article class="col-lg-2">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-select">
+                <option value="">All categories</option>
+                <?php foreach ($categories as $categoryName): ?><option value="<?= e($categoryName) ?>" <?= $category===$categoryName?'selected':'' ?>><?= e($categoryName) ?></option><?php endforeach; ?>
+              </select>
+            </article>
+            <article class="col-lg-3 d-flex gap-2 justify-content-lg-end">
+              <button type="submit" class="btn btn-success rounded-pill px-4">Apply Filters</button>
+              <a href="events.php" class="btn btn-outline-dark rounded-pill px-4">Reset</a>
             </article>
           </section>
-        </section>
+        </form>
       </section>
     </section>
 
@@ -122,7 +145,7 @@ $categories = $db->query("SELECT DISTINCT category FROM events WHERE event_statu
         </section>
         <section class="text-end">
           <p class="category-badge mb-1"><?= e($event['category']) ?></p>
-          <p class="small text-muted mb-1"><?= e(ucfirst($event['event_type'])) ?> event</p>
+          <?php if ($event['event_type'] === 'private'): ?><span class="badge text-bg-warning mb-1">Private</span><?php else: ?><span class="badge text-bg-success mb-1">Public</span><?php endif; ?>
           <p class="small text-muted mb-0"><?= ((float)$event['fee_amount'] > 0 ? '$' . number_format((float)$event['fee_amount'], 0) : 'Free') ?></p>
         </section>
       </section>
