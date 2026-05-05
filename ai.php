@@ -1,6 +1,8 @@
 <?php
 require 'bootstrap.php';
-$apiConfigured = !empty(getenv('OPENAI_API_KEY'));
+require_once 'ai-api.php';
+$openAiKey = getenv('OPENAI_API_KEY') ?: (defined('OPENAI_API_KEY') ? OPENAI_API_KEY : '');
+$apiConfigured = trim((string) $openAiKey) !== '' && trim((string) $openAiKey) !== 'PASTE_YOUR_OPENAI_API_KEY_HERE';
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
@@ -58,7 +60,7 @@ $apiConfigured = !empty(getenv('OPENAI_API_KEY'));
   <section class="py-4 bg-light border-bottom">
     <div class="container">
       <div class="row g-3">
-        <div class="col-lg-4"><div class="mini-stat-card h-100"><p class="text-uppercase small fw-bold text-success mb-2">Chatbot status</p><?php if ($apiConfigured): ?><h3 class="h5 mb-2"><i class="bi bi-check-circle-fill text-success"></i> Live OpenAI mode ready</h3><p class="text-muted mb-0">The server detected <code>OPENAI_API_KEY</code>. This page is ready for a real backend chat upgrade later.</p><?php else: ?><h3 class="h5 mb-2"><i class="bi bi-stars text-warning"></i> Demo mode active</h3><p class="text-muted mb-0">This capstone build uses guided sample replies in the browser so the page still demos cleanly without another API file.</p><?php endif; ?></div></div>
+        <div class="col-lg-4"><div class="mini-stat-card h-100"><p class="text-uppercase small fw-bold text-success mb-2">Chatbot status</p><?php if ($apiConfigured): ?><h3 class="h5 mb-2"><i class="bi bi-check-circle-fill text-success"></i> Live OpenAI mode ready</h3><p class="text-muted mb-0">The server detected an OpenAI API key. Chat requests will be sent securely through <code>ai-api.php</code>.</p><?php else: ?><h3 class="h5 mb-2"><i class="bi bi-stars text-warning"></i> API key needed</h3><p class="text-muted mb-0">Add your OpenAI API key in <code>ai-api.php</code> to activate live ChatGPT responses.</p><?php endif; ?></div></div>
         <div class="col-lg-4"><div class="mini-stat-card h-100"><p class="text-uppercase small fw-bold text-success mb-2">What it can do</p><ul class="text-muted mb-0 ai-guide-mini-list"><li>Suggest parks by region or activity</li><li>Help plan day trips and weekend outings</li><li>Answer site-related public questions</li><li>Guide users to parks, events, FAQ, and map pages</li></ul></div></div>
         <div class="col-lg-4"><div class="mini-stat-card h-100"><p class="text-uppercase small fw-bold text-success mb-2">Capstone note</p><p class="text-muted mb-0">This merged version keeps the stronger UI from your alternate file while still fitting the flat root-file structure of the final site.</p></div></div>
       </div>
@@ -93,16 +95,16 @@ $apiConfigured = !empty(getenv('OPENAI_API_KEY'));
                   <label for="aiChatInput" class="form-label fw-semibold">Your message</label>
                   <textarea id="aiChatInput" class="form-control" rows="3" maxlength="800" placeholder="Example: Help me find a scenic NY state park for a weekend picnic and short hike." required></textarea>
                 </div>
-                <div class="col-sm-8 col-lg-9"><div class="form-text">This capstone build responds on-page with guided demo replies. It can be upgraded later to a live server-side API call.</div></div>
+                <div class="col-sm-8 col-lg-9"><div class="form-text">Your message is sent to <code>ai-api.php</code>, which calls OpenAI server-side so the API key stays out of the browser.</div></div>
                 <div class="col-sm-4 col-lg-3 d-grid"><button type="submit" class="btn btn-success btn-lg"><i class="bi bi-send-fill"></i> Send</button></div>
               </form>
             </div>
           </div>
         </div>
         <div class="col-lg-4">
-          <div class="card border-0 shadow-sm h-100 ai-guide-side-card mb-4"><div class="card-body p-4"><h3 class="h5 mb-3">How this page works</h3><ol class="text-muted small ps-3 mb-0"><li class="mb-2">The visitor types a question in the browser.</li><li class="mb-2">JavaScript renders the conversation on the page.</li><li class="mb-2">Demo replies simulate how a real guide would respond.</li><li class="mb-0">Later, this same layout can connect to a live AI backend.</li></ol></div></div>
+          <div class="card border-0 shadow-sm h-100 ai-guide-side-card mb-4"><div class="card-body p-4"><h3 class="h5 mb-3">How this page works</h3><ol class="text-muted small ps-3 mb-0"><li class="mb-2">The visitor types a question in the browser.</li><li class="mb-2">JavaScript renders the conversation on the page.</li><li class="mb-2">The page sends the question to <code>ai-api.php</code>.</li><li class="mb-0"><code>ai-api.php</code> calls OpenAI and returns the guide response.</li></ol></div></div>
           <div class="card border-0 shadow-sm ai-guide-side-card mb-4"><div class="card-body p-4"><h3 class="h5 mb-3">Good questions to ask</h3><ul class="text-muted small mb-0 ps-3"><li class="mb-2">Which parks are best for families with young kids?</li><li class="mb-2">What region has the best waterfall hikes?</li><li class="mb-2">Plan a low-cost outdoor day trip from NYC.</li><li class="mb-2">What pages on this site should I visit for events and maps?</li><li class="mb-0">Compare beach parks versus mountain parks in NY.</li></ul></div></div>
-          <div class="card border-0 shadow-sm ai-guide-side-card"><div class="card-body p-4"><h3 class="h5 mb-3">Important note</h3><p class="text-muted small mb-0">This is a public-facing assistant demo for your capstone. The page now looks much stronger while still cooperating with the no-extra-files flat build.</p></div></div>
+          <div class="card border-0 shadow-sm ai-guide-side-card"><div class="card-body p-4"><h3 class="h5 mb-3">Important note</h3><p class="text-muted small mb-0">This is a public-facing assistant for your capstone. Keep your OpenAI API key server-side in <code>ai-api.php</code> and do not paste it into browser JavaScript.</p></div></div>
         </div>
       </div>
     </div>

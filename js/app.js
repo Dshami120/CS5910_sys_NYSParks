@@ -20,16 +20,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const newsSearch = document.getElementById('newsSearch');
   const newsButtons = document.querySelectorAll('[data-news-topic]');
+  const newsTopicFilter = document.getElementById('newsTopicFilter');
   const newsRegionFilter = document.getElementById('newsRegionFilter');
   const newsItems = document.querySelectorAll('.news-item');
   const newsResultsText = document.getElementById('newsResultsText');
   const newsCount = document.getElementById('newsCount');
   const noNewsMessage = document.getElementById('noNewsMessage');
   const resetNews = document.getElementById('resetNewsFilters');
+  const resetNewsEmpty = document.getElementById('resetNewsFiltersEmpty');
+  const applyNews = document.getElementById('applyNewsFilters');
   if (newsItems.length) {
-    let activeTopic = 'all';
-    let activeRegion = 'all';
+    let activeTopic = newsTopicFilter?.value || 'all';
+    let activeRegion = newsRegionFilter?.value || 'all';
     const filterNews = () => {
+      activeTopic = newsTopicFilter?.value || activeTopic || 'all';
+      activeRegion = newsRegionFilter?.value || activeRegion || 'all';
       const query = (newsSearch?.value || '').toLowerCase().trim();
       let visible = 0;
       newsItems.forEach((item) => {
@@ -49,25 +54,32 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     newsButtons.forEach((btn) => btn.addEventListener('click', () => {
       activeTopic = btn.dataset.newsTopic || 'all';
+      if (newsTopicFilter) newsTopicFilter.value = activeTopic;
       newsButtons.forEach((b) => b.classList.toggle('active', b === btn));
       filterNews();
     }));
     newsSearch?.addEventListener('input', filterNews);
-    newsRegionFilter?.addEventListener('change', () => { activeRegion = newsRegionFilter.value || 'all'; filterNews(); });
+    newsTopicFilter?.addEventListener('change', filterNews);
+    newsRegionFilter?.addEventListener('change', filterNews);
+    applyNews?.addEventListener('click', filterNews);
     document.querySelectorAll('.news-open-article').forEach((btn) => btn.addEventListener('click', () => {
-      const content = btn.closest('.card-body')?.querySelector('.news-article-content');
+      const content = btn.closest('.news-card')?.querySelector('.news-article-content');
       if (!content) return;
       const isOpen = content.classList.toggle('show');
       btn.textContent = isOpen ? 'Close article' : 'Open article';
     }));
-    resetNews?.addEventListener('click', () => {
+    const resetNewsFilters = () => {
       activeTopic = 'all';
       activeRegion = 'all';
       if (newsSearch) newsSearch.value = '';
+      if (newsTopicFilter) newsTopicFilter.value = 'all';
       if (newsRegionFilter) newsRegionFilter.value = 'all';
       newsButtons.forEach((b) => b.classList.toggle('active', (b.dataset.newsTopic || '') === 'all'));
       filterNews();
-    });
+    };
+    resetNews?.addEventListener('click', resetNewsFilters);
+    resetNewsEmpty?.addEventListener('click', resetNewsFilters);
+    filterNews();
   }
 
   const faqSearch = document.getElementById('faqSearch');
@@ -126,32 +138,58 @@ document.addEventListener("DOMContentLoaded", () => {
   const promptButtons = document.querySelectorAll('.ai-prompt-chip');
   if (aiForm && aiInput && aiMessages) {
     const starter = aiMessages.innerHTML;
-    const addMessage = (role, text) => {
+    const chatHistory = [];
+    const submitButton = aiForm.querySelector('button[type="submit"]');
+
+    const addMessage = (role, text, save = true) => {
       const wrap = document.createElement('div');
       wrap.className = `ai-message ${role === 'user' ? 'ai-message-user' : 'ai-message-assistant'}`;
       wrap.innerHTML = `<div class="ai-message-label">${role === 'user' ? 'You' : 'AI Guide'}</div><div class="ai-message-bubble"></div>`;
       wrap.querySelector('.ai-message-bubble').textContent = text;
       aiMessages.appendChild(wrap);
       aiMessages.scrollTop = aiMessages.scrollHeight;
+      if (save) chatHistory.push({ role, text });
     };
-    const respond = (prompt) => {
-      const text = prompt.toLowerCase();
-      let reply = 'A good next step is to browse the Parks page by region, then compare Events and Map to narrow down the best destination.';
-      if (text.includes('waterfall')) reply = 'For waterfall-focused trips, start with Letchworth State Park and Watkins Glen State Park. Both are strong picks for scenery, short hikes, and photography.';
-      else if (text.includes('albany')) reply = 'Near Albany, consider Saratoga Spa State Park for families, trails, and easy planning. You can also compare parks on the Map page for distance.';
-      else if (text.includes('finger lakes')) reply = 'A Finger Lakes weekend could combine Watkins Glen for scenic trails, a picnic stop, and a public event if one is listed on the Events page.';
-      else if (text.includes('beach')) reply = 'For a Jones Beach outing, bring water, sunscreen, towels, a light layer, and check the weather before you go.';
-      else if (text.includes('map') || text.includes('events') || text.includes('pages')) reply = 'Use Parks to browse destinations, Events for public programming, Map for location planning, FAQ for quick answers, and Donate if you want to support the system.';
-      addMessage('assistant', reply);
-      if (aiStatus) aiStatus.textContent = 'Demo response generated locally in the page. This can be replaced later with a live AI backend.';
+
+    const setLoading = (loading) => {
+      if (submitButton) {
+        submitButton.disabled = loading;
+        submitButton.innerHTML = loading ? '<span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span> Sending' : '<i class="bi bi-send-fill"></i> Send';
+      }
+      aiInput.disabled = loading;
     };
+
+    const requestAiReply = async (prompt) => {
+      setLoading(true);
+      if (aiStatus) aiStatus.textContent = 'Sending your question to the NYS Parks AI Guide...';
+      try {
+        const response = await fetch('ai-api.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: prompt, history: chatHistory.slice(-6) })
+        });
+        const data = await response.json();
+        if (!data.ok) {
+          throw new Error(data.error || 'The AI Guide could not answer right now.');
+        }
+        addMessage('assistant', data.reply || 'I could not generate a response this time. Please try again.');
+        if (aiStatus) aiStatus.textContent = 'Live response generated through ai-api.php.';
+      } catch (error) {
+        addMessage('assistant', error.message || 'The AI Guide could not answer right now. Please try again later.');
+        if (aiStatus) aiStatus.textContent = 'The chatbot request did not complete. Check ai-api.php and your OpenAI API key.';
+      } finally {
+        setLoading(false);
+        aiInput.focus();
+      }
+    };
+
     aiForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const prompt = aiInput.value.trim();
       if (!prompt) return;
       addMessage('user', prompt);
       aiInput.value = '';
-      window.setTimeout(() => respond(prompt), 250);
+      requestAiReply(prompt);
     });
     promptButtons.forEach((btn) => btn.addEventListener('click', () => {
       aiInput.value = btn.dataset.prompt || '';
@@ -159,6 +197,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }));
     clearAiChat?.addEventListener('click', () => {
       aiMessages.innerHTML = starter;
+      chatHistory.length = 0;
       if (aiStatus) aiStatus.textContent = 'Tip: try one of the suggested prompts below to test the chatbot quickly.';
     });
   }

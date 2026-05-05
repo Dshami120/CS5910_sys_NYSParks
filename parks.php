@@ -74,61 +74,62 @@ $types = $db->query("SELECT DISTINCT park_type FROM parks ORDER BY park_type")->
   </header>
 
   <main>
-    <section class="page-hero-mini">
+      <!-- blue title section -->
+      <section class="subpage-hero subpage-hero-news text-white d-flex align-items-center">
+          <div class="subpage-hero-overlay"></div>
+          <div class="container position-relative py-5"><div class="row">
+                  <div class="col-lg-8">
+                      <span class="hero-kicker">Discover parks</span>
+                      <h1 class="display-5 fw-bold mb-3">Explore parks across New York State</h1>
+                      <p class="lead text-white-50 mb-0">Browse featured destinations, compare regions, and discover the types of outdoor experiences available statewide.</p>
+                  </div>
+              </div>
+          </div>
+      </section>
+
+    <section class="py-4">
       <section class="container">
-        <p class="section-kicker mb-2">Discover parks</p>
-        <h1 class="display-6 fw-bold mb-3">Explore parks across New York State</h1>
-        <p class="text-muted col-lg-8 mb-0">
-          Browse featured destinations, compare regions, and discover the types of outdoor experiences available statewide.
-        </p>
+        <form class="soft-card p-3 p-lg-4" method="get" action="parks.php">
+          <section class="row g-3 align-items-end">
+            <article class="col-lg-3">
+              <label class="form-label">Search by keyword</label>
+              <input type="text" name="q" value="<?= e($search) ?>" class="form-control" placeholder="Waterfalls, beaches, trails..." />
+            </article>
+            <article class="col-lg-3">
+              <label class="form-label">Region</label>
+              <select name="region" class="form-select">
+                <option value="">All regions</option>
+                <?php foreach ($regions as $item): ?><option value="<?= e($item) ?>" <?= $region === $item ? 'selected' : '' ?>><?= e($item) ?></option><?php endforeach; ?>
+              </select>
+            </article>
+            <article class="col-lg-3">
+              <label class="form-label">Experience type</label>
+              <select name="type" class="form-select">
+                <option value="">All experiences</option>
+                <?php foreach ($types as $item): ?><option value="<?= e($item) ?>" <?= $type === $item ? 'selected' : '' ?>><?= e($item) ?></option><?php endforeach; ?>
+              </select>
+            </article>
+            <article class="col-lg-3 d-flex gap-2 justify-content-lg-end">
+              <button type="submit" class="btn btn-success rounded-pill px-4">Apply Filters</button>
+              <a href="parks.php" class="btn btn-outline-dark rounded-pill px-4">Reset</a>
+            </article>
+          </section>
+        </form>
       </section>
     </section>
 
-    <section class="py-5">
+    <section class="py-5 pt-2">
       <section class="container">
-        <section class="row g-4 align-items-start">
-          <article class="col-lg-4">
-            <section class="soft-card p-4">
-              <h2 class="h5 fw-bold mb-3">Park Filters</h2>
+        <header class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+          <section>
+            <h2 class="fw-bold mb-1">Featured Parks</h2>
+            <p class="text-muted mb-0">Browse parks that match your selected filters.</p>
+          </section>
 
-              <form method="get">
-                <label class="form-label">Search by keyword</label>
-                <input type="text" name="q" value="<?= e($search) ?>" class="form-control mb-3" placeholder="Waterfalls, beaches, trails..." />
+          <a href="map.php" class="map-link">Open map view →</a>
+        </header>
 
-                <label class="form-label">Region</label>
-                <select name="region" class="form-select mb-3">
-<option value="">All regions</option>
-<?php foreach ($regions as $item): ?>
-<option value="<?= e($item) ?>" <?= $region === $item ? 'selected' : '' ?>><?= e($item) ?></option>
-<?php endforeach; ?>
-</select>
-
-                <label class="form-label">Experience type</label>
-                <select name="type" class="form-select mb-4">
-<option value="">All experiences</option>
-<?php foreach ($types as $item): ?>
-<option value="<?= e($item) ?>" <?= $type === $item ? 'selected' : '' ?>><?= e($item) ?></option>
-<?php endforeach; ?>
-</select>
-
-                <button type="submit" class="btn btn-success rounded-pill w-100 fw-semibold">
-                  Apply Filters
-                </button>
-              </form>
-            </section>
-          </article>
-
-          <article class="col-lg-8">
-            <header class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-              <section>
-                <h2 class="fw-bold mb-1">Featured Parks</h2>
-                <p class="text-muted mb-0">A simple starter layout that can later be filled from SQL data</p>
-              </section>
-
-              <a href="map.php" class="map-link">Open map view →</a>
-            </header>
-
-            <section class="row g-4" id="parks-grid">
+        <section class="row g-4" id="parks-grid">
 <?php foreach ($parks as $park): ?>
 <article class="col-md-6 col-xl-4">
   <figure class="image-card h-100 mb-0">
@@ -138,14 +139,65 @@ $types = $db->query("SELECT DISTINCT park_type FROM parks ORDER BY park_type")->
       <h3 class="h5 fw-bold mb-2"><?= e($park['name']) ?></h3>
       <p class="text-muted mb-2"><?= e($park['card_summary'] ?: $park['description']) ?></p>
       <p class="small text-muted mb-2"><i class="bi bi-grid-3x3-gap me-1"></i><?= (int)$park['total_fields'] ?> fields · max <?= (int)$park['max_capacity'] ?> guests</p>
-      <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1"></i><?= e($park['city']) ?>, <?= e($park['state']) ?></p>
+      <p class="small text-muted mb-3"><i class="bi bi-geo-alt me-1"></i><?= e($park['city']) ?>, <?= e($park['state']) ?></p>
+      <button type="button" class="btn btn-success w-100 rounded-pill fw-semibold" data-bs-toggle="modal" data-bs-target="#parkModal<?= (int)$park['id'] ?>">
+        View Park
+      </button>
     </figcaption>
   </figure>
+
+  <section class="modal fade" id="parkModal<?= (int)$park['id'] ?>" tabindex="-1" aria-labelledby="parkModalLabel<?= (int)$park['id'] ?>" aria-hidden="true">
+    <section class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <section class="modal-content border-0 rounded-4 overflow-hidden">
+        <img src="<?= e($park['image_url']) ?>" alt="<?= e($park['image_alt'] ?: $park['name']) ?>" class="image-cover-md" />
+        <section class="modal-header border-0 pb-0">
+          <section>
+            <p class="section-kicker mb-2"><?= e($park['region']) ?> · <?= e($park['park_type']) ?></p>
+            <h3 class="modal-title fw-bold" id="parkModalLabel<?= (int)$park['id'] ?>"><?= e($park['name']) ?></h3>
+          </section>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </section>
+        <section class="modal-body pt-3">
+          <p class="text-muted"><?= e($park['description']) ?></p>
+          <section class="row g-3 mb-3">
+            <article class="col-md-6">
+              <section class="soft-card p-3 h-100">
+                <h4 class="h6 fw-bold mb-2"><i class="bi bi-geo-alt me-1"></i>Location</h4>
+                <p class="mb-0 text-muted"><?= e($park['address_line']) ?><br /><?= e($park['city']) ?>, <?= e($park['state']) ?> <?= e($park['zip_code']) ?></p>
+              </section>
+            </article>
+            <article class="col-md-6">
+              <section class="soft-card p-3 h-100">
+                <h4 class="h6 fw-bold mb-2"><i class="bi bi-clock me-1"></i>Hours</h4>
+                <p class="mb-0 text-muted"><?= e($park['hours']) ?></p>
+              </section>
+            </article>
+            <article class="col-md-6">
+              <section class="soft-card p-3 h-100">
+                <h4 class="h6 fw-bold mb-2"><i class="bi bi-people me-1"></i>Capacity</h4>
+                <p class="mb-0 text-muted"><?= (int)$park['total_fields'] ?> fields · max <?= (int)$park['max_capacity'] ?> guests</p>
+              </section>
+            </article>
+            <article class="col-md-6">
+              <section class="soft-card p-3 h-100">
+                <h4 class="h6 fw-bold mb-2"><i class="bi bi-grid-3x3-gap me-1"></i>Amenities</h4>
+                <p class="mb-0 text-muted"><?= e($park['amenities'] ?: 'Amenities vary by season. Check official park guidance before visiting.') ?></p>
+              </section>
+            </article>
+          </section>
+        </section>
+        <section class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Close</button>
+          <a href="map.php" class="btn btn-success rounded-pill fw-semibold">Open Map</a>
+        </section>
+      </section>
+    </section>
+  </section>
 </article>
 <?php endforeach; ?>
 <?php if (!$parks): ?><p class="text-muted">No parks matched your filters.</p><?php endif; ?>
-</section>
-        </article>
+        </section>
+      </section>
     </section>
   </main>
   <!-- =====================================================

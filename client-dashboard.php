@@ -2,6 +2,18 @@
 require 'bootstrap.php';
 $user = require_role($db, 'client');
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && post('action') === 'cancel_rsvp') {
+    $eventId = (int) post('event_id');
+    if ($eventId <= 0) {
+        flash_set('error', 'Please choose a valid RSVP to cancel.');
+        redirect('client-dashboard.php#my-rsvps');
+    }
+    $stmt = $db->prepare("UPDATE attendance SET attendance_status='cancelled' WHERE event_id=? AND attendee_email=? AND attendance_status='registered'");
+    $stmt->execute([$eventId, strtolower((string)$user['email'])]);
+    flash_set('success', 'Your RSVP was cancelled.');
+    redirect('client-dashboard.php#my-rsvps');
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && post('action') === 'pay_reservation') {
     $bookingId = (int) post('booking_id');
     $method = post('payment_method') ?: 'card';
@@ -60,6 +72,18 @@ $stmt = $db->prepare("SELECT b.*, p.name AS park_name,
 $stmt->execute([$user['id']]); $bookings = $stmt->fetchAll();
 $bookingChartRows = array_map(fn($b) => ['date' => substr((string)$b['start_datetime'], 0, 10), 'status' => $b['booking_status'], 'park' => $b['park_name'], 'title' => $b['title']], $bookings);
 $bookingStatusCounts = array_count_values(array_map(fn($b) => $b['booking_status'], $bookings));
+$stmt = $db->prepare("SELECT a.*, e.title, e.start_datetime, e.end_datetime, e.event_type, e.event_status, p.name AS park_name, p.region
+    FROM attendance a
+    JOIN events e ON e.id=a.event_id
+    JOIN parks p ON p.id=e.park_id
+    WHERE a.attendee_email=?
+    ORDER BY CASE WHEN e.end_datetime >= NOW() THEN 0 ELSE 1 END, e.start_datetime ASC");
+$stmt->execute([strtolower((string)$user['email'])]);
+$rsvps = $stmt->fetchAll();
+$activeRsvps = array_values(array_filter($rsvps, fn($r) => in_array($r['attendance_status'], ['registered','attended'], true) && strtotime((string)$r['end_datetime']) >= time()));
+$registeredRsvpCount = count(array_filter($rsvps, fn($r) => $r['attendance_status'] === 'registered'));
+$rsvpGuestTotal = array_sum(array_map(fn($r) => in_array($r['attendance_status'], ['registered','attended'], true) ? (int)$r['guest_count'] : 0, $rsvps));
+$nextRsvp = $activeRsvps[0] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -144,10 +168,10 @@ $bookingStatusCounts = array_count_values(array_map(fn($b) => $b['booking_status
       </div>
       <div class="col-md-6 col-xl-3">
         <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-purple"><i class="bi bi-credit-card"></i></span>
-          <p class="admin-stat-label mb-1">Payment rules</p>
-          <h2 class="h5 fw-bold mb-1">After approval</h2>
-          <p class="text-muted small mb-0">Pay by mock card or mark in-person payment pending.</p>
+          <span class="admin-stat-icon icon-purple"><i class="bi bi-person-check"></i></span>
+          <p class="admin-stat-label mb-1">Active RSVPs</p>
+          <h2 class="admin-stat-value mb-0"><?= count($activeRsvps) ?></h2>
+          <p class="text-muted small mb-0"><?= $nextRsvp ? e($nextRsvp['title']) . ' · ' . e(format_datetime($nextRsvp['start_datetime'])) : 'No upcoming public RSVPs.' ?></p>
         </article>
       </div>
     </section>
@@ -210,6 +234,58 @@ $bookingStatusCounts = array_count_values(array_map(fn($b) => $b['booking_status
             </article>
           </div>
         </article>
+      </div>
+    </section>
+
+    <section class="card shadow-sm border-0 rounded-4 mb-4" id="my-rsvps">
+      <div class="card-body p-4 p-lg-5">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+          <div>
+            <p class="eyebrow mb-1">Public Event Attendance</p>
+            <h2 class="h3 fw-bold mb-1">My RSVPs</h2>
+            <p class="text-muted mb-0">RSVP records from the attendance table for public events you registered for.</p>
+          </div>
+          <div class="pill-note"><?= $registeredRsvpCount ?> registered · <?= $rsvpGuestTotal ?> guest<?= $rsvpGuestTotal === 1 ? '' : 's' ?></div>
+        </div>
+
+        <section class="list-shell mb-0">
+          <section class="p-4 border-bottom">
+            <section class="row g-3">
+              <article class="col-lg-3 fw-bold">Event</article>
+              <article class="col-lg-2 fw-bold">Park</article>
+              <article class="col-lg-2 fw-bold">Date / Time</article>
+              <article class="col-lg-1 fw-bold">Guests</article>
+              <article class="col-lg-2 fw-bold">Status</article>
+              <article class="col-lg-2 fw-bold">Action</article>
+            </section>
+          </section>
+          <?php foreach ($rsvps as $rsvp): ?>
+          <?php $rsvpEnded = strtotime((string)$rsvp['end_datetime']) < time(); ?>
+          <section class="list-row p-4">
+            <section class="row g-3 align-items-start">
+              <article class="col-lg-3 fw-semibold"><?= e($rsvp['title']) ?></article>
+              <article class="col-lg-2 text-muted"><?= e($rsvp['park_name']) ?></article>
+              <article class="col-lg-2 text-muted"><?= e(format_datetime($rsvp['start_datetime'])) ?></article>
+              <article class="col-lg-1 text-muted"><?= (int)$rsvp['guest_count'] ?></article>
+              <article class="col-lg-2"><span class="status-pill <?= booking_status_class($rsvp['attendance_status']) ?>"><?= e(ucfirst(str_replace('_',' ', $rsvp['attendance_status']))) ?></span></article>
+              <article class="col-lg-2">
+                <?php if ($rsvp['attendance_status'] === 'registered' && !$rsvpEnded): ?>
+                  <form method="post">
+                    <input type="hidden" name="action" value="cancel_rsvp" />
+                    <input type="hidden" name="event_id" value="<?= (int)$rsvp['event_id'] ?>" />
+                    <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit" data-confirm="Cancel this RSVP?">Cancel RSVP</button>
+                  </form>
+                <?php elseif ($rsvpEnded): ?>
+                  <span class="text-muted small">Event ended.</span>
+                <?php else: ?>
+                  <span class="text-muted small">No action available.</span>
+                <?php endif; ?>
+              </article>
+            </section>
+          </section>
+          <?php endforeach; ?>
+          <?php if (!$rsvps): ?><section class="p-4 text-muted">No RSVPs yet. Browse public events to RSVP.</section><?php endif; ?>
+        </section>
       </div>
     </section>
 

@@ -26,6 +26,7 @@
 <?php require 'bootstrap.php';
 $featuredParks = $db->query("SELECT * FROM parks WHERE is_featured=1 ORDER BY id LIMIT 6")->fetchAll();
 $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image_url AS park_image, p.image_alt AS park_image_alt, COALESCE(e.image_url, p.image_url) AS card_image, COALESCE(e.image_alt, p.image_alt, e.title) AS card_image_alt FROM events e JOIN parks p ON p.id=e.park_id WHERE e.event_status='published' AND e.start_datetime >= NOW() ORDER BY e.start_datetime LIMIT 6")->fetchAll();
+$regions = $db->query("SELECT DISTINCT region FROM parks WHERE region IS NOT NULL AND region <> '' ORDER BY region")->fetchAll(PDO::FETCH_COLUMN);
 ?>
 <body data-page="home">
   <!-- =====================================================
@@ -82,34 +83,36 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
           Discover parks, browse events, and explore the outdoors across New York State.
         </p>
 
-        <form class="search-shell mx-auto p-2 d-flex flex-column flex-lg-row gap-2" action="search.php" method="get">
+        <form class="search-shell mx-auto p-2 d-flex flex-column flex-lg-row gap-2 " action="search.php" method="get">
           <input
             type="text"
-            class="form-control border-0 shadow-none py-3"
-            placeholder="Search parks, events, news, FAQ, map, donate, and more"
+            class="form-control border-0 shadow-none py-3 flex-grow-1"
+            placeholder="Search: parks, events, news, maps, Ai, donate, about us, FAQ & more*"
             name="q"
           />
 
-          <select class="form-select border-0 shadow-none py-3" name="region">
-            <option value="">Any Region</option>
-            <option>Long Island</option>
-            <option>Hudson Valley</option>
-            <option>Finger Lakes</option>
-            <option>Western New York</option>
-          </select>
+            <select class="form-select border-0 shadow-none py-3 flex-grow-0 w-auto" name="region">
+                <option value="">Any Region</option>
+
+                <?php foreach ($regions as $regionName): ?>
+                    <option value="<?= e($regionName) ?>">
+                        <?= e($regionName) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
 
           <button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold">
             Search
           </button>
         </form>
 
-        <ul class="list-unstyled d-flex flex-wrap justify-content-center gap-2 mt-4 mb-0">
-          <li><a href="parks.php" class="filter-pill">Beaches</a></li>
-          <li><a href="parks.php" class="filter-pill">Hiking Trails</a></li>
-          <li><a href="parks.php" class="filter-pill">Camping</a></li>
-          <li><a href="events.php" class="filter-pill">Concerts</a></li>
-          <li><a href="parks.php" class="filter-pill">Picnic Spots</a></li>
-        </ul>
+          <ul class="list-unstyled d-flex flex-wrap justify-content-center gap-2 mt-4 mb-0">
+              <li><a href="search.php?q=Beach" class="filter-pill">Beaches</a></li>
+              <li><a href="search.php?q=Hiking%20Trails" class="filter-pill">Hiking Trails</a></li>
+              <li><a href="search.php?q=Camping" class="filter-pill">Camping</a></li>
+              <li><a href="search.php?q=Concert" class="filter-pill">Concerts</a></li>
+              <li><a href="search.php?q=Picnic" class="filter-pill">Picnic Spots</a></li>
+          </ul>
       </section>
     </section>
 
@@ -122,6 +125,7 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
           </section>
 
           <a href="map.php" class="map-link">View on Map →</a>
+
         </header>
 
         <section class="row g-4" id="parks-grid">
@@ -133,7 +137,8 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
       <figcaption class="p-4">
         <p class="section-kicker mb-2"><?= e($park['region']) ?> · <?= e($park['park_type']) ?></p>
         <h3 class="h5 fw-bold mb-2"><?= e($park['name']) ?></h3>
-        <p class="text-muted mb-0"><?= e($park['description']) ?></p>
+        <p class="text-muted mb-3"><?= e($park['description']) ?></p>
+        <span class="btn btn-success w-100 rounded-pill fw-semibold">View Park</span>
       </figcaption>
       </figure>
     </a>
@@ -159,25 +164,25 @@ $featuredEvents = $db->query("SELECT e.*, p.name AS park_name, p.region, p.image
   <article class="col-md-6 col-xl-4">
     <a href="events.php" class="text-decoration-none text-reset d-block h-100">
       <article class="event-card h-100">
-      <img src="<?= e($event['card_image']) ?>" alt="<?= e($event['card_image_alt']) ?>" class="image-cover-event" />
-      <section class="p-3 p-lg-4">
-        <section class="d-flex justify-content-between align-items-start gap-3 mb-3">
-          <section class="event-date-badge text-center py-2 px-1">
-            <p class="small text-uppercase text-muted fw-bold mb-1"><?= strtoupper(date('M', strtotime($event['start_datetime']))) ?></p>
-            <h3 class="h5 fw-bold mb-0"><?= date('d', strtotime($event['start_datetime'])) ?></h3>
+        <img src="<?= e($event['card_image']) ?>" alt="<?= e($event['card_image_alt']) ?>" class="image-cover-md" />
+        <section class="p-3 p-lg-4">
+          <section class="d-flex justify-content-between align-items-start gap-3 mb-3">
+            <section class="event-date-badge text-center py-2 px-1">
+              <p class="small text-uppercase text-muted fw-bold mb-1"><?= strtoupper(date('M', strtotime($event['start_datetime']))) ?></p>
+              <h3 class="h5 fw-bold mb-0"><?= date('d', strtotime($event['start_datetime'])) ?></h3>
+            </section>
+            <section class="text-end">
+              <p class="category-badge mb-1"><?= e($event['category']) ?></p>
+              <?php if ($event['event_type'] === 'private'): ?><span class="badge text-bg-warning mb-1">Private</span><?php else: ?><span class="badge text-bg-success mb-1">Public</span><?php endif; ?>
+            </section>
           </section>
-          <section class="text-end">
-            <p class="category-badge mb-1"><?= e($event['category']) ?></p>
-            <?php if ($event['event_type'] === 'private'): ?><span class="badge text-bg-warning mb-1">Private</span><?php endif; ?>
-            <p class="small text-muted mb-0"><?= ((float)$event['fee_amount'] > 0 ? 'From $' . number_format((float)$event['fee_amount'], 0) : 'Free') ?></p>
-          </section>
+          <h3 class="h5 fw-bold mb-2"><?= e($event['title']) ?></h3>
+          <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i><?= e($event['park_name']) ?>, <?= e($event['region']) ?></p>
+          <p class="small text-muted mb-2"><i class="bi bi-clock me-1"></i><?= date('g:i A', strtotime($event['start_datetime'])) ?></p>
+          <p class="small text-muted mb-2"><i class="bi bi-people me-1"></i>Capacity: <?= (int)$event['capacity'] ?></p>
+          <p class="small text-muted mb-3"><?= e($event['card_summary'] ?: mb_strimwidth($event['description'], 0, 120, '…')) ?></p>
+          <span class="btn btn-success w-100 rounded-pill fw-semibold">View Event</span>
         </section>
-        <h3 class="h5 fw-bold mb-2"><?= e($event['title']) ?></h3>
-        <p class="small text-muted mb-2"><i class="bi bi-geo-alt me-1"></i><?= e($event['park_name']) ?>, <?= e($event['region']) ?></p>
-        <p class="small text-muted mb-2"><i class="bi bi-clock me-1"></i><?= date('g:i A', strtotime($event['start_datetime'])) ?></p>
-        <p class="small text-muted mb-3"><?= e($event['card_summary'] ?: mb_strimwidth($event['description'], 0, 110, '…')) ?></p>
-        <span class="btn btn-success w-100 rounded-pill fw-semibold">View Events</span>
-      </section>
       </article>
     </a>
   </article>

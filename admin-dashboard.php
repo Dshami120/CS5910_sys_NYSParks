@@ -77,6 +77,10 @@ $approvedBookingsCount = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE b
 $pendingBookingsCount = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status='pending'")->fetchColumn();
 $pendingBookings = $pendingBookingsCount;
 $pendingPto = (int) $db->query("SELECT COUNT(*) FROM pto_requests WHERE pto_status='pending'")->fetchColumn();
+$registeredAttendanceCount = (int) $db->query("SELECT COUNT(*) FROM attendance WHERE attendance_status='registered'")->fetchColumn();
+$attendedAttendanceCount = (int) $db->query("SELECT COUNT(*) FROM attendance WHERE attendance_status='attended'")->fetchColumn();
+$upcomingRsvpGuests = (int) $db->query("SELECT COALESCE(SUM(a.guest_count),0) FROM attendance a JOIN events e ON e.id=a.event_id WHERE a.attendance_status='registered' AND e.end_datetime >= NOW()")->fetchColumn();
+$recentAttendance = $db->query("SELECT a.*, e.title, e.start_datetime, p.name AS park_name FROM attendance a JOIN events e ON e.id=a.event_id JOIN parks p ON p.id=e.park_id ORDER BY a.registered_at DESC LIMIT 8")->fetchAll();
 $employeeActions = (int) $db->query("SELECT COUNT(*) FROM users WHERE role='employee' AND account_status='active'")->fetchColumn();
 $openAlerts = $pendingBookings + $pendingPto;
 $adminChartRows = [];
@@ -198,6 +202,41 @@ if (!$selected && $employees) { $selected = $employees[0]; }
       </div>
     </section>
 
+    <section class="row g-4 mb-4" id="attendance-summary">
+      <div class="col-md-6 col-xl-3">
+        <article class="admin-stat-card">
+          <span class="admin-stat-icon icon-green"><i class="bi bi-person-check"></i></span>
+          <p class="admin-stat-label mb-1">Registered RSVPs</p>
+          <h2 class="admin-stat-value mb-0"><?= $registeredAttendanceCount ?></h2>
+          <p class="text-muted small mb-0">Active attendance records.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="admin-stat-card">
+          <span class="admin-stat-icon icon-blue"><i class="bi bi-people"></i></span>
+          <p class="admin-stat-label mb-1">Upcoming RSVP Guests</p>
+          <h2 class="admin-stat-value mb-0"><?= $upcomingRsvpGuests ?></h2>
+          <p class="text-muted small mb-0">Guest count for future/current events.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="admin-stat-card">
+          <span class="admin-stat-icon icon-purple"><i class="bi bi-clipboard-check"></i></span>
+          <p class="admin-stat-label mb-1">Attended</p>
+          <h2 class="admin-stat-value mb-0"><?= $attendedAttendanceCount ?></h2>
+          <p class="text-muted small mb-0">Manually completed attendance.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="admin-stat-card">
+          <span class="admin-stat-icon icon-orange"><i class="bi bi-bar-chart"></i></span>
+          <p class="admin-stat-label mb-1">Attendance Chart</p>
+          <h2 class="h5 fw-bold mb-1">Available</h2>
+          <p class="text-muted small mb-0">Use the dashboard metric filter and choose Attendance.</p>
+        </article>
+      </div>
+    </section>
+
     <section class="row g-4 mb-4">
       <div class="col-lg-7">
         <article class="admin-panel h-100">
@@ -267,6 +306,45 @@ if (!$selected && $employees) { $selected = $employees[0]; }
             </article>
           </div>
         </article>
+      </div>
+    </section>
+
+    <section class="card shadow-sm border-0 rounded-4 mb-4" id="attendance-records">
+      <div class="card-body p-4 p-lg-5">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+          <div>
+            <p class="eyebrow mb-1">Attendance</p>
+            <h2 class="h3 fw-bold mb-1">Recent RSVP / Attendance Records</h2>
+            <p class="text-muted mb-0">Read-only overview from the existing attendance table. Manual attendance updates can stay in your existing workflow.</p>
+          </div>
+          <div class="pill-note">Admin only · attendance table</div>
+        </div>
+
+        <section class="list-shell mb-0">
+          <section class="p-4 border-bottom">
+            <section class="row g-3">
+              <article class="col-lg-3 fw-bold">Event</article>
+              <article class="col-lg-2 fw-bold">Park</article>
+              <article class="col-lg-2 fw-bold">Event Date</article>
+              <article class="col-lg-2 fw-bold">Attendee</article>
+              <article class="col-lg-1 fw-bold">Guests</article>
+              <article class="col-lg-2 fw-bold">Status</article>
+            </section>
+          </section>
+          <?php foreach ($recentAttendance as $record): ?>
+          <section class="list-row p-4">
+            <section class="row g-3 align-items-start">
+              <article class="col-lg-3 fw-semibold"><?= e($record['title']) ?></article>
+              <article class="col-lg-2 text-muted"><?= e($record['park_name']) ?></article>
+              <article class="col-lg-2 text-muted"><?= e(format_datetime($record['start_datetime'])) ?></article>
+              <article class="col-lg-2 text-muted"><?= e($record['attendee_email']) ?></article>
+              <article class="col-lg-1 text-muted"><?= (int)$record['guest_count'] ?></article>
+              <article class="col-lg-2"><span class="status-pill <?= booking_status_class($record['attendance_status']) ?>"><?= e(ucfirst(str_replace('_',' ', $record['attendance_status']))) ?></span></article>
+            </section>
+          </section>
+          <?php endforeach; ?>
+          <?php if (!$recentAttendance): ?><section class="p-4 text-muted">No attendance records yet.</section><?php endif; ?>
+        </section>
       </div>
     </section>
 
