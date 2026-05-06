@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('admin-dashboard.php');
         }
         $db->prepare("INSERT INTO users (first_name,last_name,email,password_hash,role,phone,birthdate,notes,park_id,account_status) VALUES (?,?,?,?, 'employee',?,?,?,?, 'active')")
-           ->execute([$first,$last,strtolower(post('email')),password_hash(post('password'), PASSWORD_DEFAULT),post('phone') ?: null, post('birthdate') ?: null, post('notes') ?: null, (int) post('park_id') ?: null]);
+                ->execute([$first,$last,strtolower(post('email')),password_hash(post('password'), PASSWORD_DEFAULT),post('phone') ?: null, post('birthdate') ?: null, post('notes') ?: null, (int) post('park_id') ?: null]);
         flash_set('success', 'Employee account created.');
         redirect('admin-dashboard.php');
     }
@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) post('employee_id');
         [$first,$last] = split_name(post('full_name'));
         $db->prepare("UPDATE users SET first_name=?, last_name=?, email=?, phone=?, birthdate=?, notes=?, park_id=? WHERE id=? AND role='employee'")
-           ->execute([$first,$last,strtolower(post('email')),post('phone') ?: null, post('birthdate') ?: null, post('notes') ?: null, (int) post('park_id') ?: null, $id]);
+                ->execute([$first,$last,strtolower(post('email')),post('phone') ?: null, post('birthdate') ?: null, post('notes') ?: null, (int) post('park_id') ?: null, $id]);
         if (post('password') !== '') {
             $db->prepare("UPDATE users SET password_hash=? WHERE id=? AND role='employee'")->execute([password_hash(post('password'), PASSWORD_DEFAULT), $id]);
         }
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $isFeatured = post('is_featured') === '1' ? 1 : 0;
         if ($action === 'create_news') {
             $db->prepare("INSERT INTO news (title, topic, published_date, region, summary, content, image_url, image_alt, card_summary, tag, is_featured, news_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
-               ->execute([post('title'), $topic, $publishedDate, post('region'), post('summary'), post('content'), post('image_url') ?: null, post('image_alt') ?: null, post('card_summary') ?: null, post('tag') ?: ucwords(str_replace('_',' ', $topic)), $isFeatured, $status]);
+                    ->execute([post('title'), $topic, $publishedDate, post('region'), post('summary'), post('content'), post('image_url') ?: null, post('image_alt') ?: null, post('card_summary') ?: null, post('tag') ?: ucwords(str_replace('_',' ', $topic)), $isFeatured, $status]);
             flash_set('success', 'News item created.');
             redirect('admin-dashboard.php#news-manager');
         }
@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 redirect('admin-dashboard.php#news-manager');
             }
             $db->prepare("UPDATE news SET title=?, topic=?, published_date=?, region=?, summary=?, content=?, image_url=?, image_alt=?, card_summary=?, tag=?, is_featured=?, news_status=? WHERE id=?")
-               ->execute([post('title'), $topic, $publishedDate, post('region'), post('summary'), post('content'), post('image_url') ?: null, post('image_alt') ?: null, post('card_summary') ?: null, post('tag') ?: ucwords(str_replace('_',' ', $topic)), $isFeatured, $status, $newsId]);
+                    ->execute([post('title'), $topic, $publishedDate, post('region'), post('summary'), post('content'), post('image_url') ?: null, post('image_alt') ?: null, post('card_summary') ?: null, post('tag') ?: ucwords(str_replace('_',' ', $topic)), $isFeatured, $status, $newsId]);
             flash_set('success', 'News item updated.');
             redirect('admin-dashboard.php?news_id=' . $newsId . '#news-manager');
         }
@@ -73,13 +73,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 $parksCount = (int) $db->query("SELECT COUNT(*) FROM parks")->fetchColumn();
 $publishedEventsCount = (int) $db->query("SELECT COUNT(*) FROM events WHERE event_status='published'")->fetchColumn();
-$approvedBookingsCount = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status='approved'")->fetchColumn();
+$approvedBookingsCount = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status IN ('approved','confirmed')")->fetchColumn();
 $pendingBookingsCount = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status='pending'")->fetchColumn();
 $pendingBookings = $pendingBookingsCount;
 $pendingPto = (int) $db->query("SELECT COUNT(*) FROM pto_requests WHERE pto_status='pending'")->fetchColumn();
 $registeredAttendanceCount = (int) $db->query("SELECT COUNT(*) FROM attendance WHERE attendance_status='registered'")->fetchColumn();
 $attendedAttendanceCount = (int) $db->query("SELECT COUNT(*) FROM attendance WHERE attendance_status='attended'")->fetchColumn();
 $upcomingRsvpGuests = (int) $db->query("SELECT COALESCE(SUM(a.guest_count),0) FROM attendance a JOIN events e ON e.id=a.event_id WHERE a.attendance_status='registered' AND e.end_datetime >= NOW()")->fetchColumn();
+$totalAttendanceGuests = (int) $db->query("SELECT COALESCE(SUM(guest_count),0) FROM attendance WHERE attendance_status IN ('registered','attended')")->fetchColumn();
 $recentAttendance = $db->query("SELECT a.*, e.title, e.start_datetime, p.name AS park_name FROM attendance a JOIN events e ON e.id=a.event_id JOIN parks p ON p.id=e.park_id ORDER BY a.registered_at DESC LIMIT 8")->fetchAll();
 $employeeActions = (int) $db->query("SELECT COUNT(*) FROM users WHERE role='employee' AND account_status='active'")->fetchColumn();
 $openAlerts = $pendingBookings + $pendingPto;
@@ -120,305 +121,305 @@ if (!$selected && $employees) { $selected = $employees[0]; }
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NYS Parks - Admin Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="css/styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYS Parks - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-page="admin-dashboard">
-  <header class="site-header">
+<header class="site-header">
     <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-      <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
-        <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2">
-          <span class="brand-badge">NY</span>
-          <span class="brand-mark text-dark">
+        <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
+            <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2">
+                <span class="brand-badge">NY</span>
+                <span class="brand-mark text-dark">
             NYS Parks<br />
             <small>&amp; RECREATION</small>
           </span>
-        </a>
-        <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-            <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-            <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-            <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-            <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-            <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
-            <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
-            <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
-            <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
-            <!--
-          <li><a href="admin-dashboard.php" class="nav-link-custom active" data-page-link="admin-dashboard"><i class="bi bi-speedometer2"></i>Admin Dash</a></li>
-          <li><a href="admin-employee-schedule.php" class="nav-link-custom" data-page-link="admin-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
-          <li><a href="admin-pto.php" class="nav-link-custom" data-page-link="admin-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
-          <li><a href="admin-bookings.php" class="nav-link-custom" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i>Bookings</a></li>
-          -->
+            </a>
+            <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
+                <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
+                <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
+                <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
+                <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
+                <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+                <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
+                <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
+                <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
+                <!--
+              <li><a href="admin-dashboard.php" class="nav-link-custom active" data-page-link="admin-dashboard"><i class="bi bi-speedometer2"></i>Admin Dash</a></li>
+              <li><a href="admin-employee-schedule.php" class="nav-link-custom" data-page-link="admin-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
+              <li><a href="admin-pto.php" class="nav-link-custom" data-page-link="admin-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
+              <li><a href="admin-bookings.php" class="nav-link-custom" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i>Bookings</a></li>
+              -->
+            </ul>
+        </section>
+        <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
+            <li><a href="admin-xml.php" class="nav-link-custom" data-page-link="admin-xml"><i class="bi bi-filetype-xml"></i>CSV</a></li>
+            <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
+            <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
         </ul>
-      </section>
-      <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
-        <li><a href="admin-xml.php" class="nav-link-custom" data-page-link="admin-xml"><i class="bi bi-filetype-xml"></i>CSV</a></li>
-          <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-          <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-      </ul>
     </nav>
-  </header>
-  <main class="container py-5">
+</header>
+<main class="container py-5">
     <?php if ($flash): ?><div class="alert alert-<?= $flash['type']==='error'?'danger':'success' ?> mb-4"><?= e($flash['message']) ?></div><?php endif; ?>
     <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-      <div>
-        <p class="eyebrow mb-2">Admin Workspace</p>
-        <h1 class="display-6 fw-bold mb-2">Admin Dashboard</h1>
-        <p class="text-muted mb-0">Analytics, approvals, notifications, and employee account management.</p>
-      </div>
-      <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-success" href="admin-dashboard.php"><i class="bi bi-speedometer2"></i> Admin Dash</a>
-        <a class="btn btn-outline-dark" href="admin-employee-schedule.php"><i class="bi bi-calendar3"></i> Employee Schedules</a>
-        <a class="btn btn-outline-dark" href="admin-pto.php"><i class="bi bi-briefcase"></i> PTO Requests</a>
-        <a class="btn btn-outline-dark" href="admin-bookings.php"><i class="bi bi-journal-check"></i> Client Bookings</a>
-        <a class="btn btn-outline-dark" href="admin-news.php"><i class="bi bi-journal-check"></i> News Manager</a>
-        <a class="btn btn-outline-dark" href="admin-employee-accounts.php"><i class="bi bi-journal-check"></i> Employee Accounts</a>
-        <a class="btn btn-outline-dark" href="admin-xml.php"><i class="bi bi-journal-check"></i> CSV</a>
-      </div>
+        <div>
+            <p class="eyebrow mb-2">Admin Workspace</p>
+            <h1 class="display-6 fw-bold mb-2">Admin Dashboard</h1>
+            <p class="text-muted mb-0">Analytics, approvals, notifications, and employee account management.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-success" href="admin-dashboard.php"><i class="bi bi-speedometer2"></i> Admin Dash</a>
+            <a class="btn btn-outline-dark" href="admin-employee-schedule.php"><i class="bi bi-calendar3"></i> Employee Schedules</a>
+            <a class="btn btn-outline-dark" href="admin-pto.php"><i class="bi bi-briefcase"></i> PTO Requests</a>
+            <a class="btn btn-outline-dark" href="admin-bookings.php"><i class="bi bi-journal-check"></i> Client Bookings</a>
+            <a class="btn btn-outline-dark" href="admin-news.php"><i class="bi bi-journal-check"></i> News Manager</a>
+            <a class="btn btn-outline-dark" href="admin-employee-accounts.php"><i class="bi bi-journal-check"></i> Employee Accounts</a>
+            <a class="btn btn-outline-dark" href="admin-xml.php"><i class="bi bi-journal-check"></i> CSV</a>
+        </div>
     </section>
 
     <section class="row g-4 mb-4">
-      <div class="col-md-6 col-xl-3">
-        <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-blue">☑</span>
-          <p class="admin-stat-label mb-1">Parks</p>
-          <h2 class="admin-stat-value mb-0"><?= $parksCount ?></h2>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-green">↗</span>
-          <p class="admin-stat-label mb-1">Published events</p>
-          <h2 class="admin-stat-value mb-0"><?= $publishedEventsCount ?></h2>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-purple">◫</span>
-          <p class="admin-stat-label mb-1">Approved bookings</p>
-          <h2 class="admin-stat-value mb-0"><?= $approvedBookingsCount ?></h2>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-orange">🔔</span>
-          <p class="admin-stat-label mb-1">Pending bookings</p>
-          <h2 class="admin-stat-value mb-0"><?= $pendingBookingsCount ?></h2>
-        </article>
-      </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon icon-blue">☑</span>
+                <p class="admin-stat-label mb-1">Parks</p>
+                <h2 class="admin-stat-value mb-0"><?= $parksCount ?></h2>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon icon-green">↗</span>
+                <p class="admin-stat-label mb-1">Published events</p>
+                <h2 class="admin-stat-value mb-0"><?= $publishedEventsCount ?></h2>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon icon-purple">◫</span>
+                <p class="admin-stat-label mb-1">Approved/Confirmed bookings</p>
+                <h2 class="admin-stat-value mb-0"><?= $approvedBookingsCount ?></h2>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon icon-orange">🔔</span>
+                <p class="admin-stat-label mb-1">Pending bookings</p>
+                <h2 class="admin-stat-value mb-0"><?= $pendingBookingsCount ?></h2>
+            </article>
+        </div>
     </section>
 
     <section class="row g-4 mb-4" id="attendance-summary">
-      <div class="col-md-6 col-xl-3">
-        <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-green"><i class="bi bi-person-check"></i></span>
-          <p class="admin-stat-label mb-1">Registered RSVPs</p>
-          <h2 class="admin-stat-value mb-0"><?= $registeredAttendanceCount ?></h2>
-          <p class="text-muted small mb-0">Active attendance records.</p>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-blue"><i class="bi bi-people"></i></span>
-          <p class="admin-stat-label mb-1">Upcoming RSVP Guests</p>
-          <h2 class="admin-stat-value mb-0"><?= $upcomingRsvpGuests ?></h2>
-          <p class="text-muted small mb-0">Guest count for future/current events.</p>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-purple"><i class="bi bi-clipboard-check"></i></span>
-          <p class="admin-stat-label mb-1">Attended</p>
-          <h2 class="admin-stat-value mb-0"><?= $attendedAttendanceCount ?></h2>
-          <p class="text-muted small mb-0">Manually completed attendance.</p>
-        </article>
-      </div>
-      <div class="col-md-6 col-xl-3">
-        <article class="admin-stat-card">
-          <span class="admin-stat-icon icon-orange"><i class="bi bi-bar-chart"></i></span>
-          <p class="admin-stat-label mb-1">Attendance Chart</p>
-          <h2 class="h5 fw-bold mb-1">Available</h2>
-          <p class="text-muted small mb-0">Use the dashboard metric filter and choose Attendance.</p>
-        </article>
-      </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon icon-green"><i class="bi bi-person-check"></i></span>
+                <p class="admin-stat-label mb-1">Registered RSVPs</p>
+                <h2 class="admin-stat-value mb-0"><?= $registeredAttendanceCount ?></h2>
+                <p class="text-muted small mb-0">Active attendance records.</p>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon icon-blue"><i class="bi bi-people"></i></span>
+                <p class="admin-stat-label mb-1">Upcoming RSVP Guests</p>
+                <h2 class="admin-stat-value mb-0"><?= $upcomingRsvpGuests ?></h2>
+                <p class="text-muted small mb-0">Guest count for future/current events.</p>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon icon-purple"><i class="bi bi-clipboard-check"></i></span>
+                <p class="admin-stat-label mb-1">Attended</p>
+                <h2 class="admin-stat-value mb-0"><?= $attendedAttendanceCount ?></h2>
+                <p class="text-muted small mb-0">Manually completed attendance.</p>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="admin-stat-card">
+                <span class="admin-stat-icon icon-orange"><i class="bi bi-people-fill"></i></span>
+                <p class="admin-stat-label mb-1">Total RSVP Guests (Registered & Attended)</p>
+                <h2 class="admin-stat-value mb-0"><?= $totalAttendanceGuests ?></h2>
+                <p class="text-muted small mb-0">Guests across active and completed attendance records.</p>
+            </article>
+        </div>
     </section>
 
     <section class="row g-4 mb-4">
-      <div class="col-lg-7">
-        <article class="admin-panel h-100">
-          <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
-            <div>
-              <h2 class="h3 fw-bold mb-1">Dashboard metrics</h2>
-              <p class="text-muted mb-0">Database-backed bookings, events, attendance, and donation dollars.</p>
-            </div>
-            <div class="admin-chart-filters">
-              <div>
-                <label class="form-label small text-uppercase text-muted mb-1">Metric</label>
-                <select class="form-select admin-filter-select" id="adminChartMetric">
-                  <option value="bookings" selected>Bookings</option>
-                  <option value="events">Events</option>
-                  <option value="attendance">Attendance</option>
-                  <option value="donations">Donation dollars</option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label small text-uppercase text-muted mb-1">View By</label>
-                <select class="form-select admin-filter-select" id="adminChartRange">
-                  <option value="day">Day</option>
-                  <option value="week">Week</option>
-                  <option value="month" selected>Month</option>
-                  <option value="year">Year</option>
-                </select>
-              </div>
-              <div>
-                <label class="form-label small text-uppercase text-muted mb-1">Park</label>
-                <select class="form-select admin-filter-select" id="adminChartPark">
-                  <option value="all" selected>All Parks</option>
-                  <?php foreach ($parks as $park): ?><option value="<?= e($park['name']) ?>"><?= e($park['name']) ?></option><?php endforeach; ?>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="admin-chart bg-white rounded-4 border p-3">
-            <canvas id="adminBookingsChart" height="150"></canvas>
-          </div>
-          <?php if (!$trafficAvailable): ?><p class="text-muted small mt-3 mb-0">Traffic is not available yet because there is no site_visits or page_views table.</p><?php endif; ?>
-        </article>
-      </div>
-      <div class="col-lg-5">
-        <article class="admin-panel h-100">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h3 fw-bold mb-0">Notifications</h2>
-            <span class="admin-badge"><?= $openAlerts ?> new</span>
-          </div>
-
-          <div class="vstack gap-3">
-            <article class="admin-note-card">
-              <h3 class="h5 fw-bold mb-2"><?= $pendingBookings ?> booking requests</h3>
-              <p class="text-muted mb-3">Open the bookings page to approve or deny client event requests.</p>
-              <a href="admin-bookings.php" class="btn btn-sm btn-outline-dark">Review bookings</a>
+        <div class="col-lg-7">
+            <article class="admin-panel h-100">
+                <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 mb-4">
+                    <div>
+                        <h2 class="h3 fw-bold mb-1">Dashboard metrics</h2>
+                        <p class="text-muted mb-0">Database-backed bookings, events, attendance, and donation dollars.</p>
+                    </div>
+                    <div class="admin-chart-filters">
+                        <div>
+                            <label class="form-label small text-uppercase text-muted mb-1">Metric</label>
+                            <select class="form-select admin-filter-select" id="adminChartMetric">
+                                <option value="bookings" selected>Bookings</option>
+                                <option value="events">Events</option>
+                                <option value="attendance">Attendance</option>
+                                <option value="donations">Donation dollars</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label small text-uppercase text-muted mb-1">View By</label>
+                            <select class="form-select admin-filter-select" id="adminChartRange">
+                                <option value="day">Day</option>
+                                <option value="week">Week</option>
+                                <option value="month" selected>Month</option>
+                                <option value="year">Year</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label small text-uppercase text-muted mb-1">Park</label>
+                            <select class="form-select admin-filter-select" id="adminChartPark">
+                                <option value="all" selected>All Parks</option>
+                                <?php foreach ($parks as $park): ?><option value="<?= e($park['name']) ?>"><?= e($park['name']) ?></option><?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-chart bg-white rounded-4 border p-3">
+                    <canvas id="adminBookingsChart" height="150"></canvas>
+                </div>
+                <?php if (!$trafficAvailable): ?><p class="text-muted small mt-3 mb-0">Traffic is not available yet because there is no site_visits or page_views table.</p><?php endif; ?>
             </article>
+        </div>
+        <div class="col-lg-5">
+            <article class="admin-panel h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h3 fw-bold mb-0">Notifications</h2>
+                    <span class="admin-badge"><?= $openAlerts ?> new</span>
+                </div>
 
-            <article class="admin-note-card">
-              <h3 class="h5 fw-bold mb-2"><?= $pendingPto ?> PTO requests</h3>
-              <p class="text-muted mb-3">Review employee time-off submissions waiting in the PTO queue.</p>
-              <a href="admin-pto.php" class="btn btn-sm btn-outline-dark">Review PTO</a>
-            </article>
+                <div class="vstack gap-3">
+                    <article class="admin-note-card">
+                        <h3 class="h5 fw-bold mb-2"><?= $pendingBookings ?> booking requests</h3>
+                        <p class="text-muted mb-3">Open the bookings page to approve or deny client event requests.</p>
+                        <a href="admin-bookings.php" class="btn btn-sm btn-outline-dark">Review bookings</a>
+                    </article>
 
-            <article class="admin-note-card">
-              <h3 class="h5 fw-bold mb-2"><?= $employeeActions ?> employee actions</h3>
-              <p class="text-muted mb-3">New employee account creation and one schedule conflict to resolve.</p>
-              <a href="admin-employee-schedule.php" class="btn btn-sm btn-outline-dark">Open employee tools</a>
+                    <article class="admin-note-card">
+                        <h3 class="h5 fw-bold mb-2"><?= $pendingPto ?> PTO requests</h3>
+                        <p class="text-muted mb-3">Review employee time-off submissions waiting in the PTO queue.</p>
+                        <a href="admin-pto.php" class="btn btn-sm btn-outline-dark">Review PTO</a>
+                    </article>
+
+                    <article class="admin-note-card">
+                        <h3 class="h5 fw-bold mb-2"><?= $employeeActions ?> employee actions</h3>
+                        <p class="text-muted mb-3">New employee account creation and one schedule conflict to resolve.</p>
+                        <a href="admin-employee-schedule.php" class="btn btn-sm btn-outline-dark">Open employee tools</a>
+                    </article>
+                </div>
             </article>
-          </div>
-        </article>
-      </div>
+        </div>
     </section>
 
     <section class="card shadow-sm border-0 rounded-4 mb-4" id="attendance-records">
-      <div class="card-body p-4 p-lg-5">
-        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
-          <div>
-            <p class="eyebrow mb-1">Attendance</p>
-            <h2 class="h3 fw-bold mb-1">Recent RSVP / Attendance Records</h2>
-            <p class="text-muted mb-0">Read-only overview from the existing attendance table. Manual attendance updates can stay in your existing workflow.</p>
-          </div>
-          <div class="pill-note">Admin only · attendance table</div>
-        </div>
+        <div class="card-body p-4 p-lg-5">
+            <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+                <div>
+                    <p class="eyebrow mb-1">Attendance</p>
+                    <h2 class="h3 fw-bold mb-1">Recent RSVP / Attendance Records</h2>
+                    <p class="text-muted mb-0">Read-only overview from the existing attendance table. Manual attendance updates can stay in your existing workflow.</p>
+                </div>
+                <div class="pill-note">Admin only · attendance table</div>
+            </div>
 
-        <section class="list-shell mb-0">
-          <section class="p-4 border-bottom">
-            <section class="row g-3">
-              <article class="col-lg-3 fw-bold">Event</article>
-              <article class="col-lg-2 fw-bold">Park</article>
-              <article class="col-lg-2 fw-bold">Event Date</article>
-              <article class="col-lg-2 fw-bold">Attendee</article>
-              <article class="col-lg-1 fw-bold">Guests</article>
-              <article class="col-lg-2 fw-bold">Status</article>
+            <section class="list-shell mb-0">
+                <section class="p-4 border-bottom">
+                    <section class="row g-3">
+                        <article class="col-lg-3 fw-bold">Event</article>
+                        <article class="col-lg-2 fw-bold">Park</article>
+                        <article class="col-lg-2 fw-bold">Event Date</article>
+                        <article class="col-lg-2 fw-bold">Attendee</article>
+                        <article class="col-lg-1 fw-bold">Guests</article>
+                        <article class="col-lg-2 fw-bold">Status</article>
+                    </section>
+                </section>
+                <?php foreach ($recentAttendance as $record): ?>
+                    <section class="list-row p-4">
+                        <section class="row g-3 align-items-start">
+                            <article class="col-lg-3 fw-semibold"><?= e($record['title']) ?></article>
+                            <article class="col-lg-2 text-muted"><?= e($record['park_name']) ?></article>
+                            <article class="col-lg-2 text-muted"><?= e(format_datetime($record['start_datetime'])) ?></article>
+                            <article class="col-lg-2 text-muted"><?= e($record['attendee_email']) ?></article>
+                            <article class="col-lg-1 text-muted"><?= (int)$record['guest_count'] ?></article>
+                            <article class="col-lg-2"><span class="status-pill <?= booking_status_class($record['attendance_status']) ?>"><?= e(ucfirst(str_replace('_',' ', $record['attendance_status']))) ?></span></article>
+                        </section>
+                    </section>
+                <?php endforeach; ?>
+                <?php if (!$recentAttendance): ?><section class="p-4 text-muted">No attendance records yet.</section><?php endif; ?>
             </section>
-          </section>
-          <?php foreach ($recentAttendance as $record): ?>
-          <section class="list-row p-4">
-            <section class="row g-3 align-items-start">
-              <article class="col-lg-3 fw-semibold"><?= e($record['title']) ?></article>
-              <article class="col-lg-2 text-muted"><?= e($record['park_name']) ?></article>
-              <article class="col-lg-2 text-muted"><?= e(format_datetime($record['start_datetime'])) ?></article>
-              <article class="col-lg-2 text-muted"><?= e($record['attendee_email']) ?></article>
-              <article class="col-lg-1 text-muted"><?= (int)$record['guest_count'] ?></article>
-              <article class="col-lg-2"><span class="status-pill <?= booking_status_class($record['attendance_status']) ?>"><?= e(ucfirst(str_replace('_',' ', $record['attendance_status']))) ?></span></article>
-            </section>
-          </section>
-          <?php endforeach; ?>
-          <?php if (!$recentAttendance): ?><section class="p-4 text-muted">No attendance records yet.</section><?php endif; ?>
-        </section>
-      </div>
+        </div>
     </section>
-  </main>
+</main>
 
 <!-- SHARED FOOTER -->
-  <footer class="footer-shell py-5 mt-5">
+<footer class="footer-shell py-5 mt-5">
     <section class="container">
-      <section class="footer-five">
-        <article class="footer-block footer-brand">
-          <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2 mb-3">
-            <span class="brand-badge">NY</span>
-            <span class="brand-mark text-dark">
+        <section class="footer-five">
+            <article class="footer-block footer-brand">
+                <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2 mb-3">
+                    <span class="brand-badge">NY</span>
+                    <span class="brand-mark text-dark">
               NYS Parks<br />
               <small>&amp; RECREATION</small>
             </span>
-          </a>
-          <p class="text-muted mb-0">
-            A modern gateway to New York State parks, events, maps, news, and role-based operations.
-          </p>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Explore</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li>
-            <li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li>
-            <li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li>
-            <li class="mb-2"><a href="ai.php" class="text-muted text-decoration-none">AI</a></li>
-            <li class="mb-2"><a href="news.php" class="text-muted text-decoration-none">News</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Account</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="about.php" class="text-muted text-decoration-none">About</a></li>
-            <li class="mb-2"><a href="faq.php" class="text-muted text-decoration-none">FAQ</a></li>
-            <li class="mb-2"><a href="donate.php" class="text-muted text-decoration-none">Donate</a></li>
-            <li class="mb-2"><a href="login.php" class="text-muted text-decoration-none">Log In</a></li>
-            <li class="mb-2"><a href="register.php" class="text-muted text-decoration-none">Register</a></li>
-            <li class="mb-2"><a href="account.php" class="text-muted text-decoration-none">Account</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Portals</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="client-dashboard.php" class="text-muted text-decoration-none">Client Dashboard</a></li>
-            <li class="mb-2"><a href="admin-dashboard.php" class="text-muted text-decoration-none">Admin Dashboard</a></li>
-            <li class="mb-2"><a href="employee-dashboard.php" class="text-muted text-decoration-none">Employee Dashboard</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Contact</h2>
-          <p class="text-muted mb-2">info@nysparks.gov</p>
-          <p class="text-muted mb-2">(555) 123-4567</p>
-          <p class="text-muted mb-0">Albany, New York</p>
-        </article>
-      </section>
+                </a>
+                <p class="text-muted mb-0">
+                    A modern gateway to New York State parks, events, maps, news, and role-based operations.
+                </p>
+            </article>
+            <article class="footer-block">
+                <h2 class="h6 fw-bold mb-3">Explore</h2>
+                <ul class="list-unstyled m-0">
+                    <li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li>
+                    <li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li>
+                    <li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li>
+                    <li class="mb-2"><a href="ai.php" class="text-muted text-decoration-none">AI</a></li>
+                    <li class="mb-2"><a href="news.php" class="text-muted text-decoration-none">News</a></li>
+                </ul>
+            </article>
+            <article class="footer-block">
+                <h2 class="h6 fw-bold mb-3">Account</h2>
+                <ul class="list-unstyled m-0">
+                    <li class="mb-2"><a href="about.php" class="text-muted text-decoration-none">About</a></li>
+                    <li class="mb-2"><a href="faq.php" class="text-muted text-decoration-none">FAQ</a></li>
+                    <li class="mb-2"><a href="donate.php" class="text-muted text-decoration-none">Donate</a></li>
+                    <li class="mb-2"><a href="login.php" class="text-muted text-decoration-none">Log In</a></li>
+                    <li class="mb-2"><a href="register.php" class="text-muted text-decoration-none">Register</a></li>
+                    <li class="mb-2"><a href="account.php" class="text-muted text-decoration-none">Account</a></li>
+                </ul>
+            </article>
+            <article class="footer-block">
+                <h2 class="h6 fw-bold mb-3">Portals</h2>
+                <ul class="list-unstyled m-0">
+                    <li class="mb-2"><a href="client-dashboard.php" class="text-muted text-decoration-none">Client Dashboard</a></li>
+                    <li class="mb-2"><a href="admin-dashboard.php" class="text-muted text-decoration-none">Admin Dashboard</a></li>
+                    <li class="mb-2"><a href="employee-dashboard.php" class="text-muted text-decoration-none">Employee Dashboard</a></li>
+                </ul>
+            </article>
+            <article class="footer-block">
+                <h2 class="h6 fw-bold mb-3">Contact</h2>
+                <p class="text-muted mb-2">info@nysparks.gov</p>
+                <p class="text-muted mb-2">(555) 123-4567</p>
+                <p class="text-muted mb-0">Albany, New York</p>
+            </article>
+        </section>
     </section>
-  </footer>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="js/dashboard-charts.js"></script>
-  <script>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="js/dashboard-charts.js"></script>
+<script>
     window.initAdminDashboardChart(<?= json_encode($adminChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>);
-  </script>
-  <script src="js/app.js"></script>
+</script>
+<script src="js/app.js"></script>
 </body>
 </html>

@@ -83,7 +83,7 @@ $topicLabels = [
         <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
             <?php if ($currentUser): ?>
                 <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-                <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
+                <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
             <?php else: ?>
                 <li><a href="login.php" class="nav-link-custom" data-page-link="login">Log In</a></li>
                 <li><a href="register.php" class="btn btn-dark nav-pill-btn" data-page-link="register">Register</a></li>

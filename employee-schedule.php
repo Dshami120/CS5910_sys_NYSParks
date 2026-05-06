@@ -24,19 +24,20 @@ $stmt->execute([$user['id']]); $schedules = $stmt->fetchAll();
             <small>&amp; RECREATION</small>
           </span>
         </a>
-        <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-            <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-            <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-            <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-            <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-            <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
-            <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
-            <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
-            <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
-          <li><a href="employee-dashboard.php" class="nav-link-custom" data-page-link="employee-dashboard"><i class="bi bi-speedometer2"></i>Employee Dash</a></li>
-          <li><a href="employee-schedule.php" class="nav-link-custom active" data-page-link="employee-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
-          <li><a href="employee-pto.php" class="nav-link-custom" data-page-link="employee-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
-        </ul>
+          <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
+              <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
+              <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
+              <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
+              <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
+              <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+              <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
+              <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
+              <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
+              <!--<li><a href="employee-dashboard.php" class="nav-link-custom active" data-page-link="employee-dashboard"><i class="bi bi-speedometer2"></i>Employee Dash</a></li>
+              <li><a href="employee-schedule.php" class="nav-link-custom" data-page-link="employee-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
+              <li><a href="employee-pto.php" class="nav-link-custom" data-page-link="employee-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
+          -->
+          </ul>
       </section>
         <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
             <?php if ($currentUser): ?>
@@ -49,13 +50,21 @@ $stmt->execute([$user['id']]); $schedules = $stmt->fetchAll();
         </ul>
     </nav>
   </header>
-  <main class="py-5">
-    <section class="container">
-      <header class="mb-4">
-        <p class="section-kicker mb-2">Employee portal</p>
-        <h1 class="h2 fw-bold mb-1">My Schedule</h1>
-        <p class="text-muted mb-0">Employees can view their schedule here, but only admins can make schedule changes.</p>
-      </header>
+
+        <main class="py-5">
+            <section class="container">
+                <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                    <div>
+                        <p class="eyebrow mb-2">Employee portal</p>
+                        <h1 class="display-6 fw-bold mb-2">My Schedule</h1>
+                        <p class="text-muted mb-0">Employees can view their schedule here, but only admins can make schedule changes.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-outline-dark" href="employee-dashboard.php"><i class="bi bi-speedometer2"></i> Employee Dash</a></li>
+                        <a class="btn btn-success" href="employee-schedule.php"><i class="bi bi-calendar3"></i> Employee Schedule</a>
+                        <a class="btn btn-outline-dark" href="employee-pto.php"><i class="bi bi-calendar-event me-1"></i>Employee PTO</a>
+                    </div>
+                </section>
 
       <section class="row g-4">
         <article class="col-xl-8">

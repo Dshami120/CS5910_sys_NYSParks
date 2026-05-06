@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 // OpenAI API configuration for the NYS Parks AI Guide.
 // Paste your real OpenAI API key below, or set OPENAI_API_KEY in your server environment.
-define('OPENAI_API_KEY', 'PASTE_YOUR_OPENAI_API_KEY_HERE');
+define('OPENAI_API_KEY', 'PASTE_YOUR_OPENAI_API_KEY_HERE'); //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
 define('OPENAI_MODEL', 'gpt-4.1-mini');
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
@@ -21,7 +21,8 @@ function ai_json_response(array $payload, int $statusCode = 200): void {
 function ai_configured_key(): string {
     $key = getenv('OPENAI_API_KEY') ?: OPENAI_API_KEY;
     $key = trim((string) $key);
-    if ($key === '' || $key === 'PASTE_YOUR_OPENAI_API_KEY_HERE') {
+    if ($key === '' || $key === 'PASTE_YOUR_OPENAI_API_KEY_HERE')//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
+    {
         return '';
     }
     return $key;
