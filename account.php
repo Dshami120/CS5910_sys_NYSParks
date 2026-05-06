@@ -87,21 +87,29 @@ if ($user['role'] === 'client') {
           </span>
         </a>
         <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-          <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-          <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-          <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-          <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-          <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
-          <li><a href="client-dashboard.php" class="nav-link-custom" data-page-link="client-dashboard"><i class="bi bi-speedometer2"></i>Client Dash</a></li>
-          <li><a href="client-create-event.php" class="nav-link-custom" data-page-link="client-create-event"><i class="bi bi-plus-circle"></i>Create Event</a></li>
+            <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
+            <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
+            <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
+            <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
+            <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+            <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
+            <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
+            <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
+            <!--
+            <li><a href="client-dashboard.php" class="nav-link-custom" data-page-link="client-dashboard"><i class="bi bi-speedometer2"></i>Client Dash</a></li>
+            <li><a href="client-create-event.php" class="nav-link-custom" data-page-link="client-create-event"><i class="bi bi-plus-circle"></i>Create Event</a></li>
+            -->
         </ul>
       </section>
+
       <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
         <li><a href="account.php" class="nav-link-custom active" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-          <li><a href="logout.php" class="nav-link-custom" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
+          <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
       </ul>
     </nav>
   </header>
+
+
   <main class="py-5">
     <section class="container">
       <section class="row g-4">

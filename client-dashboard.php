@@ -115,14 +115,21 @@ $nextRsvp = $activeRsvps[0] ?? null;
             <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
             <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
             <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
-          <li><a href="client-dashboard.php" class="nav-link-custom active" data-page-link="client-dashboard"><i class="bi bi-speedometer2"></i>Client Dash</a></li>
-          <li><a href="client-create-event.php" class="nav-link-custom" data-page-link="client-create-event"><i class="bi bi-plus-circle"></i>Create Event</a></li>
+            <!--
+          <li><a href="client-dashboard.php" class="nav-link-custom" data-page-link="client-dashboard"><i class="bi bi-speedometer2"></i>Client Dash</a></li>
+          <li><a href="client-create-event.php" class="nav-link-custom active" data-page-link="client-create-event"><i class="bi bi-plus-circle"></i>Create Event</a></li>
+          -->
         </ul>
       </section>
-      <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
-        <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-        <li><a href="logout.php" class="nav-link-custom" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
-      </ul>
+        <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
+            <?php if ($currentUser): ?>
+                <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
+                <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
+            <?php else: ?>
+                <li><a href="login.php" class="nav-link-custom" data-page-link="login">Log In</a></li>
+                <li><a href="register.php" class="btn btn-dark nav-pill-btn" data-page-link="register">Register</a></li>
+            <?php endif; ?>
+        </ul>
     </nav>
   </header>
 
@@ -136,7 +143,8 @@ $nextRsvp = $activeRsvps[0] ?? null;
         <p class="text-muted mb-0">Track booking requests, approval status, reservation fees, and private event visibility.</p>
       </div>
       <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-success" href="client-create-event.php"><i class="bi bi-plus-circle me-1"></i>Create Event Request</a>
+        <a class="btn btn-success" href="client-dashboard.php"><i class="bi bi-speedometer2"></i> Client Dash</a></li>
+        <a class="btn btn-outline-dark" href="client-create-event.php"><i class="bi bi-plus-circle me-1"></i>Create Event Request</a>
         <a class="btn btn-outline-dark" href="events.php"><i class="bi bi-calendar-event me-1"></i>Public Calendar</a>
       </div>
     </section>

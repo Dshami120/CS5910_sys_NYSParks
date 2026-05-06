@@ -139,20 +139,26 @@ if (!$selected && $employees) { $selected = $employees[0]; }
           </span>
         </a>
         <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-          <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-          <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-          <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-          <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-          <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+            <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
+            <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
+            <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
+            <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
+            <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+            <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
+            <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
+            <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
+            <!--
           <li><a href="admin-dashboard.php" class="nav-link-custom active" data-page-link="admin-dashboard"><i class="bi bi-speedometer2"></i>Admin Dash</a></li>
           <li><a href="admin-employee-schedule.php" class="nav-link-custom" data-page-link="admin-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
           <li><a href="admin-pto.php" class="nav-link-custom" data-page-link="admin-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
           <li><a href="admin-bookings.php" class="nav-link-custom" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i>Bookings</a></li>
+          -->
         </ul>
       </section>
       <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
-        <li><a href="admin-xml.php" class="nav-link-custom" data-page-link="admin-xml"><i class="bi bi-filetype-xml"></i>XML</a></li>
-        <li><a href="logout.php" class="nav-link-custom" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
+        <li><a href="admin-xml.php" class="nav-link-custom" data-page-link="admin-xml"><i class="bi bi-filetype-xml"></i>CSV</a></li>
+          <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
+          <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
       </ul>
     </nav>
   </header>
@@ -165,9 +171,13 @@ if (!$selected && $employees) { $selected = $employees[0]; }
         <p class="text-muted mb-0">Analytics, approvals, notifications, and employee account management.</p>
       </div>
       <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-success" href="admin-employee-schedule.php">Employee Schedules</a>
-        <a class="btn btn-outline-dark" href="admin-pto.php">PTO Requests</a>
-        <a class="btn btn-outline-dark" href="admin-bookings.php">Client Bookings</a>
+        <a class="btn btn-success" href="admin-dashboard.php"><i class="bi bi-speedometer2"></i> Admin Dash</a>
+        <a class="btn btn-outline-dark" href="admin-employee-schedule.php"><i class="bi bi-calendar3"></i> Employee Schedules</a>
+        <a class="btn btn-outline-dark" href="admin-pto.php"><i class="bi bi-briefcase"></i> PTO Requests</a>
+        <a class="btn btn-outline-dark" href="admin-bookings.php"><i class="bi bi-journal-check"></i> Client Bookings</a>
+        <a class="btn btn-outline-dark" href="admin-news.php"><i class="bi bi-journal-check"></i> News Manager</a>
+        <a class="btn btn-outline-dark" href="admin-employee-accounts.php"><i class="bi bi-journal-check"></i> Employee Accounts</a>
+        <a class="btn btn-outline-dark" href="admin-xml.php"><i class="bi bi-journal-check"></i> CSV</a>
       </div>
     </section>
 
@@ -347,224 +357,9 @@ if (!$selected && $employees) { $selected = $employees[0]; }
         </section>
       </div>
     </section>
-
-    <section class="card shadow-sm border-0 rounded-4 mb-4">
-      <div class="card-body p-4 p-lg-5">
-        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
-          <div>
-            <p class="eyebrow mb-1">Employee Accounts</p>
-            <h2 class="h3 fw-bold mb-1">Create, Update, or Delete Employee Accounts</h2>
-            <p class="text-muted mb-0">Admin can find employee accounts from the user list, update passwords, create new accounts, or deactivate/delete existing ones.</p>
-          </div>
-          <div class="pill-note">Admin only · users table workflow</div>
-        </div>
-
-        <div class="row g-4">
-          <div class="col-xl-5">
-            <div class="account-panel h-100">
-              <h3 class="h5 fw-bold mb-3">Find Employee Account</h3>
-              <div class="vstack gap-3">
-                <div>
-                  <label class="form-label">Employee Dropdown</label>
-                  <form method="get">
-                    <select class="form-select form-select-lg" name="employee_id" onchange="this.form.submit()">
-                      <option value="">Select employee account</option>
-                      <?php foreach ($employees as $emp): ?>
-                      <option value="<?= $emp['id'] ?>" <?= $selected && (int)$selected['id'] === (int)$emp['id'] ? 'selected' : '' ?>><?= e(full_name($emp)) ?> — <?= e($emp['email']) ?></option>
-                      <?php endforeach; ?>
-                    </select>
-                  </form>
-                </div>
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Quick Filter</label>
-                    <select class="form-select">
-                      <option selected>All Employees</option>
-                      <option>Park Operations</option>
-                      <option>Visitor Services</option>
-                      <option>Maintenance</option>
-                    </select>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Assigned Park</label>
-                    <select class="form-select">
-                      <option selected>All Parks</option>
-                      <?php foreach ($parks as $park): ?><option><?= e($park['name']) ?></option><?php endforeach; ?>
-                    </select>
-                  </div>
-                </div>
-                <div class="mini-panel">
-                  <strong class="d-block mb-2">Selected Account Preview</strong>
-                  <?php if ($selected): ?>
-                  <p class="small text-muted mb-1">Name: <?= e(full_name($selected)) ?></p>
-                  <p class="small text-muted mb-1">Email: <?= e($selected['email']) ?></p>
-                  <p class="small text-muted mb-1">Birthdate: <?= e((string)$selected['birthdate']) ?: '—' ?></p>
-                  <p class="small text-muted mb-1">Park: <?= e((string)($selected['park_name'] ?? 'Unassigned')) ?></p>
-                  <p class="small text-muted mb-0">Role: Employee</p>
-                  <?php else: ?>
-                  <p class="small text-muted mb-0">Select an employee to preview account details.</p>
-                  <?php endif; ?>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-xl-7">
-            <div class="account-panel h-100">
-              <h3 class="h5 fw-bold mb-3">Employee Account CRUD</h3>
-              <form class="row g-3" method="post">
-                <input type="hidden" name="employee_id" value="<?= (int)($selected['id'] ?? 0) ?>" />
-                <div class="col-md-6">
-                  <label class="form-label">Full Name</label>
-                  <input type="text" name="full_name" class="form-control form-control-lg" placeholder="Jordan Lee" value="<?= e($selected ? full_name($selected) : '') ?>" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Email</label>
-                  <input type="email" name="email" class="form-control form-control-lg" placeholder="employee@nysparks.gov" value="<?= e($selected['email'] ?? '') ?>" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Password</label>
-                  <input type="password" name="password" class="form-control form-control-lg" placeholder="Update or set password" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Birthdate</label>
-                  <input type="date" name="birthdate" class="form-control form-control-lg" value="<?= e((string)($selected['birthdate'] ?? '')) ?>" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Assigned Park</label>
-                  <select name="park_id" class="form-select form-select-lg">
-                    <option value="">Select park</option>
-                    <?php foreach ($parks as $park): ?><option value="<?= $park['id'] ?>" <?= (int)($selected['park_id'] ?? 0)===(int)$park['id']?'selected':'' ?>><?= e($park['name']) ?></option><?php endforeach; ?>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Role</label>
-                  <select class="form-select form-select-lg" disabled>
-                    <option selected>Employee</option>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Phone</label>
-                  <input type="text" name="phone" class="form-control form-control-lg" value="<?= e((string)($selected['phone'] ?? '')) ?>" />
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Notes</label>
-                  <textarea class="form-control" name="notes" rows="3" placeholder="Optional employee account notes, department details, or hiring status."><?= e((string)($selected['notes'] ?? '')) ?></textarea>
-                </div>
-                <div class="col-12 d-flex flex-wrap gap-3">
-                  <button type="submit" name="action" value="create_employee" class="btn btn-success btn-lg">Create Account</button>
-                  <button type="submit" name="action" value="update_employee" class="btn btn-outline-dark btn-lg">Update Account</button>
-                  <button type="submit" name="action" value="disable_employee" class="btn btn-outline-danger btn-lg" <?= $selected ? '' : 'disabled' ?>>Disable Account</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="card shadow-sm border-0 rounded-4 mb-4" id="news-manager">
-      <div class="card-body p-4 p-lg-5">
-        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
-          <div>
-            <p class="eyebrow mb-1">News Manager</p>
-            <h2 class="h3 fw-bold mb-1">Create, Edit, or Delete News</h2>
-            <p class="text-muted mb-0">Manage public news directly from the news table without leaving the dashboard.</p>
-          </div>
-          <form method="get" class="d-flex gap-2 align-items-start">
-            <input type="text" name="news_q" value="<?= e($newsSearch) ?>" class="form-control" placeholder="Search news..." />
-            <button class="btn btn-outline-dark" type="submit">Search</button>
-          </form>
-        </div>
-
-        <div class="row g-4">
-          <div class="col-xl-5">
-            <div class="account-panel h-100">
-              <h3 class="h5 fw-bold mb-3">Existing News</h3>
-              <div class="vstack gap-2">
-                <?php foreach ($newsItems as $item): ?>
-                  <a class="text-decoration-none text-dark border rounded-3 p-3 <?= $selectedNews && (int)$selectedNews['id']===(int)$item['id'] ? 'bg-light' : '' ?>" href="admin-dashboard.php?news_id=<?= (int)$item['id'] ?>#news-manager">
-                    <strong class="d-block"><?= e($item['title']) ?></strong>
-                    <span class="small text-muted"><?= e(ucfirst($item['news_status'])) ?> · <?= e($item['region']) ?> · <?= e(format_date($item['published_date'])) ?></span>
-                  </a>
-                <?php endforeach; ?>
-                <?php if (!$newsItems): ?><p class="text-muted mb-0">No news items matched your search.</p><?php endif; ?>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-xl-7">
-            <div class="account-panel h-100">
-              <h3 class="h5 fw-bold mb-3">News Form</h3>
-              <form class="row g-3" method="post">
-                <input type="hidden" name="news_id" value="<?= (int)($selectedNews['id'] ?? 0) ?>" />
-                <div class="col-md-8">
-                  <label class="form-label">Title</label>
-                  <input type="text" name="title" class="form-control form-control-lg" value="<?= e($selectedNews['title'] ?? '') ?>" required />
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Published Date</label>
-                  <input type="date" name="published_date" class="form-control form-control-lg" value="<?= e((string)($selectedNews['published_date'] ?? date('Y-m-d'))) ?>" />
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Topic</label>
-                  <select name="topic" class="form-select form-select-lg">
-                    <?php foreach ($newsTopics as $topic): ?><option value="<?= e($topic) ?>" <?= ($selectedNews['topic'] ?? '')===$topic ? 'selected' : '' ?>><?= e(ucwords(str_replace('_',' ', $topic))) ?></option><?php endforeach; ?>
-                  </select>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Region</label>
-                  <input type="text" name="region" class="form-control form-control-lg" value="<?= e($selectedNews['region'] ?? '') ?>" required />
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label">Status</label>
-                  <select name="news_status" class="form-select form-select-lg">
-                    <?php foreach ($newsStatuses as $status): ?><option value="<?= e($status) ?>" <?= ($selectedNews['news_status'] ?? '')===$status ? 'selected' : '' ?>><?= e(ucfirst($status)) ?></option><?php endforeach; ?>
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Tag</label>
-                  <input type="text" name="tag" class="form-control" value="<?= e($selectedNews['tag'] ?? '') ?>" />
-                </div>
-                <div class="col-md-6 d-flex align-items-end">
-                  <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" name="is_featured" value="1" id="newsFeatured" <?= !empty($selectedNews['is_featured']) ? 'checked' : '' ?> />
-                    <label class="form-check-label" for="newsFeatured">Featured news</label>
-                  </div>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Summary</label>
-                  <textarea name="summary" class="form-control" rows="2" required><?= e($selectedNews['summary'] ?? '') ?></textarea>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Article Content</label>
-                  <textarea name="content" class="form-control" rows="5" required><?= e($selectedNews['content'] ?? '') ?></textarea>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Image URL</label>
-                  <input type="text" name="image_url" class="form-control" value="<?= e($selectedNews['image_url'] ?? '') ?>" />
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label">Image Alt Text</label>
-                  <input type="text" name="image_alt" class="form-control" value="<?= e($selectedNews['image_alt'] ?? '') ?>" />
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Card Summary</label>
-                  <input type="text" name="card_summary" class="form-control" value="<?= e($selectedNews['card_summary'] ?? '') ?>" />
-                </div>
-                <div class="col-12 d-flex flex-wrap gap-3">
-                  <button type="submit" name="action" value="create_news" class="btn btn-success btn-lg">Create News</button>
-                  <button type="submit" name="action" value="update_news" class="btn btn-outline-dark btn-lg">Update News</button>
-                  <button type="submit" name="action" value="delete_news" class="btn btn-outline-danger btn-lg" data-confirm="Delete this news item?">Delete News</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
   </main>
+
+<!-- SHARED FOOTER -->
   <footer class="footer-shell py-5 mt-5">
     <section class="container">
       <section class="footer-five">

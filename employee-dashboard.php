@@ -31,19 +31,28 @@ $stmt->execute([$user['id']]); $shifts = $stmt->fetchAll();
           </span>
         </a>
         <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-          <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-          <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-          <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-          <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-          <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+            <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
+            <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
+            <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
+            <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
+            <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+            <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
+            <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
+            <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
           <li><a href="employee-dashboard.php" class="nav-link-custom active" data-page-link="employee-dashboard"><i class="bi bi-speedometer2"></i>Employee Dash</a></li>
           <li><a href="employee-schedule.php" class="nav-link-custom" data-page-link="employee-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
           <li><a href="employee-pto.php" class="nav-link-custom" data-page-link="employee-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
         </ul>
       </section>
-      <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
-        <li><a href="logout.php" class="nav-link-custom" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
-      </ul>
+        <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
+            <?php if ($currentUser): ?>
+                <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
+                <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
+            <?php else: ?>
+                <li><a href="login.php" class="nav-link-custom" data-page-link="login">Log In</a></li>
+                <li><a href="register.php" class="btn btn-dark nav-pill-btn" data-page-link="register">Register</a></li>
+            <?php endif; ?>
+        </ul>
     </nav>
   </header>
   <main class="py-5">

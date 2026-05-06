@@ -74,7 +74,7 @@ $recent = array_map(fn($name) => ['name'=>csv_title($name),'dataset'=>ucwords(st
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NYS Parks - Admin XML Export</title>
+  <title>NYS Parks - Admin CSV Export</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
@@ -92,25 +92,30 @@ $recent = array_map(fn($name) => ['name'=>csv_title($name),'dataset'=>ucwords(st
         </a>
 
         <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-          <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-          <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-          <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-          <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-          <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+            <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
+            <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
+            <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
+            <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
+            <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+            <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
+            <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
+            <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
+            <!--
           <li><a href="admin-dashboard.php" class="nav-link-custom" data-page-link="admin-dashboard"><i class="bi bi-speedometer2"></i>Dashboard</a></li>
           <li><a href="admin-employee-schedule.php" class="nav-link-custom" data-page-link="admin-employee-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
           <li><a href="admin-pto.php" class="nav-link-custom" data-page-link="admin-pto"><i class="bi bi-calendar-check"></i>PTO</a></li>
           <li><a href="admin-bookings.php" class="nav-link-custom" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i>Bookings</a></li>
-          <li><a href="admin-xml.php" class="nav-link-custom" data-page-link="admin-xml"><i class="bi bi-code-slash"></i>XML</a></li>
+          <li><a href="admin-news.php" class="nav-link-custom" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i> News Manager</a></li>
+          <li><a href="admin-xml.php" class="nav-link-custom" data-page-link="admin-xml"><i class="bi bi-code-slash"></i>CSV</a></li>
+          -->
         </ul>
       </section>
 
       <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
         <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-        <li><a href="logout.php" class="nav-link-custom" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
+        <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
         <li><a href="#" class="nav-link-custom"><i class="bi bi-bell"></i></a></li>
-        <li>
-          <a href="account.php" class="text-decoration-none text-dark d-inline-flex align-items-center gap-2">
+        <li><a href="account.php" class="text-decoration-none text-dark d-inline-flex align-items-center gap-2">
             <img
               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80"
               alt="User profile photo"
@@ -128,8 +133,19 @@ $recent = array_map(fn($name) => ['name'=>csv_title($name),'dataset'=>ucwords(st
     <section class="container">
       <header class="mb-4">
         <p class="section-kicker mb-2">Admin portal</p>
-        <h1 class="h2 fw-bold mb-1">XML Export Center</h1>
-        <p class="text-muted mb-0">Prepare XML exports for events, bookings, and park records.</p>
+        <h1 class="h2 fw-bold mb-1">CSV Export Center</h1>
+        <p class="text-muted mb-0">Prepare CSV exports for events, bookings, and park records.</p>
+          <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+              <div></div>
+              <div class="d-flex flex-wrap gap-2">
+                  <a class="btn btn-outline-dark" href="admin-dashboard.php"><i class="bi bi-speedometer2"></i> Admin Dash</a>
+                  <a class="btn btn-outline-dark" href="admin-employee-schedule.php"><i class="bi bi-calendar3"></i> Employee Schedules</a>
+                  <a class="btn btn-outline-dark" href="admin-pto.php"><i class="bi bi-briefcase"></i> PTO Requests</a>
+                  <a class="btn btn-outline-dark" href="admin-bookings.php"><i class="bi bi-journal-check"></i> Client Bookings</a>
+                  <a class="btn btn-outline-dark" href="admin-news.php"><i class="bi bi-journal-check"></i> News Manager</a>
+                  <a class="btn btn-outline-dark" href="admin-employee-accounts.php"><i class="bi bi-journal-check"></i> Employee Accounts</a>
+                  <a class="btn btn-success" href="admin-xml.php"><i class="bi bi-journal-check"></i> CSV</a>
+              </div>
       </header>
 
       <section class="row g-4">
@@ -144,7 +160,7 @@ $recent = array_map(fn($name) => ['name'=>csv_title($name),'dataset'=>ucwords(st
               <label class="form-label">Date range</label>
               <input type="date" name="date_from" class="form-control mb-3" />
               <input type="date" name="date_to" class="form-control mb-4" />
-              <input type="hidden" name="download" value="1" /><button class="btn btn-success rounded-pill w-100">Generate XML</button>
+              <input type="hidden" name="download" value="1" /><button class="btn btn-success rounded-pill w-100">Generate CSV</button>
             </form>
           </section>
         </article>
@@ -152,7 +168,7 @@ $recent = array_map(fn($name) => ['name'=>csv_title($name),'dataset'=>ucwords(st
           <section class="list-shell">
             <section class="p-4 border-bottom">
               <h2 class="h5 fw-bold mb-1">Recent exports</h2>
-              <p class="text-muted mb-0">Starter log table for generated XML files</p>
+              <p class="text-muted mb-0">Starter log table for generated CSV files</p>
             </section>
             <?php foreach ($recent as $row): ?>
 <section class="list-row p-4"><section class="row g-3"><article class="col-md-4 fw-semibold"><?= e($row['name']) ?></article><article class="col-md-3 text-muted"><?= e($row['dataset']) ?></article><article class="col-md-3 text-muted"><?= e($row['date']) ?></article><article class="col-md-2"><span class="status-pill status-approved"><?= e($row['status']) ?></span></article></section></section>

@@ -79,8 +79,38 @@ $donateUrl = $currentUser && $currentUser['role'] === 'client' ? 'donate.php?act
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
+
+
 <body data-page="donate">
-<header class="site-header"><nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3"><section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4"><a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2"><span class="brand-badge">NY</span><span class="brand-mark text-dark">NYS Parks<br /><small>&amp; RECREATION</small></span></a><ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center"><li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li><li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li><li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li><li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li><li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li><li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li><li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li><li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li></ul></section><ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center"><?php if ($currentUser): ?><li><a href="account.php" class="nav-link-custom"><i class="bi bi-person-circle"></i>Account</a></li><li><a href="logout.php" class="btn btn-dark nav-pill-btn">Logout</a></li><?php else: ?><li><a href="login.php" class="nav-link-custom" data-page-link="login">Log In</a></li><li><a href="register.php" class="btn btn-dark nav-pill-btn" data-page-link="register">Register</a></li><?php endif; ?></ul></nav></header>
+
+<header class="site-header">
+    <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
+            <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2"><span class="brand-badge">NY</span><span class="brand-mark text-dark">NYS Parks<br /><small>&amp; RECREATION</small></span></a>
+            <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
+                <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
+                <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
+                <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
+                <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
+                <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
+                <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
+                <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
+                <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
+            </ul>
+        </section>
+
+        <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
+            <?php if ($currentUser): ?>
+                <li><a href="account.php" class="nav-link-custom"><i class="bi bi-person-circle"></i>Account</a></li>
+                <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+            <?php else: ?>
+                <li><a href="login.php" class="nav-link-custom" data-page-link="login">Log In</a></li>
+                <li><a href="register.php" class="btn btn-dark nav-pill-btn" data-page-link="register">Register</a></li>
+            <?php endif; ?>
+        </ul>
+    </nav>
+</header>
+
 <section class="subpage-hero subpage-hero-donate d-flex align-items-center text-white"><div class="subpage-hero-overlay"></div><div class="container position-relative py-5"><div class="row"><div class="col-lg-8 col-xl-7"><span class="hero-kicker">SUPPORT NEW YORK STATE PARKS</span><h1 class="display-5 fw-bold mb-3">Help protect parks, expand programs, and support outdoor access.</h1><p class="lead text-white-50 mb-0">Donation information is public. The mock payment form opens after a client login.</p></div></div></div></section>
 <section class="py-5 section-soft-green border-bottom"><div class="container"><div class="row g-4"><div class="col-md-4"><div class="impact-card h-100"><div class="impact-icon"><i class="bi bi-signpost-split"></i></div><h2 class="h5 fw-bold">Maintain trails</h2><p class="text-muted mb-0">Support trail repairs, signage, cleanup, and safe visitor access across the state.</p></div></div><div class="col-md-4"><div class="impact-card h-100"><div class="impact-icon"><i class="bi bi-tree"></i></div><h2 class="h5 fw-bold">Protect habitats</h2><p class="text-muted mb-0">Help preserve natural spaces, scenic views, and the long-term health of public lands.</p></div></div><div class="col-md-4"><div class="impact-card h-100"><div class="impact-icon"><i class="bi bi-people"></i></div><h2 class="h5 fw-bold">Fund public programs</h2><p class="text-muted mb-0">Expand educational programs, family activities, seasonal events, and community outreach.</p></div></div></div></div></section>
 <?php if ($donationFlow && $user && $user['role'] === 'client'): ?>
