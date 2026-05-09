@@ -17,7 +17,7 @@ The project demonstrates:
 - private pages protected by role checks
 - client reservation/event-request workflows
 - employee schedule and PTO workflows
-- admin approval, employee management, news management, and XML export workflows
+- admin approval, employee management, news management, and CSV export workflows
 - reusable shared navigation, footer, Bootstrap styling, and JavaScript helpers
 - a MySQL schema with foreign keys, indexes, enum fields, and check constraints
 - seeded test data so the project can be demoed immediately after import
@@ -45,14 +45,16 @@ There are no Laravel, Symfony, React, Node, Composer, or npm requirements.
 The project is flat on purpose. All main pages live in the root folder.
 
 ```text
-p5r3/
+p7r13/
 ├── about.php
 ├── account.php
 ├── admin-bookings.php
 ├── admin-dashboard.php
+├── admin-employee-accounts.php
 ├── admin-employee-schedule.php
+├── admin-news.php
 ├── admin-pto.php
-├── admin-xml.php
+├── admin-csv.php
 ├── ai.php
 ├── ai-api.php
 ├── bootstrap.php
@@ -77,16 +79,21 @@ p5r3/
 ├── search.php
 ├── css/
 │   └── styles.css
+├── includes/
+│   ├── constants.php
+│   ├── header.php
+│   └── footer.php
 ├── js/
 │   ├── app.js
 │   └── dashboard-charts.js
 ├── db/
 │   ├── schema.sql
 │   └── seed.sql
-└── README.md
+├── README.md
+└── todo - done - data - pgs - sql - etc .xlsx
 ```
 
-The `.idea/` folder is only IDE metadata. It is not required to run the project.
+The `.idea/` folder is only IDE metadata. It is not required to run the project and should be removed from a clean final submission. The spreadsheet is a planning/checklist artifact, not a runtime dependency.
 
 ---
 
@@ -109,7 +116,7 @@ It handles:
 - date formatting helpers
 - input helpers for `POST` and `GET`
 - mock card validation
-- XML export filename helper
+- CSV export filename helper
 
 The database settings are currently inside the `db()` function:
 
@@ -120,6 +127,10 @@ $dbname = 'nys_parks';
 $username = 'root';
 $password = '';
 ```
+
+### `includes/header.php` and `includes/footer.php`
+
+These are the shared layout partials. They keep the public navigation, account/login links, footer columns, and common page shell consistent across the flat PHP pages.
 
 ### `css/styles.css`
 
@@ -162,7 +173,7 @@ Copy the full project folder into XAMPP `htdocs`.
 Example:
 
 ```text
-C:\xampp\htdocs\p5r3
+C:\xampp\htdocs\p7r13
 ```
 
 ### 2. Start services
@@ -214,10 +225,8 @@ For a normal XAMPP install, `root` with a blank password should work.
 Use:
 
 ```text
-http://localhost/p5r3/index.php
+http://localhost/p7r13/index.php
 ```
-
-If the folder name is different, replace `p5r3` with your actual folder name.
 
 ---
 
@@ -233,7 +242,7 @@ Main demo accounts:
 
 | Role | Email | Purpose |
 |---|---|---|
-| Admin | `admin@nysparks.local` | Admin dashboard, employees, approvals, news manager, XML exports |
+| Admin | `admin@nysparks.local` | Admin dashboard, employees, approvals, news manager, CSV exports |
 | Employee | `employee@nysparks.local` | Employee dashboard, schedule, PTO requests |
 | Client | `client@nysparks.local` | Client dashboard, RSVPs, event requests, donations |
 
@@ -286,11 +295,13 @@ These pages require login and role checks through `require_login()` or `require_
 | `employee-dashboard.php` | Employee | Employee home dashboard with upcoming schedule and PTO overview |
 | `employee-schedule.php` | Employee | Read-only employee shift schedule |
 | `employee-pto.php` | Employee | Submit/cancel PTO requests and view PTO history |
-| `admin-dashboard.php` | Admin | Main admin dashboard, metrics, charts, employee manager, and news manager |
+| `admin-dashboard.php` | Admin | Main admin overview with metrics, charts, and links to admin tools |
+| `admin-employee-accounts.php` | Admin | Create, update, disable, and reactivate employee accounts |
+| `admin-news.php` | Admin | Create, update, search, and delete news records |
 | `admin-bookings.php` | Admin | Review, approve, deny, and link booking requests to private events |
 | `admin-employee-schedule.php` | Admin | Create/delete employee shift schedules with overlap validation |
 | `admin-pto.php` | Admin | Approve or deny employee PTO requests |
-| `admin-xml.php` | Admin | Export database datasets as XML downloads |
+| `admin-csv.php` | Admin | Export database datasets as CSV downloads |
 
 ---
 
@@ -339,12 +350,12 @@ An admin can:
 
 1. Log in through `login.php`
 2. View metrics on `admin-dashboard.php`
-3. Create/update/disable employee accounts
-4. Add/update/delete public news records
+3. Create/update/disable employee accounts on `admin-employee-accounts.php`
+4. Add/update/delete public news records on `admin-news.php`
 5. Approve or deny booking requests on `admin-bookings.php`
 6. Create or delete employee schedules on `admin-employee-schedule.php`
 7. Approve or deny PTO requests on `admin-pto.php`
-8. Export XML datasets through `admin-xml.php`
+8. Export CSV datasets through `admin-csv.php`
 
 ---
 
@@ -439,7 +450,8 @@ The page validates:
 - guest count
 - field capacity
 - overlapping active bookings for the same field/time range
-- mock payment details when card payment is selected
+
+Payment is not collected on `client-create-event.php`. The booking request stores a calculated reservation fee, and the client dashboard displays booking/payment status for review/demo purposes.
 
 ### Admin booking approval flow
 
@@ -502,13 +514,13 @@ It uses database queries for:
 - active employee counts
 - chart data for bookings, events, attendance, and donations
 
-It also includes an admin news manager that creates, updates, and deletes rows in the `news` table.
+Employee account management and news management now live on dedicated admin pages: `admin-employee-accounts.php` and `admin-news.php`. The dashboard links to those tools instead of handling those mutations directly.
 
-### XML export
+### CSV export
 
-`admin-xml.php` exports selected datasets as XML downloads.
+`admin-csv.php` exports selected datasets as CSV downloads.
 
-It does not require filesystem write permissions because it sends the XML directly as a download response.
+It does not require filesystem write permissions because it sends the CSV directly as a download response.
 
 Supported export-style datasets include:
 
@@ -748,7 +760,7 @@ INDEX idx_events_featured (is_featured)
 
 ### `news`
 
-Stores public news feed items used by `news.php` and managed from the admin dashboard.
+Stores public news feed items used by `news.php` and managed from `admin-news.php`.
 
 Important fields:
 
@@ -1064,8 +1076,10 @@ Important limitations:
 - there is no CSRF token system yet
 - payment handling is mock/demo only
 - CVV/card fields should not be stored in a real production system
-- password reset does not send email
+- password reset does not send email or use expiring reset tokens
+- API keys should be loaded from environment variables, not committed to source
 - AI API configuration depends on local setup/environment
+- database credentials are currently local XAMPP defaults in `bootstrap.php`
 
 ---
 
@@ -1107,11 +1121,11 @@ For a real production site, this would need a payment processor like Stripe, Squ
 
 ---
 
-## XML export notes
+## CSV export notes
 
-The XML export page is admin-only.
+The CSV export page is admin-only.
 
-The export is generated directly in PHP and downloaded immediately. This avoids folder permission problems because the server does not need to write XML files to disk.
+The export is generated directly in PHP and downloaded immediately. This avoids folder permission problems because the server does not need to write CSV files to disk.
 
 This is useful for the project because it demonstrates structured data output without adding storage folders or export log tables.
 
@@ -1123,9 +1137,9 @@ Not every page uses database tables.
 
 - `faq.php` stores FAQ content in a PHP array.
 - `about.php` is mainly static content.
-- Shared headers/footers are repeated in files instead of being included as separate partials.
+- Shared headers and footers are now included through `includes/header.php` and `includes/footer.php`.
 
-This was done to keep the project easy to follow in a flat PHP submission.
+The FAQ/static pages were kept simple so the project remains easy to follow in a flat PHP submission.
 
 ---
 
@@ -1142,9 +1156,9 @@ This section is kept from the original README and updated to match the current p
 - Booking/PTO approvals write review metadata
 - Booking and schedule overlap validation added
 - Payments kept as mock / card-validation-only / in-person support
-- XML export works as a direct download and does not require file-system write permissions
+- CSV export works as a direct download and does not require file-system write permissions
 - News page now uses the `news` database table
-- Admin dashboard includes news create/update/delete management
+- Dedicated admin pages handle employee account management and news create/update/delete management
 - Database currently uses 10 tables
 - FAQ remains a PHP array and can be moved to a database later
 
@@ -1180,7 +1194,6 @@ Before submitting or demoing, I should click-test these flows in XAMPP:
 - Cancel RSVP
 - Submit private event request
 - View booking status
-- Submit reservation payment/mock payment if applicable
 - Submit donation as logged-in client
 
 ### Employee flows
@@ -1207,7 +1220,7 @@ Before submitting or demoing, I should click-test these flows in XAMPP:
 - Delete schedule
 - Approve PTO
 - Deny PTO
-- Download XML export
+- Download CSV export
 
 ---
 
@@ -1262,7 +1275,6 @@ These are realistic improvements that could be added after the capstone version:
 
 - move FAQ content into a `faqs` database table
 - add CSRF tokens to all POST forms
-- move shared header/footer into reusable PHP partials
 - add stronger server-side validation messages by field
 - connect donation/reservation payment to a real payment processor
 - replace local password reset with email/token-based reset

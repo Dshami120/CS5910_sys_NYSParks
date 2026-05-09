@@ -1,12 +1,16 @@
 <?php
+// Load project setup.
 require 'bootstrap.php';
 $user = require_role($db, 'client');
 $parks = park_options($db);
 $fields = $db->query("SELECT f.*, p.name AS park_name FROM fields f JOIN parks p ON p.id=f.park_id WHERE availability_status='available' ORDER BY p.name, f.name")->fetchAll();
 $fieldMap = [];
+// Group available fields by park.
 foreach ($fields as $field) {
     $fieldMap[(int)$field['park_id']][] = $field;
 }
+// Handle booking request form.
+// Handle submitted form actions.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = post('title');
     $parkId = (int) post('park_id');
@@ -58,6 +62,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('client-create-event.php');
         }
     } else {
+        $parkCapacityStmt = $db->prepare("SELECT max_capacity FROM parks WHERE id=?");
+        $parkCapacityStmt->execute([$parkId]);
+        $parkCapacity = (int) $parkCapacityStmt->fetchColumn();
+        if ($parkCapacity <= 0) {
+            flash_set('error', 'Selected park was not found.');
+            redirect('client-create-event.php');
+        }
+        if ($guestCount > $parkCapacity) {
+            flash_set('error', 'Guest count cannot exceed the selected park capacity of ' . $parkCapacity . ' when no field is selected.');
+            redirect('client-create-event.php');
+        }
         $parkOverlap = $db->prepare("SELECT COUNT(*) FROM bookings WHERE park_id=? AND booking_status IN ('pending','approved','confirmed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $parkOverlap->execute([$parkId, $startDt, $endDt]);
         $parkEventOverlap = $db->prepare("SELECT COUNT(*) FROM events WHERE park_id=? AND event_status IN ('draft','published','closed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
@@ -74,57 +89,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('client-create-event.php');
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NYS Parks - Client Create Event</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body data-page="client-create-event">
-  <header class="site-header">
-    <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-      <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
-        <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2">
-          <span class="brand-badge">NY</span>
-          <span class="brand-mark text-dark">
-            NYS Parks<br />
-            <small>&amp; RECREATION</small>
-          </span>
-        </a>
-        <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-          <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-          <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-          <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-          <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-          <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
-          <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
-          <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
-          <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
-            <!--
-          <li><a href="client-dashboard.php" class="nav-link-custom" data-page-link="client-dashboard"><i class="bi bi-speedometer2"></i>Client Dash</a></li>
-          <li><a href="client-create-event.php" class="nav-link-custom active" data-page-link="client-create-event"><i class="bi bi-plus-circle"></i>Create Event</a></li>
-          -->
-        </ul>
-      </section>
-        <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
-            <?php if ($currentUser): ?>
-                <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-                <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
-            <?php else: ?>
-                <li><a href="login.php" class="nav-link-custom" data-page-link="login">Log In</a></li>
-                <li><a href="register.php" class="btn btn-dark nav-pill-btn" data-page-link="register">Register</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-  </header>
+<?php
+// Set page metadata.
+$pageTitle = 'NYS Parks - Client Create Event';
+$bodyPage = 'client-create-event';
+$extraHead = '';
+?>
+<?php include __DIR__ . '/includes/header.php'; ?>
 
-  <!-- nav links-->
-  <main class="py-5">
-      <section class="container">
+<main class="py-5">
+  <section class="container">
+  <!-- Client booking navigation. -->
   <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
       <div>
           <p class="eyebrow mb-2">Client Bookings</p>
@@ -132,15 +107,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <p class="text-muted mb-0"> Take charge of your events. Create an event booking request today! </p>
       </div>
       <div class="d-flex flex-wrap gap-2">
-          <a class="btn btn-outline-dark" href="client-dashboard.php"><i class="bi bi-speedometer2"></i> Client Dash</a></li>
+          <a class="btn btn-outline-dark" href="client-dashboard.php"><i class="bi bi-speedometer2"></i> Client Dash</a>
           <a class="btn btn-success" href="client-create-event.php"><i class="bi bi-plus-circle me-1"></i>Create Event Request</a>
           <a class="btn btn-outline-dark" href="events.php"><i class="bi bi-calendar-event me-1"></i>Public Calendar</a>
       </div>
   </section>
 
-  <main class="py-5">
-    <section class="container">
-      <section class="row g-4">
+  <!-- Booking request form and guidance. -->
+  <section class="row g-4">
         <article class="col-xl-8">
           <section class="feature-panel p-4 mb-4">
             <p class="mb-1 fw-semibold">Client portal</p>
@@ -160,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <label class="form-label">Park location</label>
                   <select name="park_id" id="park_id" class="form-select form-select-lg" required>
                     <?php foreach ($parks as $park): ?>
-                    <option value="<?= $park['id'] ?>"><?= e($park['name']) ?></option>
+                    <option value="<?= $park['id'] ?>" data-capacity="<?= (int)($park['max_capacity'] ?? 0) ?>"><?= e($park['name']) ?></option>
                     <?php endforeach; ?>
                   </select>
                 </article>
@@ -188,7 +162,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </article>
                 <article class="col-lg-6">
                   <label class="form-label">Estimated attendees</label>
-                  <input type="number" name="guest_count" class="form-control form-control-lg" placeholder="150" min="1" required />
+                  <input type="number" name="guest_count" id="guest_count" class="form-control form-control-lg" placeholder="150" min="1" required />
+                  <div id="capacity_hint" class="form-text">Select a park or field to view the maximum capacity available.</div>
                 </article>
                 <article class="col-lg-6">
                   <label class="form-label">Requested setup</label>
@@ -204,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <select name="field_id" id="field_id" class="form-select form-select-lg">
                     <option value="">No specific field</option>
                     <?php foreach ($fields as $field): ?>
-                    <option value="<?= $field['id'] ?>" data-park="<?= $field['park_id'] ?>"><?= e($field['park_name']) ?> — <?= e($field['name']) ?></option>
+                    <option value="<?= $field['id'] ?>" data-park="<?= $field['park_id'] ?>" data-capacity="<?= (int)$field['capacity'] ?>"><?= e($field['park_name']) ?> — <?= e($field['name']) ?> (capacity <?= (int)$field['capacity'] ?>)</option>
                     <?php endforeach; ?>
                   </select>
                 </article>
@@ -239,66 +214,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </section>
           </section>
         </article>
-      </section>
-    </section>
-  </main>
-  <footer class="footer-shell py-5 mt-5">
-    <section class="container">
-      <section class="footer-five">
-        <article class="footer-block footer-brand">
-          <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2 mb-3">
-            <span class="brand-badge">NY</span>
-            <span class="brand-mark text-dark">
-              NYS Parks<br />
-              <small>&amp; RECREATION</small>
-            </span>
-          </a>
-          <p class="text-muted mb-0">
-            A modern gateway to New York State parks, events, maps, news, and role-based operations.
-          </p>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Explore</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li>
-            <li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li>
-            <li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li>
-            <li class="mb-2"><a href="ai.php" class="text-muted text-decoration-none">AI</a></li>
-            <li class="mb-2"><a href="news.php" class="text-muted text-decoration-none">News</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Account</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="about.php" class="text-muted text-decoration-none">About</a></li>
-            <li class="mb-2"><a href="faq.php" class="text-muted text-decoration-none">FAQ</a></li>
-            <li class="mb-2"><a href="donate.php" class="text-muted text-decoration-none">Donate</a></li>
-            <li class="mb-2"><a href="login.php" class="text-muted text-decoration-none">Log In</a></li>
-            <li class="mb-2"><a href="register.php" class="text-muted text-decoration-none">Register</a></li>
-            <li class="mb-2"><a href="account.php" class="text-muted text-decoration-none">Account</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Portals</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="client-dashboard.php" class="text-muted text-decoration-none">Client Dashboard</a></li>
-            <li class="mb-2"><a href="admin-dashboard.php" class="text-muted text-decoration-none">Admin Dashboard</a></li>
-            <li class="mb-2"><a href="employee-dashboard.php" class="text-muted text-decoration-none">Employee Dashboard</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Contact</h2>
-          <p class="text-muted mb-2">info@nysparks.gov</p>
-          <p class="text-muted mb-2">(555) 123-4567</p>
-          <p class="text-muted mb-0">Albany, New York</p>
-        </article>
-      </section>
-    </section>
-  </footer>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
+  </section>
+  </section>
+</main>
+<script>
+    // Update capacity hints by selected park/field.
     const parkSelect = document.getElementById('park_id');
     const fieldSelect = document.getElementById('field_id');
+    const guestCountInput = document.getElementById('guest_count');
+    const capacityHint = document.getElementById('capacity_hint');
+    function updateCapacityHint() {
+      const selectedField = fieldSelect.selectedOptions[0];
+      const selectedPark = parkSelect.selectedOptions[0];
+      const fieldCapacity = selectedField && selectedField.value ? parseInt(selectedField.dataset.capacity || '0', 10) : 0;
+      const parkCapacity = selectedPark ? parseInt(selectedPark.dataset.capacity || '0', 10) : 0;
+      const limit = fieldCapacity || parkCapacity;
+      if (limit > 0) {
+        guestCountInput.max = String(limit);
+        capacityHint.textContent = fieldCapacity
+          ? `Selected field max capacity: ${limit}. Capacity available for this request: up to ${limit} guests.`
+          : `No field selected. Park max capacity: ${limit}. Capacity available for this request: up to ${limit} guests.`;
+      } else {
+        guestCountInput.removeAttribute('max');
+        capacityHint.textContent = 'Select a park or field to view the maximum capacity available.';
+      }
+    }
     function filterFieldsByPark() {
       const selectedPark = parkSelect.value;
       Array.from(fieldSelect.options).forEach(option => {
@@ -308,10 +248,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if (fieldSelect.selectedOptions.length && fieldSelect.selectedOptions[0].hidden) {
         fieldSelect.value = '';
       }
+      updateCapacityHint();
     }
     parkSelect.addEventListener('change', filterFieldsByPark);
+    fieldSelect.addEventListener('change', updateCapacityHint);
     filterFieldsByPark();
   </script>
-  <script src="js/app.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>

@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/includes/constants.php';
+
 session_set_cookie_params([
     'lifetime' => 0,
     'path' => '/',
@@ -115,6 +117,24 @@ function format_datetime(?string $date, string $format = 'm/d/Y g:i A'): string 
 function full_name(array $user): string {
     return trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
 }
+function profile_image_url(array $user): string {
+    $url = trim((string) ($user['profile_image_url'] ?? ''));
+    $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+    if ($url !== '' && filter_var($url, FILTER_VALIDATE_URL) && in_array($scheme, ['http', 'https'], true)) {
+        return $url;
+    }
+    return match($user['role'] ?? '') {
+        'admin' => 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
+        'employee' => 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+        default => 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=200&q=80',
+    };
+}
+function account_chip(array $user, bool $active=false): string {
+    $activeClass = $active ? ' active' : '';
+    $name = e(full_name($user) ?: 'Account');
+    $avatar = e(profile_image_url($user));
+    return '<li><a href="account.php" class="text-decoration-none text-dark d-inline-flex align-items-center gap-2 profile-account-chip' . $activeClass . '" data-page-link="account"><img src="' . $avatar . '" alt="' . $name . ' profile photo" class="avatar-chip" /><span class="small fw-semibold d-none d-md-inline">' . $name . '</span></a></li>';
+}
 function redirect(string $path): void {
     header("Location: {$path}");
     exit;
@@ -139,6 +159,18 @@ function user_options(PDO $db, string $role='employee'): array {
     $stmt->execute([$role]);
     return $stmt->fetchAll();
 }
+
+function cancel_future_schedules_for_employee(PDO $db, int $employeeId): void {
+    $stmt = $db->prepare("UPDATE employee_schedules SET schedule_status='cancelled' WHERE employee_id=? AND shift_date >= CURDATE() AND schedule_status='scheduled'");
+    $stmt->execute([$employeeId]);
+}
+
+function cancel_future_schedules_for_disabled_employees(PDO $db): int {
+    $stmt = $db->prepare("UPDATE employee_schedules s JOIN users u ON u.id=s.employee_id SET s.schedule_status='cancelled' WHERE u.account_status='disabled' AND s.shift_date >= CURDATE() AND s.schedule_status='scheduled'");
+    $stmt->execute();
+    return $stmt->rowCount();
+}
+
 function park_options(PDO $db): array {
     return $db->query("SELECT * FROM parks ORDER BY name")->fetchAll();
 }
@@ -176,18 +208,18 @@ function validate_card(string $number, string $month, string $year, string $cvv=
 }
 function csv_title(string $dataset): string {
     return match($dataset){
-        'parks' => 'parks_export.xml',
-        'users' => 'users_export.xml',
-        'fields' => 'fields_export.xml',
-        'events' => 'events_export.xml',
-        'news' => 'news_export.xml',
-        'bookings' => 'bookings_export.xml',
-        'attendance' => 'attendance_export.xml',
-        'payments' => 'payments_export.xml',
-        'employee_schedules' => 'employee_schedules_export.xml',
-        'pto_requests' => 'pto_requests_export.xml',
-        'employees' => 'employees_export.xml',
-        default => preg_replace('/[^a-z0-9_]+/i', '_', $dataset) . '_export.xml',
+        'parks' => 'parks_export.csv',
+        'users' => 'users_export.csv',
+        'fields' => 'fields_export.csv',
+        'events' => 'events_export.csv',
+        'news' => 'news_export.csv',
+        'bookings' => 'bookings_export.csv',
+        'attendance' => 'attendance_export.csv',
+        'payments' => 'payments_export.csv',
+        'employee_schedules' => 'employee_schedules_export.csv',
+        'pto_requests' => 'pto_requests_export.csv',
+        'employees' => 'employees_export.csv',
+        default => preg_replace('/[^a-z0-9_]+/i', '_', $dataset) . '_export.csv',
     };
 }
 

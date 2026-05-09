@@ -1,63 +1,55 @@
 <?php
+// Load project setup.
 require 'bootstrap.php';
 $user = require_role($db, 'admin');
+// Handle submitted form actions.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validate PTO approval action.
     $id = (int) post('pto_id');
     $decision = post('decision');
-    if (in_array($decision, ['approved', 'denied'], true)) {
-        $db->prepare("UPDATE pto_requests SET pto_status=?, reviewed_by=?, reviewed_at=NOW(), admin_notes=? WHERE id=?")
-                ->execute([$decision, $user['id'], post('admin_notes') ?: null, $id]);
-        flash_set('success', 'PTO request updated.');
+
+    if (!in_array($decision, ['approved', 'denied'], true)) {
+        flash_set('error', 'Invalid PTO action.');
+        redirect('admin-pto.php');
     }
+
+    // Only pending PTO requests can be approved or denied.
+    $updateStmt = $db->prepare("
+        UPDATE pto_requests
+        SET pto_status=?,
+            reviewed_by=?,
+            reviewed_at=NOW(),
+            admin_notes=?
+        WHERE id=?
+          AND pto_status='pending'
+    ");
+
+    $updateStmt->execute([
+        $decision,
+        $user['id'],
+        post('admin_notes') ?: null,
+        $id
+    ]);
+
+    if ($updateStmt->rowCount() > 0) {
+        flash_set('success', 'PTO request updated.');
+    } else {
+        flash_set('error', 'PTO request could not be updated. It may have already been reviewed or cancelled.');
+    }
+
     redirect('admin-pto.php');
 }
 $pending = (int) $db->query("SELECT COUNT(*) FROM pto_requests WHERE pto_status='pending'")->fetchColumn();
 $approvedMonth = (int) $db->query("SELECT COUNT(*) FROM pto_requests WHERE pto_status='approved' AND YEAR(start_date)=YEAR(CURDATE()) AND MONTH(start_date)=MONTH(CURDATE())")->fetchColumn();
 $conflicts = (int) $db->query("SELECT COUNT(DISTINCT p.id) FROM pto_requests p JOIN employee_schedules s ON s.employee_id=p.employee_id AND s.shift_date BETWEEN p.start_date AND p.end_date AND s.schedule_status <> 'cancelled' WHERE p.pto_status='pending'")->fetchColumn();
 $rows = $db->query("SELECT p.*, CONCAT(u.first_name,' ',u.last_name) AS employee_name, EXISTS(SELECT 1 FROM employee_schedules s WHERE s.employee_id=p.employee_id AND s.shift_date BETWEEN p.start_date AND p.end_date AND s.schedule_status <> 'cancelled') AS has_schedule_conflict FROM pto_requests p JOIN users u ON u.id=p.employee_id ORDER BY p.created_at DESC")->fetchAll();
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NYS Parks - Admin PTO</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body data-page="admin-pto">
-<header class="site-header">
-    <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-        <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
-            <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2">
-                <span class="brand-badge">NY</span>
-                <span class="brand-mark text-dark">NYS Parks<br /><small>&amp; RECREATION</small></span>
-            </a>
-            <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-                <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-                <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-                <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-                <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-                <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
-                <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
-                <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
-                <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
-                <!--
-              <li><a href="admin-dashboard.php" class="nav-link-custom active" data-page-link="admin-dashboard"><i class="bi bi-speedometer2"></i>Admin Dash</a></li>
-              <li><a href="admin-employee-schedule.php" class="nav-link-custom" data-page-link="admin-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
-              <li><a href="admin-pto.php" class="nav-link-custom" data-page-link="admin-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
-              <li><a href="admin-bookings.php" class="nav-link-custom" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i>Bookings</a></li>
-              -->
-            </ul>
-        </section>
-
-        <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
-            <li><a href="admin-xml.php" class="nav-link-custom" data-page-link="admin-xml"><i class="bi bi-filetype-xml"></i>CSV</a></li>
-            <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-            <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-        </ul>
-    </nav>
-</header>
+?><?php
+// Set page metadata.
+$pageTitle = 'NYS Parks - Admin PTO';
+$bodyPage = 'admin-pto';
+$extraHead = '';
+?>
+<?php include __DIR__ . '/includes/header.php'; ?>
 
 <main class="py-5">
     <section class="container">
@@ -75,8 +67,9 @@ $rows = $db->query("SELECT p.*, CONCAT(u.first_name,' ',u.last_name) AS employee
                     <a class="btn btn-outline-dark" href="admin-bookings.php"><i class="bi bi-journal-check"></i> Client Bookings</a>
                     <a class="btn btn-outline-dark" href="admin-news.php"><i class="bi bi-journal-check"></i> News Manager</a>
                     <a class="btn btn-outline-dark" href="admin-employee-accounts.php"><i class="bi bi-journal-check"></i> Employee Accounts</a>
-                    <a class="btn btn-outline-dark" href="admin-xml.php"><i class="bi bi-journal-check"></i> CSV</a>
+                    <a class="btn btn-outline-dark" href="admin-csv.php"><i class="bi bi-journal-check"></i> CSV</a>
                 </div>
+            </section>
         </header>
 
 
@@ -109,22 +102,89 @@ $rows = $db->query("SELECT p.*, CONCAT(u.first_name,' ',u.last_name) AS employee
 
 
         <section class="list-shell">
-            <section class="p-4 border-bottom"><section class="row g-3"><article class="col-md-3 fw-bold">Employee</article><article class="col-md-2 fw-bold">Dates</article><article class="col-md-2 fw-bold">Type</article><article class="col-md-2 fw-bold">Coverage</article><article class="col-md-3 fw-bold">Actions</article></section></section>
+            <!-- PTO table header -->
+            <section class="p-4 border-bottom">
+                <section class="row g-3">
+                    <article class="col-md-3 fw-bold">Employee</article>
+                    <article class="col-md-2 fw-bold">Dates</article>
+                    <article class="col-md-2 fw-bold">Type</article>
+                    <article class="col-md-2 fw-bold">Coverage</article>
+                    <article class="col-md-3 fw-bold">Actions</article>
+                </section>
+            </section>
+
             <?php foreach ($rows as $i => $row): ?>
+                <!-- PTO request row -->
                 <section class="<?= $i < count($rows) - 1 ? 'list-row' : '' ?> p-4">
                     <section class="row g-3 align-items-center">
-                        <article class="col-md-3"><?= e($row['employee_name']) ?></article>
-                        <article class="col-md-2 text-muted"><?= format_date($row['start_date']) ?><?= $row['start_date'] !== $row['end_date'] ? '–' . format_date($row['end_date']) : '' ?></article>
-                        <article class="col-md-2 text-muted"><?= e($row['leave_type']) ?></article>
-                        <article class="col-md-2"><span class="status-pill <?= (int)$row['has_schedule_conflict'] ? 'status-pending' : 'status-approved' ?>"><?= (int)$row['has_schedule_conflict'] ? 'Conflict' : 'No conflict' ?></span></article>
-                        <article class="col-md-3"><section class="d-flex gap-2"><form method="post" class="d-flex gap-2 mb-0"><input type="hidden" name="pto_id" value="<?= $row['id'] ?>" /><input type="hidden" name="admin_notes" value="" /><button type="submit" name="decision" value="approved" class="btn btn-sm btn-success rounded-pill">Approve</button><button type="submit" name="decision" value="denied" class="btn btn-sm btn-outline-danger rounded-pill">Deny</button></form></section></article>
+                        <article class="col-md-3">
+                            <?= e($row['employee_name']) ?><br>
+                            <span class="status-pill <?= booking_status_class($row['pto_status']) ?>">
+                        <?= e(ucfirst($row['pto_status'])) ?>
+                    </span>
+                        </article>
+
+                        <article class="col-md-2 text-muted">
+                            <?= format_date($row['start_date']) ?>
+                            <?= $row['start_date'] !== $row['end_date'] ? '–' . format_date($row['end_date']) : '' ?>
+                        </article>
+
+                        <article class="col-md-2 text-muted">
+                            <?= e($row['leave_type']) ?>
+                        </article>
+
+                        <article class="col-md-2">
+                    <span class="status-pill <?= (int) $row['has_schedule_conflict'] ? 'status-pending' : 'status-approved' ?>">
+                        <?= (int) $row['has_schedule_conflict'] ? 'Conflict' : 'No conflict' ?>
+                    </span>
+                        </article>
+
+                        <article class="col-md-3">
+                            <?php if ($row['pto_status'] === 'pending'): ?>
+                                <form method="post" class="d-flex flex-column gap-2 mb-0">
+                                    <input type="hidden" name="pto_id" value="<?= (int) $row['id'] ?>">
+
+                                    <input
+                                            type="text"
+                                            name="admin_notes"
+                                            class="form-control form-control-sm"
+                                            placeholder="Optional admin note"
+                                    >
+
+                                    <section class="d-flex flex-wrap gap-2">
+                                        <button
+                                                type="submit"
+                                                name="decision"
+                                                value="approved"
+                                                class="btn btn-sm btn-success rounded-pill"
+                                        >
+                                            Approve
+                                        </button>
+
+                                        <button
+                                                type="submit"
+                                                name="decision"
+                                                value="denied"
+                                                class="btn btn-sm btn-outline-danger rounded-pill"
+                                        >
+                                            Deny
+                                        </button>
+                                    </section>
+                                </form>
+                            <?php else: ?>
+                                <span class="text-muted small">Already reviewed</span>
+                            <?php endif; ?>
+                        </article>
                     </section>
                 </section>
             <?php endforeach; ?>
+
+            <?php if (!$rows): ?>
+                <section class="p-4">
+                    <p class="text-muted mb-0">No PTO requests found.</p>
+                </section>
+            <?php endif; ?>
         </section>
     </section>
 </main>
-<footer class="footer-shell py-5 mt-5"><section class="container"><section class="footer-five"><article class="footer-block footer-brand"><a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2 mb-3"><span class="brand-badge">NY</span><span class="brand-mark text-dark">NYS Parks<br /><small>&amp; RECREATION</small></span></a><p class="text-muted mb-0">A modern gateway to New York State parks, events, maps, news, and role-based operations.</p></article><article class="footer-block"><h2 class="h6 fw-bold mb-3">Explore</h2><ul class="list-unstyled m-0"><li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li><li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li><li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li><li class="mb-2"><a href="ai.php" class="text-muted text-decoration-none">AI</a></li><li class="mb-2"><a href="news.php" class="text-muted text-decoration-none">News</a></li></ul></article><article class="footer-block"><h2 class="h6 fw-bold mb-3">Account</h2><ul class="list-unstyled m-0"><li class="mb-2"><a href="about.php" class="text-muted text-decoration-none">About</a></li><li class="mb-2"><a href="faq.php" class="text-muted text-decoration-none">FAQ</a></li><li class="mb-2"><a href="donate.php" class="text-muted text-decoration-none">Donate</a></li><li class="mb-2"><a href="login.php" class="text-muted text-decoration-none">Log In</a></li><li class="mb-2"><a href="register.php" class="text-muted text-decoration-none">Register</a></li><li class="mb-2"><a href="account.php" class="text-muted text-decoration-none">Account</a></li></ul></article><article class="footer-block"><h2 class="h6 fw-bold mb-3">Portals</h2><ul class="list-unstyled m-0"><li class="mb-2"><a href="client-dashboard.php" class="text-muted text-decoration-none">Client Dashboard</a></li><li class="mb-2"><a href="admin-dashboard.php" class="text-muted text-decoration-none">Admin Dashboard</a></li><li class="mb-2"><a href="employee-dashboard.php" class="text-muted text-decoration-none">Employee Dashboard</a></li></ul></article><article class="footer-block"><h2 class="h6 fw-bold mb-3">Contact</h2><p class="text-muted mb-2">info@nysparks.gov</p><p class="text-muted mb-2">(555) 123-4567</p><p class="text-muted mb-0">Albany, New York</p></article></section></section></footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script src="js/app.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>

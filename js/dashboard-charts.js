@@ -79,7 +79,31 @@
     const chart = new Chart(canvas, {
       type: 'bar',
       data: { labels: [], datasets: [{ label: labels[metricSelect.value] || 'Metric', data: [] }] },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0,
+              callback: function(value) {
+                const metric = metricSelect.value;
+
+                if (metric === 'donations') {
+                  return '$' + Number(value).toLocaleString(undefined, {
+                    maximumFractionDigits: 0
+                  });
+                }
+
+                return Number.isInteger(value) ? value : '';
+              }
+            }
+          }
+        }
+      }
     });
 
     function payload() {

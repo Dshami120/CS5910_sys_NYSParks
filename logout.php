@@ -15,29 +15,15 @@ session_destroy();
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NYS Parks - Logout</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body data-page="logout">
-  <header class="site-header">
-    <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-      <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2"><span class="brand-badge">NY</span><span class="brand-mark text-dark">NYS Parks<br /><small>&amp; RECREATION</small></span></a>
-      <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
-        <li><a href="parks.php" class="nav-link-custom">Parks</a></li>
-        <li><a href="events.php" class="nav-link-custom">Events</a></li>
-        <li><a href="news.php" class="nav-link-custom">News</a></li>
-        <li><a href="login.php" class="nav-link-custom"><i class="bi bi-box-arrow-in-right"></i>Log In</a></li>
-      </ul>
-    </nav>
-  </header>
-  <main class="py-5">
+<?php
+// Set page metadata.
+$pageTitle = 'NYS Parks - Logout';
+$bodyPage = 'logout';
+$extraHead = '';
+?>
+<?php include __DIR__ . '/includes/header.php'; ?>
+
+<main class="py-5">
     <section class="container">
       <section class="row justify-content-center">
         <article class="col-lg-7">
@@ -54,7 +40,4 @@ header('Pragma: no-cache');
       </section>
     </section>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/app.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>

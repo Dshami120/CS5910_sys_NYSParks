@@ -1,76 +1,10 @@
 <?php
+// Load project setup.
 require 'bootstrap.php';
 $user = require_role($db, 'admin');
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = post('action');
-    if ($action === 'create_employee') {
-        [$first,$last] = split_name(post('full_name'));
-        if (!$first || !$last || !valid_email(post('email')) || strlen(post('password')) < 8) {
-            flash_set('error', 'Enter a full name, valid email, and password of at least 8 characters.');
-            redirect('admin-dashboard.php');
-        }
-        $db->prepare("INSERT INTO users (first_name,last_name,email,password_hash,role,phone,birthdate,notes,park_id,account_status) VALUES (?,?,?,?, 'employee',?,?,?,?, 'active')")
-                ->execute([$first,$last,strtolower(post('email')),password_hash(post('password'), PASSWORD_DEFAULT),post('phone') ?: null, post('birthdate') ?: null, post('notes') ?: null, (int) post('park_id') ?: null]);
-        flash_set('success', 'Employee account created.');
-        redirect('admin-dashboard.php');
-    }
-    if ($action === 'update_employee') {
-        $id = (int) post('employee_id');
-        [$first,$last] = split_name(post('full_name'));
-        $db->prepare("UPDATE users SET first_name=?, last_name=?, email=?, phone=?, birthdate=?, notes=?, park_id=? WHERE id=? AND role='employee'")
-                ->execute([$first,$last,strtolower(post('email')),post('phone') ?: null, post('birthdate') ?: null, post('notes') ?: null, (int) post('park_id') ?: null, $id]);
-        if (post('password') !== '') {
-            $db->prepare("UPDATE users SET password_hash=? WHERE id=? AND role='employee'")->execute([password_hash(post('password'), PASSWORD_DEFAULT), $id]);
-        }
-        flash_set('success', 'Employee account updated.');
-        redirect('admin-dashboard.php?employee_id=' . $id);
-    }
-    if ($action === 'disable_employee') {
-        $db->prepare("UPDATE users SET account_status='disabled' WHERE id=? AND role='employee'")->execute([(int) post('employee_id')]);
-        flash_set('success', 'Employee account disabled.');
-        redirect('admin-dashboard.php');
-    }
-    if (in_array($action, ['create_news','update_news','delete_news'], true)) {
-        $newsId = (int) post('news_id');
-        $allowedTopics = ['alerts','community','events','parks','safety','support','conservation','volunteer','maintenance','education','seasonal'];
-        $allowedStatuses = ['draft','published','archived'];
-        if ($action === 'delete_news') {
-            if ($newsId <= 0) {
-                flash_set('error', 'Select a news item to delete.');
-                redirect('admin-dashboard.php#news-manager');
-            }
-            $db->prepare("DELETE FROM news WHERE id=?")->execute([$newsId]);
-            flash_set('success', 'News item deleted.');
-            redirect('admin-dashboard.php#news-manager');
-        }
-        $topic = post('topic') ?: 'community';
-        $status = post('news_status') ?: 'draft';
-        if (!in_array($topic, $allowedTopics, true)) { $topic = 'community'; }
-        if (!in_array($status, $allowedStatuses, true)) { $status = 'draft'; }
-        if (post('title') === '' || post('summary') === '' || post('content') === '' || post('region') === '') {
-            flash_set('error', 'News title, summary, content, and region are required.');
-            redirect('admin-dashboard.php#news-manager');
-        }
-        $publishedDate = post('published_date') ?: date('Y-m-d');
-        $isFeatured = post('is_featured') === '1' ? 1 : 0;
-        if ($action === 'create_news') {
-            $db->prepare("INSERT INTO news (title, topic, published_date, region, summary, content, image_url, image_alt, card_summary, tag, is_featured, news_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)")
-                    ->execute([post('title'), $topic, $publishedDate, post('region'), post('summary'), post('content'), post('image_url') ?: null, post('image_alt') ?: null, post('card_summary') ?: null, post('tag') ?: ucwords(str_replace('_',' ', $topic)), $isFeatured, $status]);
-            flash_set('success', 'News item created.');
-            redirect('admin-dashboard.php#news-manager');
-        }
-        if ($action === 'update_news') {
-            if ($newsId <= 0) {
-                flash_set('error', 'Select a news item to update.');
-                redirect('admin-dashboard.php#news-manager');
-            }
-            $db->prepare("UPDATE news SET title=?, topic=?, published_date=?, region=?, summary=?, content=?, image_url=?, image_alt=?, card_summary=?, tag=?, is_featured=?, news_status=? WHERE id=?")
-                    ->execute([post('title'), $topic, $publishedDate, post('region'), post('summary'), post('content'), post('image_url') ?: null, post('image_alt') ?: null, post('card_summary') ?: null, post('tag') ?: ucwords(str_replace('_',' ', $topic)), $isFeatured, $status, $newsId]);
-            flash_set('success', 'News item updated.');
-            redirect('admin-dashboard.php?news_id=' . $newsId . '#news-manager');
-        }
-    }
-}
+// Employee and news mutations were moved to the dedicated admin pages.
+// Employee changes: admin-employee-accounts.php
+// News changes: admin-news.php
 $parksCount = (int) $db->query("SELECT COUNT(*) FROM parks")->fetchColumn();
 $publishedEventsCount = (int) $db->query("SELECT COUNT(*) FROM events WHERE event_status='published'")->fetchColumn();
 $approvedBookingsCount = (int) $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status IN ('approved','confirmed')")->fetchColumn();
@@ -90,8 +24,8 @@ foreach ($db->query("SELECT DATE(e.start_datetime) AS date, p.name AS park, 'eve
 foreach ($db->query("SELECT DATE(a.registered_at) AS date, p.name AS park, 'attendance' AS metric, a.guest_count AS value FROM attendance a JOIN events e ON e.id=a.event_id JOIN parks p ON p.id=e.park_id WHERE a.attendance_status IN ('registered','attended') ORDER BY a.registered_at")->fetchAll() as $row) { $adminChartRows[] = $row; }
 foreach ($db->query("SELECT DATE(py.created_at) AS date, COALESCE(p.name, 'No park') AS park, 'donations' AS metric, py.amount AS value FROM payments py LEFT JOIN bookings b ON b.id=py.booking_id LEFT JOIN parks p ON p.id=b.park_id WHERE py.payment_type='donation' AND py.payment_status='completed' ORDER BY py.created_at")->fetchAll() as $row) { $adminChartRows[] = $row; }
 $trafficAvailable = false;
-$newsTopics = ['alerts','community','events','parks','safety','support','conservation','volunteer','maintenance','education','seasonal'];
-$newsStatuses = ['draft','published','archived'];
+$newsTopics = NEWS_TOPICS;
+$newsStatuses = NEWS_STATUSES;
 $newsSearch = get('news_q');
 $newsParams = [];
 $newsSql = "SELECT * FROM news WHERE 1=1";
@@ -118,51 +52,14 @@ $selectedId = (int) get('employee_id');
 $selected = null;
 if ($selectedId) { $stmt=$db->prepare("SELECT * FROM users WHERE id=? AND role='employee'"); $stmt->execute([$selectedId]); $selected=$stmt->fetch(); }
 if (!$selected && $employees) { $selected = $employees[0]; }
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NYS Parks - Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body data-page="admin-dashboard">
-<header class="site-header">
-    <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-        <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
-            <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2">
-                <span class="brand-badge">NY</span>
-                <span class="brand-mark text-dark">
-            NYS Parks<br />
-            <small>&amp; RECREATION</small>
-          </span>
-            </a>
-            <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-                <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-                <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-                <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-                <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-                <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
-                <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
-                <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
-                <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
-                <!--
-              <li><a href="admin-dashboard.php" class="nav-link-custom active" data-page-link="admin-dashboard"><i class="bi bi-speedometer2"></i>Admin Dash</a></li>
-              <li><a href="admin-employee-schedule.php" class="nav-link-custom" data-page-link="admin-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
-              <li><a href="admin-pto.php" class="nav-link-custom" data-page-link="admin-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
-              <li><a href="admin-bookings.php" class="nav-link-custom" data-page-link="admin-bookings"><i class="bi bi-journal-check"></i>Bookings</a></li>
-              -->
-            </ul>
-        </section>
-        <ul class="list-unstyled d-flex flex-wrap gap-3 m-0 align-items-center">
-            <li><a href="admin-xml.php" class="nav-link-custom" data-page-link="admin-xml"><i class="bi bi-filetype-xml"></i>CSV</a></li>
-            <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-            <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
-        </ul>
-    </nav>
-</header>
+?><?php
+// Set page metadata.
+$pageTitle = 'NYS Parks - Admin Dashboard';
+$bodyPage = 'admin-dashboard';
+$extraHead = '';
+?>
+<?php include __DIR__ . '/includes/header.php'; ?>
+
 <main class="container py-5">
     <?php if ($flash): ?><div class="alert alert-<?= $flash['type']==='error'?'danger':'success' ?> mb-4"><?= e($flash['message']) ?></div><?php endif; ?>
     <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
@@ -178,7 +75,7 @@ if (!$selected && $employees) { $selected = $employees[0]; }
             <a class="btn btn-outline-dark" href="admin-bookings.php"><i class="bi bi-journal-check"></i> Client Bookings</a>
             <a class="btn btn-outline-dark" href="admin-news.php"><i class="bi bi-journal-check"></i> News Manager</a>
             <a class="btn btn-outline-dark" href="admin-employee-accounts.php"><i class="bi bi-journal-check"></i> Employee Accounts</a>
-            <a class="btn btn-outline-dark" href="admin-xml.php"><i class="bi bi-journal-check"></i> CSV</a>
+            <a class="btn btn-outline-dark" href="admin-csv.php"><i class="bi bi-journal-check"></i> CSV</a>
         </div>
     </section>
 
@@ -359,67 +256,9 @@ if (!$selected && $employees) { $selected = $employees[0]; }
         </div>
     </section>
 </main>
-
-<!-- SHARED FOOTER -->
-<footer class="footer-shell py-5 mt-5">
-    <section class="container">
-        <section class="footer-five">
-            <article class="footer-block footer-brand">
-                <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2 mb-3">
-                    <span class="brand-badge">NY</span>
-                    <span class="brand-mark text-dark">
-              NYS Parks<br />
-              <small>&amp; RECREATION</small>
-            </span>
-                </a>
-                <p class="text-muted mb-0">
-                    A modern gateway to New York State parks, events, maps, news, and role-based operations.
-                </p>
-            </article>
-            <article class="footer-block">
-                <h2 class="h6 fw-bold mb-3">Explore</h2>
-                <ul class="list-unstyled m-0">
-                    <li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li>
-                    <li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li>
-                    <li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li>
-                    <li class="mb-2"><a href="ai.php" class="text-muted text-decoration-none">AI</a></li>
-                    <li class="mb-2"><a href="news.php" class="text-muted text-decoration-none">News</a></li>
-                </ul>
-            </article>
-            <article class="footer-block">
-                <h2 class="h6 fw-bold mb-3">Account</h2>
-                <ul class="list-unstyled m-0">
-                    <li class="mb-2"><a href="about.php" class="text-muted text-decoration-none">About</a></li>
-                    <li class="mb-2"><a href="faq.php" class="text-muted text-decoration-none">FAQ</a></li>
-                    <li class="mb-2"><a href="donate.php" class="text-muted text-decoration-none">Donate</a></li>
-                    <li class="mb-2"><a href="login.php" class="text-muted text-decoration-none">Log In</a></li>
-                    <li class="mb-2"><a href="register.php" class="text-muted text-decoration-none">Register</a></li>
-                    <li class="mb-2"><a href="account.php" class="text-muted text-decoration-none">Account</a></li>
-                </ul>
-            </article>
-            <article class="footer-block">
-                <h2 class="h6 fw-bold mb-3">Portals</h2>
-                <ul class="list-unstyled m-0">
-                    <li class="mb-2"><a href="client-dashboard.php" class="text-muted text-decoration-none">Client Dashboard</a></li>
-                    <li class="mb-2"><a href="admin-dashboard.php" class="text-muted text-decoration-none">Admin Dashboard</a></li>
-                    <li class="mb-2"><a href="employee-dashboard.php" class="text-muted text-decoration-none">Employee Dashboard</a></li>
-                </ul>
-            </article>
-            <article class="footer-block">
-                <h2 class="h6 fw-bold mb-3">Contact</h2>
-                <p class="text-muted mb-2">info@nysparks.gov</p>
-                <p class="text-muted mb-2">(555) 123-4567</p>
-                <p class="text-muted mb-0">Albany, New York</p>
-            </article>
-        </section>
-    </section>
-</footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="js/dashboard-charts.js"></script>
+<script src="js/dashboard-charts.js?v=3"></script>
 <script>
     window.initAdminDashboardChart(<?= json_encode($adminChartRows, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>);
 </script>
-<script src="js/app.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>

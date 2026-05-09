@@ -1,34 +1,98 @@
 <?php
+// Load project setup.
 require 'bootstrap.php';
 $user = require_role($db, 'employee');
+// Handle submitted form actions.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Route PTO create/cancel actions.
     $action = post('action', 'create');
+
     if ($action === 'cancel') {
+        // Cancel only this employee's pending PTO request.
         $requestId = (int) post('pto_id');
-        $db->prepare("UPDATE pto_requests SET pto_status='cancelled' WHERE id=? AND employee_id=? AND pto_status='pending'")->execute([$requestId, $user['id']]);
-        flash_set('success', 'Pending PTO request cancelled.');
+
+        $cancelStmt = $db->prepare("
+            UPDATE pto_requests
+            SET pto_status='cancelled'
+            WHERE id=?
+              AND employee_id=?
+              AND pto_status='pending'
+        ");
+        $cancelStmt->execute([$requestId, $user['id']]);
+
+        if ($cancelStmt->rowCount() > 0) {
+            flash_set('success', 'Pending PTO request cancelled.');
+        } else {
+            flash_set('error', 'PTO request could not be cancelled. It may have already been reviewed.');
+        }
+
         redirect('employee-pto.php');
     }
+
+    // Read PTO form values.
     $leave = post('leave_type');
     $start = post('start_date');
     $end = post('end_date');
     $reason = post('reason');
+
     if (!$leave || !$start || !$end) {
         flash_set('error', 'Complete the PTO form.');
         redirect('employee-pto.php');
     }
+
+    // Prevent past PTO requests.
+    if ($start < date('Y-m-d')) {
+        flash_set('error', 'PTO start date cannot be in the past.');
+        redirect('employee-pto.php');
+    }
+
     if ($start > $end) {
         flash_set('error', 'End date must be on or after start date.');
         redirect('employee-pto.php');
     }
-    $dup = $db->prepare("SELECT COUNT(*) FROM pto_requests WHERE employee_id=? AND pto_status IN ('pending','approved') AND NOT (end_date < ? OR start_date > ?)");
+
+    // Validate leave type against expected options.
+    $validLeaveTypes = ['Vacation', 'Sick Leave', 'Personal Leave', 'Bereavement'];
+
+    if (!in_array($leave, $validLeaveTypes, true)) {
+        flash_set('error', 'Please choose a valid leave type.');
+        redirect('employee-pto.php');
+    }
+
+    // Prevent overlapping pending or approved PTO.
+    $dup = $db->prepare("
+        SELECT COUNT(*)
+        FROM pto_requests
+        WHERE employee_id=?
+          AND pto_status IN ('pending','approved')
+          AND NOT (end_date < ? OR start_date > ?)
+    ");
     $dup->execute([$user['id'], $start, $end]);
+
     if ((int) $dup->fetchColumn() > 0) {
         flash_set('error', 'That PTO range overlaps an existing request.');
         redirect('employee-pto.php');
     }
-    $db->prepare("INSERT INTO pto_requests (employee_id, leave_type, start_date, end_date, reason, pto_status) VALUES (?,?,?,?,?, 'pending')")
-       ->execute([$user['id'], $leave, $start, $end, $reason ?: null]);
+
+    // Save new PTO request.
+    $db->prepare("
+        INSERT INTO pto_requests (
+            employee_id,
+            leave_type,
+            start_date,
+            end_date,
+            reason,
+            pto_status
+        )
+        VALUES (?,?,?,?,?, 'pending')
+    ")->execute([
+        $user['id'],
+        $leave,
+        $start,
+        $end,
+        $reason ?: null
+    ]);
+
     flash_set('success', 'PTO request submitted.');
     redirect('employee-pto.php');
 }
@@ -36,55 +100,15 @@ $stmt = $db->prepare("SELECT * FROM pto_requests WHERE employee_id=? ORDER BY cr
 $stmt->execute([$user['id']]);
 $requests = $stmt->fetchAll();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NYS Parks - Employee PTO</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body data-page="employee-pto">
-  <header class="site-header">
-    <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-      <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
-        <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2">
-          <span class="brand-badge">NY</span>
-          <span class="brand-mark text-dark">
-            NYS Parks<br />
-            <small>&amp; RECREATION</small>
-          </span>
-        </a>
-          <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-              <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-              <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-              <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-              <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-              <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
-              <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
-              <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
-              <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
-              <!--<li><a href="employee-dashboard.php" class="nav-link-custom active" data-page-link="employee-dashboard"><i class="bi bi-speedometer2"></i>Employee Dash</a></li>
-              <li><a href="employee-schedule.php" class="nav-link-custom" data-page-link="employee-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
-              <li><a href="employee-pto.php" class="nav-link-custom" data-page-link="employee-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
-          -->
-          </ul>
-      </section>
-        <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
-            <?php if ($currentUser): ?>
-                <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-                <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
-            <?php else: ?>
-                <li><a href="login.php" class="nav-link-custom" data-page-link="login">Log In</a></li>
-                <li><a href="register.php" class="btn btn-dark nav-pill-btn" data-page-link="register">Register</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-  </header>
+<?php
+// Set page metadata.
+$pageTitle = 'NYS Parks - Employee PTO';
+$bodyPage = 'employee-pto';
+$extraHead = '';
+?>
+<?php include __DIR__ . '/includes/header.php'; ?>
 
-        <main class="py-5">
+<main class="py-5">
             <section class="container">
                 <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
                     <div>
@@ -93,7 +117,7 @@ $requests = $stmt->fetchAll();
                         <p class="text-muted mb-0">Submit new time-off requests and check the status of recent submissions.</p>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
-                        <a class="btn btn-outline-dark" href="employee-dashboard.php"><i class="bi bi-speedometer2"></i> Employee Dash</a></li>
+                        <a class="btn btn-outline-dark" href="employee-dashboard.php"><i class="bi bi-speedometer2"></i> Employee Dash</a>
                         <a class="btn btn-outline-dark" href="employee-schedule.php"><i class="bi bi-calendar3"></i> Employee Schedule</a>
                         <a class="btn btn-success" href="employee-pto.php"><i class="bi bi-calendar-event me-1"></i>Employee PTO</a>
                     </div>
@@ -129,69 +153,49 @@ $requests = $stmt->fetchAll();
                 <article class="col-md-4 fw-bold">Actions</article>
               </section>
             </section>
-            <?php foreach ($requests as $i => $row): ?>
-            <section class="<?= $i < count($requests) - 1 ? 'list-row' : '' ?> p-4"><section class="row g-3 align-items-center"><article class="col-md-2"><?= format_date($row['start_date']) ?><?= $row['start_date'] !== $row['end_date'] ? '–' . format_date($row['end_date']) : '' ?></article><article class="col-md-2 text-muted"><?= e($row['leave_type']) ?></article><article class="col-md-2 text-muted"><?= format_date($row['created_at']) ?></article><article class="col-md-2"><span class="status-pill <?= booking_status_class($row['pto_status']) ?>"><?= e(ucfirst($row['pto_status'])) ?></span></article><article class="col-md-4"><?php if ($row['pto_status'] === 'pending'): ?><form method="post" class="mb-0"><input type="hidden" name="action" value="cancel"><input type="hidden" name="pto_id" value="<?= (int)$row['id'] ?>"><button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">Cancel request</button></form><?php else: ?><span class="text-muted small">No action</span><?php endif; ?></article></section></section>
-            <?php endforeach; ?>
+              <?php foreach ($requests as $i => $row): ?>
+                  <!-- PTO request row -->
+                  <section class="<?= $i < count($requests) - 1 ? 'list-row' : '' ?> p-4">
+                      <section class="row g-3 align-items-center">
+                          <article class="col-md-2">
+                              <?= format_date($row['start_date']) ?>
+                              <?= $row['start_date'] !== $row['end_date'] ? '–' . format_date($row['end_date']) : '' ?>
+                          </article>
+
+                          <article class="col-md-2 text-muted">
+                              <?= e($row['leave_type']) ?>
+                          </article>
+
+                          <article class="col-md-2 text-muted">
+                              <?= format_date($row['created_at']) ?>
+                          </article>
+
+                          <article class="col-md-2">
+                <span class="status-pill <?= booking_status_class($row['pto_status']) ?>">
+                    <?= e(ucfirst($row['pto_status'])) ?>
+                </span>
+                          </article>
+
+                          <article class="col-md-4">
+                              <?php if ($row['pto_status'] === 'pending'): ?>
+                                  <form method="post" class="mb-0">
+                                      <input type="hidden" name="action" value="cancel">
+                                      <input type="hidden" name="pto_id" value="<?= (int) $row['id'] ?>">
+                                      <button class="btn btn-sm btn-outline-danger rounded-pill" type="submit">
+                                          Cancel request
+                                      </button>
+                                  </form>
+                              <?php else: ?>
+                                  <span class="text-muted small">No action</span>
+                              <?php endif; ?>
+                          </article>
+                      </section>
+                  </section>
+              <?php endforeach; ?>
             <?php if (!$requests): ?><section class="p-4"><section class="row g-3 align-items-center"><article class="col-12 text-muted">No PTO requests yet.</article></section></section><?php endif; ?>
           </section>
         </article>
       </section>
     </section>
   </main>
-  <footer class="footer-shell py-5 mt-5">
-    <section class="container">
-      <section class="footer-five">
-        <article class="footer-block footer-brand">
-          <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2 mb-3">
-            <span class="brand-badge">NY</span>
-            <span class="brand-mark text-dark">
-              NYS Parks<br />
-              <small>&amp; RECREATION</small>
-            </span>
-          </a>
-          <p class="text-muted mb-0">
-            A modern gateway to New York State parks, events, maps, news, and role-based operations.
-          </p>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Explore</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li>
-            <li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li>
-            <li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li>
-            <li class="mb-2"><a href="ai.php" class="text-muted text-decoration-none">AI</a></li>
-            <li class="mb-2"><a href="news.php" class="text-muted text-decoration-none">News</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Account</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="about.php" class="text-muted text-decoration-none">About</a></li>
-            <li class="mb-2"><a href="faq.php" class="text-muted text-decoration-none">FAQ</a></li>
-            <li class="mb-2"><a href="donate.php" class="text-muted text-decoration-none">Donate</a></li>
-            <li class="mb-2"><a href="login.php" class="text-muted text-decoration-none">Log In</a></li>
-            <li class="mb-2"><a href="register.php" class="text-muted text-decoration-none">Register</a></li>
-            <li class="mb-2"><a href="account.php" class="text-muted text-decoration-none">Account</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Portals</h2>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="client-dashboard.php" class="text-muted text-decoration-none">Client Dashboard</a></li>
-            <li class="mb-2"><a href="admin-dashboard.php" class="text-muted text-decoration-none">Admin Dashboard</a></li>
-            <li class="mb-2"><a href="employee-dashboard.php" class="text-muted text-decoration-none">Employee Dashboard</a></li>
-          </ul>
-        </article>
-        <article class="footer-block">
-          <h2 class="h6 fw-bold mb-3">Contact</h2>
-          <p class="text-muted mb-2">info@nysparks.gov</p>
-          <p class="text-muted mb-2">(555) 123-4567</p>
-          <p class="text-muted mb-0">Albany, New York</p>
-        </article>
-      </section>
-    </section>
-  </footer>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/app.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>

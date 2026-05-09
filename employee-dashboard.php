@@ -1,6 +1,9 @@
 <?php
+// Load project setup.
 require 'bootstrap.php';
 $user = require_role($db, 'employee');
+
+// Load employee dashboard metrics.
 $stmt = $db->prepare("SELECT s.*, p.name AS park_name FROM employee_schedules s JOIN parks p ON p.id=s.park_id WHERE s.employee_id=? AND s.shift_date >= CURDATE() AND s.schedule_status <> 'cancelled' ORDER BY s.shift_date, s.start_time LIMIT 1");
 $stmt->execute([$user['id']]); $nextShift = $stmt->fetch();
 $stmt = $db->prepare("SELECT COALESCE(SUM(TIMESTAMPDIFF(HOUR, start_time, end_time)),0) FROM employee_schedules WHERE employee_id=? AND YEARWEEK(shift_date,1)=YEARWEEK(CURDATE(),1) AND schedule_status <> 'cancelled'");
@@ -10,53 +13,13 @@ $stmt->execute([$user['id']]); $ptoPending = (int)$stmt->fetchColumn();
 $stmt = $db->prepare("SELECT s.*, p.name AS park_name FROM employee_schedules s JOIN parks p ON p.id=s.park_id WHERE s.employee_id=? AND s.shift_date >= CURDATE() AND s.schedule_status <> 'cancelled' ORDER BY s.shift_date ASC, s.start_time ASC LIMIT 5");
 $stmt->execute([$user['id']]); $shifts = $stmt->fetchAll();
 $ptoStatusText = $ptoPending === 0 ? 'No requests currently in review.' : ($ptoPending === 1 ? '1 request currently in review.' : $ptoPending . ' requests currently in review.');
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NYS Parks - Employee Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body data-page="employee-dashboard">
-<header class="site-header">
-    <nav class="container py-3 d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-        <section class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 gap-lg-4">
-            <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2">
-                <span class="brand-badge">NY</span>
-                <span class="brand-mark text-dark">
-            NYS Parks<br />
-            <small>&amp; RECREATION</small>
-          </span>
-            </a>
-            <ul class="list-unstyled d-flex flex-wrap gap-3 gap-lg-4 m-0 align-items-center">
-                <li><a href="parks.php" class="nav-link-custom" data-page-link="parks"><i class="bi bi-tree"></i>Parks</a></li>
-                <li><a href="events.php" class="nav-link-custom" data-page-link="events"><i class="bi bi-calendar-event"></i>Events</a></li>
-                <li><a href="map.php" class="nav-link-custom" data-page-link="map"><i class="bi bi-geo-alt"></i>Map</a></li>
-                <li><a href="ai.php" class="nav-link-custom" data-page-link="ai"><i class="bi bi-stars"></i>AI</a></li>
-                <li><a href="news.php" class="nav-link-custom" data-page-link="news"><i class="bi bi-newspaper"></i>News</a></li>
-                <li><a href="about.php" class="nav-link-custom" data-page-link="about"><i class="bi bi-info-circle"></i>About Us</a></li>
-                <li><a href="faq.php" class="nav-link-custom" data-page-link="faq"><i class="bi bi-question-circle"></i>FAQ</a></li>
-                <li><a href="donate.php" class="nav-link-custom" data-page-link="donate"><i class="bi bi-heart"></i>Donate</a></li>
-                <!--<li><a href="employee-dashboard.php" class="nav-link-custom active" data-page-link="employee-dashboard"><i class="bi bi-speedometer2"></i>Employee Dash</a></li>
-                <li><a href="employee-schedule.php" class="nav-link-custom" data-page-link="employee-schedule"><i class="bi bi-calendar3"></i>Schedule</a></li>
-                <li><a href="employee-pto.php" class="nav-link-custom" data-page-link="employee-pto"><i class="bi bi-briefcase"></i>PTO</a></li>
-            -->
-            </ul>
-        </section>
-        <ul class="list-unstyled d-flex flex-wrap gap-2 gap-lg-3 m-0 align-items-center">
-            <?php if ($currentUser): ?>
-                <li><a href="account.php" class="nav-link-custom" data-page-link="account"><i class="bi bi-person-circle"></i>Account</a></li>
-                <li><a href="logout.php" class="btn btn-dark nav-pill-btn" data-page-link="logout"><i class="bi bi-box-arrow-right"></i>Logout</a></li>
-            <?php else: ?>
-                <li><a href="login.php" class="nav-link-custom" data-page-link="login">Log In</a></li>
-                <li><a href="register.php" class="btn btn-dark nav-pill-btn" data-page-link="register">Register</a></li>
-            <?php endif; ?>
-        </ul>
-    </nav>
-</header>
+?><?php
+// Set page metadata.
+$pageTitle = 'NYS Parks - Employee Dashboard';
+$bodyPage = 'employee-dashboard';
+$extraHead = '';
+?>
+<?php include __DIR__ . '/includes/header.php'; ?>
 
 <main class="py-5">
     <section class="container">
@@ -67,21 +30,19 @@ $ptoStatusText = $ptoPending === 0 ? 'No requests currently in review.' : ($ptoP
         <p class="text-muted mb-0">Employees can only view their schedule and submit PTO requests.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-success" href="employee-dashboard.php"><i class="bi bi-speedometer2"></i> Employee Dash</a></li>
+        <a class="btn btn-success" href="employee-dashboard.php"><i class="bi bi-speedometer2"></i> Employee Dash</a>
         <a class="btn btn-outline-dark" href="employee-schedule.php"><i class="bi bi-calendar3"></i> Employee Schedule</a>
         <a class="btn btn-outline-dark" href="employee-pto.php"><i class="bi bi-calendar-event me-1"></i>Employee PTO</a>
     </div>
 </section>
 
-
-<main class="py-5">
-    <section class="container">
+        <!-- Employee summary cards. -->
         <section class="row g-4 mb-4">
             <article class="col-xl-8">
                 <section class="soft-card p-4 p-lg-5 h-100">
                     <p class="section-kicker mb-2">Employee Notifications</p>
                     <h1 class="h2 fw-bold mb-1">Shift & PTO Cards</h1>
-                    <p class="text-muted mb-0">quick at a glance summary for current schedule and pto statuses.</p>
+                    <p class="text-muted mb-0">Quick at-a-glance summary for current schedule and PTO statuses.</p>
 
                     <section class="row g-3 mt-4">
                         <article class="col-md-4"><section class="stats-card h-100"><p class="small text-uppercase text-muted mb-1">Next shift</p><h2 class="h5 fw-bold mb-2"><?= $nextShift ? date('M d', strtotime($nextShift['shift_date'])) : 'No shift' ?></h2><p class="text-muted mb-0"><?= $nextShift ? e($nextShift['park_name']) . ' · ' . date('g:i A', strtotime($nextShift['start_time'])) . '–' . date('g:i A', strtotime($nextShift['end_time'])) : 'No upcoming shift assigned.' ?></p></section></article>
@@ -114,60 +75,4 @@ $ptoStatusText = $ptoPending === 0 ? 'No requests currently in review.' : ($ptoP
         </section>
     </section>
 </main>
-<footer class="footer-shell py-5 mt-5">
-    <section class="container">
-        <section class="footer-five">
-            <article class="footer-block footer-brand">
-                <a href="index.php" class="brand-link text-decoration-none d-inline-flex align-items-center gap-2 mb-3">
-                    <span class="brand-badge">NY</span>
-                    <span class="brand-mark text-dark">
-              NYS Parks<br />
-              <small>&amp; RECREATION</small>
-            </span>
-                </a>
-                <p class="text-muted mb-0">
-                    A modern gateway to New York State parks, events, maps, news, and role-based operations.
-                </p>
-            </article>
-            <article class="footer-block">
-                <h2 class="h6 fw-bold mb-3">Explore</h2>
-                <ul class="list-unstyled m-0">
-                    <li class="mb-2"><a href="parks.php" class="text-muted text-decoration-none">Parks</a></li>
-                    <li class="mb-2"><a href="events.php" class="text-muted text-decoration-none">Events</a></li>
-                    <li class="mb-2"><a href="map.php" class="text-muted text-decoration-none">Map</a></li>
-                    <li class="mb-2"><a href="ai.php" class="text-muted text-decoration-none">AI</a></li>
-                    <li class="mb-2"><a href="news.php" class="text-muted text-decoration-none">News</a></li>
-                </ul>
-            </article>
-            <article class="footer-block">
-                <h2 class="h6 fw-bold mb-3">Account</h2>
-                <ul class="list-unstyled m-0">
-                    <li class="mb-2"><a href="about.php" class="text-muted text-decoration-none">About</a></li>
-                    <li class="mb-2"><a href="faq.php" class="text-muted text-decoration-none">FAQ</a></li>
-                    <li class="mb-2"><a href="donate.php" class="text-muted text-decoration-none">Donate</a></li>
-                    <li class="mb-2"><a href="login.php" class="text-muted text-decoration-none">Log In</a></li>
-                    <li class="mb-2"><a href="register.php" class="text-muted text-decoration-none">Register</a></li>
-                    <li class="mb-2"><a href="account.php" class="text-muted text-decoration-none">Account</a></li>
-                </ul>
-            </article>
-            <article class="footer-block">
-                <h2 class="h6 fw-bold mb-3">Portals</h2>
-                <ul class="list-unstyled m-0">
-                    <li class="mb-2"><a href="client-dashboard.php" class="text-muted text-decoration-none">Client Dashboard</a></li>
-                    <li class="mb-2"><a href="admin-dashboard.php" class="text-muted text-decoration-none">Admin Dashboard</a></li>
-                    <li class="mb-2"><a href="employee-dashboard.php" class="text-muted text-decoration-none">Employee Dashboard</a></li>
-                </ul>
-            </article>
-            <article class="footer-block">
-                <h2 class="h6 fw-bold mb-3">Contact</h2>
-                <p class="text-muted mb-2">info@nysparks.gov</p>
-                <p class="text-muted mb-2">(555) 123-4567</p>
-                <p class="text-muted mb-0">Albany, New York</p>
-            </article>
-        </section>
-    </section>
-</footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/app.js"></script>
-</body>
-</html>
+<?php include __DIR__ . '/includes/footer.php'; ?>

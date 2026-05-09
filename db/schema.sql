@@ -52,6 +52,7 @@ CREATE TABLE users (
     phone VARCHAR(25) NULL,
     birthdate DATE NULL,
     organization VARCHAR(120) NULL,
+    profile_image_url VARCHAR(255) NULL,
     notes TEXT NULL,
     park_id INT NULL,
     account_status ENUM('active','locked','disabled') NOT NULL DEFAULT 'active',

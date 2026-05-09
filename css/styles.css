@@ -141,6 +141,18 @@ main {
   box-shadow: 0 4px 14px rgba(0,0,0,0.12);
 }
 
+.profile-account-chip {
+  padding: 0.25rem 0.45rem;
+  border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.profile-account-chip:hover,
+.profile-account-chip.active {
+  background: rgba(46, 125, 50, 0.1);
+  transform: translateY(-1px);
+}
+
 /* -------------------------------
    HERO / FEATURE PANELS
 -------------------------------- */
@@ -991,7 +1003,7 @@ main {
 .summary-line,.impact-list-item { display:flex; justify-content:space-between; gap:1rem; padding:.65rem 0; border-top:1px solid var(--nys-border); }
 .summary-line:first-child,.impact-list-item:first-child { border-top:0; padding-top:0; }
 .impact-dollar { min-width:56px; font-weight:800; color:#0f274e; }
-.xml-preview { white-space:pre-wrap; font-size:.82rem; background:#f8fafc; padding:1rem; border-radius:1rem; border:1px solid var(--nys-border); }
+.csv-preview { white-space:pre-wrap; font-size:.82rem; background:#f8fafc; padding:1rem; border-radius:1rem; border:1px solid var(--nys-border); }
 .section-soft-green { background: linear-gradient(180deg, #f5fcf8, #ffffff); }
 @media (max-width: 767.98px) {
   .news-card-image { min-height: 200px; }
@@ -1036,4 +1048,18 @@ body[data-page="news"] .news-article-content.show {
   body[data-page="news"] .news-card .image-cover-event {
     height: 200px;
   }
+}
+
+.ai-hero-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 1.5rem;
+  box-shadow: var(--nys-shadow);
+  color: var(--nys-text);
+  padding: 1.5rem;
+}
+
+.ai-chat-shell .card-header,
+.ai-chat-shell .card-body {
+  background: #fff;
 }
