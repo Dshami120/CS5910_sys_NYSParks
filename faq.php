@@ -181,6 +181,7 @@ $topicLabels = [
     'future'=>'Future Features'
 ];
 ?>
+
 <?php
 // Set page metadata.
 $pageTitle = 'NYS Parks - FAQ';
@@ -190,169 +191,169 @@ $extraHead = '';
 
 <?php include __DIR__ . '/includes/header.php'; ?>
 
-<!-- Page hero -->
-<section class="subpage-hero subpage-hero-faq text-white d-flex align-items-center">
-    <div class="subpage-hero-overlay"></div>
+    <!-- Page hero -->
+    <section class="subpage-hero subpage-hero-faq text-white d-flex align-items-center">
+        <div class="subpage-hero-overlay"></div>
 
-    <div class="container position-relative py-5">
-        <div class="row">
-            <div class="col-lg-8">
-                <span class="hero-kicker">HELP & SUPPORT</span>
-                <h1 class="display-5 fw-bold mb-3">Frequently asked questions</h1>
-                <p class="lead text-white-50 mb-0">This page answers common questions about the public NYS Parks build, including visiting, events, donations, and the capstone system itself.</p>
+        <div class="container position-relative py-5">
+            <div class="row">
+                <div class="col-lg-8">
+                    <span class="hero-kicker">HELP & SUPPORT</span>
+                    <h1 class="display-5 fw-bold mb-3">Frequently asked questions</h1>
+                    <p class="lead text-white-50 mb-0">This page answers common questions about the public NYS Parks build, including visiting, events, donations, and the capstone system itself.</p>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- Help cards -->
-<section class="py-5 border-bottom bg-light">
-    <div class="container">
-        <div class="row g-4 align-items-stretch">
+    <!-- Help cards -->
+    <section class="py-5 border-bottom bg-light">
+        <div class="container">
+            <div class="row g-4 align-items-stretch">
 
-            <!-- Quick help card -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100 rounded-4">
-                    <div class="card-body p-4">
-                        <p class="section-label mb-2">QUICK HELP</p>
-                        <h2 class="h4 fw-bold mb-3">Find answers fast</h2>
-                        <p class="text-muted mb-0">Use the search box or topic buttons below to narrow the FAQ list. This keeps the page easy to use and easy to explain in your demo.</p>
+                <!-- Quick help card -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 rounded-4">
+                        <div class="card-body p-4">
+                            <p class="section-label mb-2">QUICK HELP</p>
+                            <h2 class="h4 fw-bold mb-3">Find answers fast</h2>
+                            <p class="text-muted mb-0">Use the search box or topic buttons below to narrow the FAQ list. This keeps the page easy to use and easy to explain in your demo.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Public users card -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100 rounded-4">
-                    <div class="card-body p-4">
-                        <p class="section-label mb-2">PUBLIC FIRST</p>
-                        <h2 class="h4 fw-bold mb-3">Focused on public users</h2>
-                        <p class="text-muted mb-0">These answers mainly support the current public pages while still reinforcing how the role-based portals fit into the site.</p>
+                <!-- Public users card -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 rounded-4">
+                        <div class="card-body p-4">
+                            <p class="section-label mb-2">PUBLIC FIRST</p>
+                            <h2 class="h4 fw-bold mb-3">Focused on public users</h2>
+                            <p class="text-muted mb-0">These answers mainly support the current public pages while still reinforcing how the role-based portals fit into the site.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Future ready card -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100 rounded-4">
-                    <div class="card-body p-4">
-                        <p class="section-label mb-2">FUTURE READY</p>
-                        <h2 class="h4 fw-bold mb-3">Easy to expand</h2>
-                        <p class="text-muted mb-0">Right now the questions are stored in a PHP array. Later, they can move into a database table without changing the page layout.</p>
+                <!-- Future ready card -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm h-100 rounded-4">
+                        <div class="card-body p-4">
+                            <p class="section-label mb-2">FUTURE READY</p>
+                            <h2 class="h4 fw-bold mb-3">Easy to expand</h2>
+                            <p class="text-muted mb-0">Right now the questions are stored in a PHP array. Later, they can move into a database table without changing the page layout.</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<!-- FAQ search area -->
-<section class="py-5">
-    <div class="container">
-        <div class="row g-4 align-items-start">
+    <!-- FAQ search area -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row g-4 align-items-start">
 
-            <!-- Filter sidebar -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm faq-filter-card sticky-lg-top" style="top: 96px;">
-                    <div class="card-body p-4">
-                        <p class="section-label mb-2">SEARCH THE FAQ</p>
-                        <h2 class="h4 fw-bold mb-3">Need something specific?</h2>
-                        <p class="text-muted small mb-4">Type a keyword like <strong>events</strong>, <strong>donate</strong>, or <strong>account</strong> and the list will update automatically.</p>
+                <!-- Filter sidebar -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm faq-filter-card sticky-lg-top" style="top: 96px;">
+                        <div class="card-body p-4">
+                            <p class="section-label mb-2">SEARCH THE FAQ</p>
+                            <h2 class="h4 fw-bold mb-3">Need something specific?</h2>
+                            <p class="text-muted small mb-4">Type a keyword like <strong>events</strong>, <strong>donate</strong>, or <strong>account</strong> and the list will update automatically.</p>
 
-                        <!-- Search input -->
-                        <div class="mb-4">
-                            <label for="faqSearch" class="form-label">Search questions</label>
-                            <div class="input-group input-group-lg">
+                            <!-- Search input -->
+                            <div class="mb-4">
+                                <label for="faqSearch" class="form-label">Search questions</label>
+                                <div class="input-group input-group-lg">
                                 <span class="input-group-text bg-white">
                                     <i class="bi bi-search"></i>
                                 </span>
-                                <input type="text" class="form-control" id="faqSearch" placeholder="Search the FAQ...">
-                            </div>
-                        </div>
-
-                        <!-- Topic buttons -->
-                        <div class="mb-4">
-                            <label class="form-label d-block">Filter by topic</label>
-                            <div class="faq-topic-grid">
-                                <?php foreach($topicLabels as $topicValue=>$topicLabel): ?>
-                                    <button type="button" class="btn btn-outline-success faq-topic-button <?= $topicValue==='all'?'active':'' ?>" data-faq-topic="<?= e($topicValue) ?>">
-                                        <?= e($topicLabel) ?>
-                                    </button>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-
-                        <!-- Filter controls -->
-                        <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                            <span class="text-muted small" id="faqResultsText">Showing <?= count($faqItems) ?> questions</span>
-                            <button type="button" class="btn btn-sm btn-link text-success text-decoration-none p-0" id="resetFaqFilters">Reset</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FAQ list column -->
-            <div class="col-lg-8">
-
-                <!-- FAQ intro card -->
-                <div class="card border-0 shadow-sm faq-hero-card mb-4">
-                    <div class="card-body p-4 p-lg-5">
-                        <p class="section-label mb-2">SUPPORT CENTER</p>
-                        <h2 class="fw-bold mb-2">Clear answers for visitors and reviewers</h2>
-                        <p class="text-muted mb-0">This merged FAQ keeps the stronger search-and-filter experience from the alternate version while fitting the current site structure cleanly.</p>
-                    </div>
-                </div>
-
-                <!-- FAQ accordion -->
-                <div class="accordion faq-accordion" id="faqAccordion">
-                    <?php foreach($faqItems as $i=>$item): $collapse='faqItem'.$i; $search=strtolower($item['question'].' '.$item['answer'].' '.$item['topic']); ?>
-                        <div class="accordion-item border-0 mb-3 soft-card overflow-hidden faq-item" data-faq-topic="<?= e($item['topic']) ?>" data-search="<?= e($search) ?>">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button <?= $i===0?'':'collapsed' ?> fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#<?= e($collapse) ?>">
-                                    <?= e($item['question']) ?>
-                                </button>
-                            </h2>
-                            <div id="<?= e($collapse) ?>" class="accordion-collapse collapse <?= $i===0?'show':'' ?>" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body text-muted">
-                                    <?= e($item['answer']) ?>
+                                    <input type="text" class="form-control" id="faqSearch" placeholder="Search the FAQ...">
                                 </div>
                             </div>
+
+                            <!-- Topic buttons -->
+                            <div class="mb-4">
+                                <label class="form-label d-block">Filter by topic</label>
+                                <div class="faq-topic-grid">
+                                    <?php foreach($topicLabels as $topicValue=>$topicLabel): ?>
+                                        <button type="button" class="btn btn-outline-success faq-topic-button <?= $topicValue==='all'?'active':'' ?>" data-faq-topic="<?= e($topicValue) ?>">
+                                            <?= e($topicLabel) ?>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+
+                            <!-- Filter controls -->
+                            <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                <span class="text-muted small" id="faqResultsText">Showing <?= count($faqItems) ?> questions</span>
+                                <button type="button" class="btn btn-sm btn-link text-success text-decoration-none p-0" id="resetFaqFilters">Reset</button>
+                            </div>
                         </div>
-                    <?php endforeach; ?>
+                    </div>
                 </div>
 
-                <!-- Empty filter message -->
-                <div id="noFaqMessage" class="alert alert-light border d-none mt-4">
-                    <h3 class="h6 fw-bold mb-1">No FAQ items match your filters</h3>
-                    <p class="mb-0 text-muted">Try a different keyword or reset the selected topic.</p>
+                <!-- FAQ list column -->
+                <div class="col-lg-8">
+
+                    <!-- FAQ intro card -->
+                    <div class="card border-0 shadow-sm faq-hero-card mb-4">
+                        <div class="card-body p-4 p-lg-5">
+                            <p class="section-label mb-2">SUPPORT CENTER</p>
+                            <h2 class="fw-bold mb-2">Clear answers for visitors and reviewers</h2>
+                            <p class="text-muted mb-0">This merged FAQ keeps the stronger search-and-filter experience from the alternate version while fitting the current site structure cleanly.</p>
+                        </div>
+                    </div>
+
+                    <!-- FAQ accordion -->
+                    <div class="accordion faq-accordion" id="faqAccordion">
+                        <?php foreach($faqItems as $i=>$item): $collapse='faqItem'.$i; $search=strtolower($item['question'].' '.$item['answer'].' '.$item['topic']); ?>
+                            <div class="accordion-item border-0 mb-3 soft-card overflow-hidden faq-item" data-faq-topic="<?= e($item['topic']) ?>" data-search="<?= e($search) ?>">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button <?= $i===0?'':'collapsed' ?> fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#<?= e($collapse) ?>">
+                                        <?= e($item['question']) ?>
+                                    </button>
+                                </h2>
+                                <div id="<?= e($collapse) ?>" class="accordion-collapse collapse <?= $i===0?'show':'' ?>" data-bs-parent="#faqAccordion">
+                                    <div class="accordion-body text-muted">
+                                        <?= e($item['answer']) ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- Empty filter message -->
+                    <div id="noFaqMessage" class="alert alert-light border d-none mt-4">
+                        <h3 class="h6 fw-bold mb-1">No FAQ items match your filters</h3>
+                        <p class="mb-0 text-muted">Try a different keyword or reset the selected topic.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Keep exploring section -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm news-cta-card mt-4">
+                <div class="card-body p-4 p-lg-5">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-md-7">
+                            <p class="section-label mb-2">KEEP EXPLORING</p>
+                            <h2 class="h4 fw-bold mb-2">Turn updates into action</h2>
+                            <p class="text-muted mb-0">After reading statewide updates, public users can jump into the: <br> park directory, browse events, or support the system through the donate flow.</p>
+                        </div>
+                        <div class="col-md-5 text-md-end ">
+                            <a href="parks.php" class="btn btn-success px-4 me-2 mb-2 mb-md-0">Go to Parks</a>
+                            <a href="events.php" class="btn btn-success px-4 me-2 mb-2 mb-md-0">Go to Events</a>
+                            <a href="news.php" class="btn btn-success px-4 me-2 mb-2 mb-md-0">Go to News</a>
+                            <a href="donate.php" class="btn btn-outline-success px-5 ">Donate</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</section>
-
-<!-- keep exploring section -->
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm news-cta-card mt-4">
-            <div class="card-body p-4 p-lg-5">
-                <div class="row g-4 align-items-center">
-                    <div class="col-md-7">
-                        <p class="section-label mb-2">KEEP EXPLORING</p>
-                        <h2 class="h4 fw-bold mb-2">Turn updates into action</h2>
-                        <p class="text-muted mb-0">After reading statewide updates, public users can jump into the: <br> park directory, browse events, or support the system through the donate flow.</p>
-                    </div>
-                    <div class="col-md-5 text-md-end ">
-                        <a href="parks.php" class="btn btn-success px-4 me-2 mb-2 mb-md-0">Go to Parks</a>
-                        <a href="events.php" class="btn btn-success px-4 me-2 mb-2 mb-md-0">Go to Events</a>
-                        <a href="news.php" class="btn btn-success px-4 me-2 mb-2 mb-md-0">Go to News</a>
-                        <a href="donate.php" class="btn btn-outline-success px-5 ">Donate</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

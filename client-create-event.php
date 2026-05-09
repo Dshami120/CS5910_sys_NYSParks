@@ -1,16 +1,19 @@
 <?php
-// Load project setup.
+// Load setup and require client access.
 require 'bootstrap.php';
 $user = require_role($db, 'client');
+
+// Load park and field options.
 $parks = park_options($db);
 $fields = $db->query("SELECT f.*, p.name AS park_name FROM fields f JOIN parks p ON p.id=f.park_id WHERE availability_status='available' ORDER BY p.name, f.name")->fetchAll();
 $fieldMap = [];
+
 // Group available fields by park.
 foreach ($fields as $field) {
     $fieldMap[(int)$field['park_id']][] = $field;
 }
+
 // Handle booking request form.
-// Handle submitted form actions.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title = post('title');
     $parkId = (int) post('park_id');
@@ -23,235 +26,332 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $setup = post('requested_setup');
     $desc = post('event_description');
     $special = post('special_requests');
+
+    // Validate required booking fields.
     if (!$title || !$parkId || !$date || !$start || !$end || !$desc) {
         flash_set('error', 'Please complete all required fields.');
         redirect('client-create-event.php');
     }
+
+    // Build datetime values.
     $startDt = $date . ' ' . $start . ':00';
     $endDt = $date . ' ' . $end . ':00';
+
+    // Validate time order.
     if (strtotime($startDt) >= strtotime($endDt)) {
         flash_set('error', 'End time must be after start time.');
         redirect('client-create-event.php');
     }
+
+    // Validate future booking.
     if (strtotime($startDt) <= time()) {
         flash_set('error', 'Booking must be in the future.');
         redirect('client-create-event.php');
     }
+
+    // Validate selected field booking.
     if ($fieldId > 0) {
         $fieldStmt = $db->prepare("SELECT * FROM fields WHERE id=? AND park_id=? AND availability_status='available'");
         $fieldStmt->execute([$fieldId, $parkId]);
         $selectedField = $fieldStmt->fetch();
+
         if (!$selectedField) {
             flash_set('error', 'Please choose an available field for the selected park.');
             redirect('client-create-event.php');
         }
+
         if ($guestCount > (int)$selectedField['capacity']) {
             flash_set('error', 'Guest count cannot exceed the selected field capacity of ' . (int)$selectedField['capacity'] . '.');
             redirect('client-create-event.php');
         }
+
+        // Check field and whole-park overlaps.
         $overlap = $db->prepare("SELECT COUNT(*) FROM bookings WHERE field_id=? AND booking_status IN ('pending','approved','confirmed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $overlap->execute([$fieldId, $startDt, $endDt]);
+
         $eventOverlap = $db->prepare("SELECT COUNT(*) FROM events WHERE field_id=? AND event_status IN ('draft','published','closed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $eventOverlap->execute([$fieldId, $startDt, $endDt]);
+
         $wholeParkBookingOverlap = $db->prepare("SELECT COUNT(*) FROM bookings WHERE park_id=? AND field_id IS NULL AND booking_status IN ('pending','approved','confirmed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $wholeParkBookingOverlap->execute([$parkId, $startDt, $endDt]);
+
         $wholeParkEventOverlap = $db->prepare("SELECT COUNT(*) FROM events WHERE park_id=? AND field_id IS NULL AND event_status IN ('draft','published','closed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $wholeParkEventOverlap->execute([$parkId, $startDt, $endDt]);
+
         if (((int)$overlap->fetchColumn() + (int)$eventOverlap->fetchColumn() + (int)$wholeParkBookingOverlap->fetchColumn() + (int)$wholeParkEventOverlap->fetchColumn()) > 0) {
             flash_set('error', 'That field or the whole park already has an overlapping booking or event. Pending requests also block the same time slot.');
             redirect('client-create-event.php');
         }
     } else {
+        // Validate whole-park booking.
         $parkCapacityStmt = $db->prepare("SELECT max_capacity FROM parks WHERE id=?");
         $parkCapacityStmt->execute([$parkId]);
         $parkCapacity = (int) $parkCapacityStmt->fetchColumn();
+
         if ($parkCapacity <= 0) {
             flash_set('error', 'Selected park was not found.');
             redirect('client-create-event.php');
         }
+
         if ($guestCount > $parkCapacity) {
             flash_set('error', 'Guest count cannot exceed the selected park capacity of ' . $parkCapacity . ' when no field is selected.');
             redirect('client-create-event.php');
         }
+
+        // Check whole-park overlaps.
         $parkOverlap = $db->prepare("SELECT COUNT(*) FROM bookings WHERE park_id=? AND booking_status IN ('pending','approved','confirmed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $parkOverlap->execute([$parkId, $startDt, $endDt]);
+
         $parkEventOverlap = $db->prepare("SELECT COUNT(*) FROM events WHERE park_id=? AND event_status IN ('draft','published','closed') AND NOT (end_datetime <= ? OR start_datetime >= ?)");
         $parkEventOverlap->execute([$parkId, $startDt, $endDt]);
+
         if (((int)$parkOverlap->fetchColumn() + (int)$parkEventOverlap->fetchColumn()) > 0) {
             flash_set('error', 'That park already has an overlapping booking or event. Choose a field, date, or time that does not clash.');
             redirect('client-create-event.php');
         }
     }
+
+    // Save booking request.
     $fee = max(25, $guestCount * 4);
+
     $db->prepare("INSERT INTO bookings (client_id, park_id, field_id, title, booking_type, attendee_email, start_datetime, end_datetime, guest_count, requested_setup, event_description, special_requests, reservation_fee, booking_status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?, 'pending')")
-       ->execute([$user['id'], $parkId, $fieldId ?: null, $title, $bookingType, $user['email'], $startDt, $endDt, $guestCount, $setup ?: null, $desc, $special ?: null, $fee]);
+        ->execute([$user['id'], $parkId, $fieldId ?: null, $title, $bookingType, $user['email'], $startDt, $endDt, $guestCount, $setup ?: null, $desc, $special ?: null, $fee]);
+
     flash_set('success', 'Booking request submitted.');
     redirect('client-create-event.php');
 }
 ?>
+
 <?php
 // Set page metadata.
 $pageTitle = 'NYS Parks - Client Create Event';
 $bodyPage = 'client-create-event';
 $extraHead = '';
 ?>
+
 <?php include __DIR__ . '/includes/header.php'; ?>
 
-<main class="py-5">
-  <section class="container">
-  <!-- Client booking navigation. -->
-  <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-      <div>
-          <p class="eyebrow mb-2">Client Bookings</p>
-          <h1 class="display-6 fw-bold mb-2"> Event-Booking Requests</h1>
-          <p class="text-muted mb-0"> Take charge of your events. Create an event booking request today! </p>
-      </div>
-      <div class="d-flex flex-wrap gap-2">
-          <a class="btn btn-outline-dark" href="client-dashboard.php"><i class="bi bi-speedometer2"></i> Client Dash</a>
-          <a class="btn btn-success" href="client-create-event.php"><i class="bi bi-plus-circle me-1"></i>Create Event Request</a>
-          <a class="btn btn-outline-dark" href="events.php"><i class="bi bi-calendar-event me-1"></i>Public Calendar</a>
-      </div>
-  </section>
+    <main class="py-5">
+        <section class="container">
 
-  <!-- Booking request form and guidance. -->
-  <section class="row g-4">
-        <article class="col-xl-8">
-          <section class="feature-panel p-4 mb-4">
-            <p class="mb-1 fw-semibold">Client portal</p>
-            <h1 class="h3 fw-bold mb-1">Create Booking Request</h1>
-            <p class="mb-0 text-white-50">Clients submit requests here. Admins approve or deny them in the bookings queue.</p>
-          </section>
+            <!-- Client booking navigation. -->
+            <section class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                <div>
+                    <p class="eyebrow mb-2">Client Bookings</p>
+                    <h1 class="display-6 fw-bold mb-2"> Event-Booking Requests</h1>
+                    <p class="text-muted mb-0"> Take charge of your events. Create an event booking request today! </p>
+                </div>
 
-          <section class="form-panel p-4 p-lg-5">
-            <?php if ($flash): ?><div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?> mb-4"><?= e($flash['message']) ?></div><?php endif; ?>
-            <form method="post">
-              <section class="row g-4">
-                <article class="col-12">
-                  <label class="form-label">Event title</label>
-                  <input type="text" name="title" class="form-control form-control-lg" placeholder="e.g. Sunset Jazz Festival" required />
-                </article>
-                <article class="col-lg-6">
-                  <label class="form-label">Park location</label>
-                  <select name="park_id" id="park_id" class="form-select form-select-lg" required>
-                    <?php foreach ($parks as $park): ?>
-                    <option value="<?= $park['id'] ?>" data-capacity="<?= (int)($park['max_capacity'] ?? 0) ?>"><?= e($park['name']) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                </article>
-                <article class="col-lg-6">
-                  <label class="form-label">Event type</label>
-                  <select name="booking_type" class="form-select form-select-lg">
-                    <option>Music</option>
-                    <option>Festival</option>
-                    <option>Fitness</option>
-                    <option>Community</option>
-                    <option>Sports</option>
-                  </select>
-                </article>
-                <article class="col-lg-4">
-                  <label class="form-label">Date</label>
-                  <input type="date" name="booking_date" class="form-control form-control-lg" required />
-                </article>
-                <article class="col-lg-4">
-                  <label class="form-label">Start time</label>
-                  <input type="time" name="start_time" class="form-control form-control-lg" required />
-                </article>
-                <article class="col-lg-4">
-                  <label class="form-label">End time</label>
-                  <input type="time" name="end_time" class="form-control form-control-lg" required />
-                </article>
-                <article class="col-lg-6">
-                  <label class="form-label">Estimated attendees</label>
-                  <input type="number" name="guest_count" id="guest_count" class="form-control form-control-lg" placeholder="150" min="1" required />
-                  <div id="capacity_hint" class="form-text">Select a park or field to view the maximum capacity available.</div>
-                </article>
-                <article class="col-lg-6">
-                  <label class="form-label">Requested setup</label>
-                  <select name="requested_setup" class="form-select form-select-lg">
-                    <option>Stage + sound</option>
-                    <option>Tent area</option>
-                    <option>Sports field</option>
-                    <option>Picnic shelter</option>
-                  </select>
-                </article>
-                <article class="col-12">
-                  <label class="form-label">Preferred field or area</label>
-                  <select name="field_id" id="field_id" class="form-select form-select-lg">
-                    <option value="">No specific field</option>
-                    <?php foreach ($fields as $field): ?>
-                    <option value="<?= $field['id'] ?>" data-park="<?= $field['park_id'] ?>" data-capacity="<?= (int)$field['capacity'] ?>"><?= e($field['park_name']) ?> — <?= e($field['name']) ?> (capacity <?= (int)$field['capacity'] ?>)</option>
-                    <?php endforeach; ?>
-                  </select>
-                </article>
-                <article class="col-12">
-                  <label class="form-label">Event description</label>
-                  <textarea rows="5" name="event_description" class="form-control form-control-lg" placeholder="Purpose, audience, staffing, and setup notes" required></textarea>
-                </article>
-                <article class="col-12">
-                  <label class="form-label">Special requests</label>
-                  <textarea rows="3" name="special_requests" class="form-control" placeholder="Security, parking, power, permits, or ADA notes"></textarea>
-                </article>
-              </section>
-              <section class="d-flex flex-wrap gap-2 mt-4">
-                <button type="submit" class="btn btn-success rounded-pill px-4">Submit Booking Request</button>
-                <a href="client-dashboard.php" class="btn btn-outline-dark rounded-pill px-4">Back to Dashboard</a>
-              </section>
-            </form>
-          </section>
-        </article>
-
-        <article class="col-xl-4">
-          <section class="soft-card p-4 h-100">
-            <h2 class="h5 fw-bold mb-3">How this flows</h2>
-            <ol class="text-muted ps-3 mb-4">
-              <li class="mb-2">Client submits a booking request.</li>
-              <li class="mb-2">Admin reviews it in the bookings queue.</li>
-              <li class="mb-2">Admin approves or denies the request.</li>
-              <li class="mb-0">Approved requests appear on the client dashboard.</li>
-            </ol>
-            <section class="note-box">
-              This page now writes directly to the live bookings table and checks for overlapping field requests.
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-dark" href="client-dashboard.php">
+                        <i class="bi bi-speedometer2"></i> Client Dash
+                    </a>
+                    <a class="btn btn-success" href="client-create-event.php">
+                        <i class="bi bi-plus-circle me-1"></i>Create Event Request
+                    </a>
+                    <a class="btn btn-outline-dark" href="events.php">
+                        <i class="bi bi-calendar-event me-1"></i>Public Calendar
+                    </a>
+                </div>
             </section>
-          </section>
-        </article>
-  </section>
-  </section>
-</main>
-<script>
-    // Update capacity hints by selected park/field.
-    const parkSelect = document.getElementById('park_id');
-    const fieldSelect = document.getElementById('field_id');
-    const guestCountInput = document.getElementById('guest_count');
-    const capacityHint = document.getElementById('capacity_hint');
-    function updateCapacityHint() {
-      const selectedField = fieldSelect.selectedOptions[0];
-      const selectedPark = parkSelect.selectedOptions[0];
-      const fieldCapacity = selectedField && selectedField.value ? parseInt(selectedField.dataset.capacity || '0', 10) : 0;
-      const parkCapacity = selectedPark ? parseInt(selectedPark.dataset.capacity || '0', 10) : 0;
-      const limit = fieldCapacity || parkCapacity;
-      if (limit > 0) {
-        guestCountInput.max = String(limit);
-        capacityHint.textContent = fieldCapacity
-          ? `Selected field max capacity: ${limit}. Capacity available for this request: up to ${limit} guests.`
-          : `No field selected. Park max capacity: ${limit}. Capacity available for this request: up to ${limit} guests.`;
-      } else {
-        guestCountInput.removeAttribute('max');
-        capacityHint.textContent = 'Select a park or field to view the maximum capacity available.';
-      }
-    }
-    function filterFieldsByPark() {
-      const selectedPark = parkSelect.value;
-      Array.from(fieldSelect.options).forEach(option => {
-        if (!option.value) { option.hidden = false; return; }
-        option.hidden = option.dataset.park !== selectedPark;
-      });
-      if (fieldSelect.selectedOptions.length && fieldSelect.selectedOptions[0].hidden) {
-        fieldSelect.value = '';
-      }
-      updateCapacityHint();
-    }
-    parkSelect.addEventListener('change', filterFieldsByPark);
-    fieldSelect.addEventListener('change', updateCapacityHint);
-    filterFieldsByPark();
-  </script>
+
+            <!-- Booking request form and guidance. -->
+            <section class="row g-4">
+
+                <!-- Booking form column -->
+                <article class="col-xl-8">
+                    <section class="feature-panel p-4 mb-4">
+                        <p class="mb-1 fw-semibold">Client portal</p>
+                        <h1 class="h3 fw-bold mb-1">Create Booking Request</h1>
+                        <p class="mb-0 text-white-50">Clients submit requests here. Admins approve or deny them in the bookings queue.</p>
+                    </section>
+
+                    <section class="form-panel p-4 p-lg-5">
+
+                        <!-- Flash message -->
+                        <?php if ($flash): ?>
+                            <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?> mb-4">
+                                <?= e($flash['message']) ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Booking request form -->
+                        <form method="post">
+                            <section class="row g-4">
+
+                                <!-- Event title field -->
+                                <article class="col-12">
+                                    <label class="form-label">Event title</label>
+                                    <input type="text" name="title" class="form-control form-control-lg" placeholder="e.g. Sunset Jazz Festival" required />
+                                </article>
+
+                                <!-- Park location field -->
+                                <article class="col-lg-6">
+                                    <label class="form-label">Park location</label>
+                                    <select name="park_id" id="park_id" class="form-select form-select-lg" required>
+                                        <?php foreach ($parks as $park): ?>
+                                            <option value="<?= $park['id'] ?>" data-capacity="<?= (int)($park['max_capacity'] ?? 0) ?>">
+                                                <?= e($park['name']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </article>
+
+                                <!-- Event type field -->
+                                <article class="col-lg-6">
+                                    <label class="form-label">Event type</label>
+                                    <select name="booking_type" class="form-select form-select-lg">
+                                        <option>Music</option>
+                                        <option>Festival</option>
+                                        <option>Fitness</option>
+                                        <option>Community</option>
+                                        <option>Sports</option>
+                                    </select>
+                                </article>
+
+                                <!-- Date field -->
+                                <article class="col-lg-4">
+                                    <label class="form-label">Date</label>
+                                    <input type="date" name="booking_date" class="form-control form-control-lg" required />
+                                </article>
+
+                                <!-- Start time field -->
+                                <article class="col-lg-4">
+                                    <label class="form-label">Start time</label>
+                                    <input type="time" name="start_time" class="form-control form-control-lg" required />
+                                </article>
+
+                                <!-- End time field -->
+                                <article class="col-lg-4">
+                                    <label class="form-label">End time</label>
+                                    <input type="time" name="end_time" class="form-control form-control-lg" required />
+                                </article>
+
+                                <!-- Guest count field -->
+                                <article class="col-lg-6">
+                                    <label class="form-label">Estimated attendees</label>
+                                    <input type="number" name="guest_count" id="guest_count" class="form-control form-control-lg" placeholder="150" min="1" required />
+                                    <div id="capacity_hint" class="form-text">Select a park or field to view the maximum capacity available.</div>
+                                </article>
+
+                                <!-- Requested setup field -->
+                                <article class="col-lg-6">
+                                    <label class="form-label">Requested setup</label>
+                                    <select name="requested_setup" class="form-select form-select-lg">
+                                        <option>Stage + sound</option>
+                                        <option>Tent area</option>
+                                        <option>Sports field</option>
+                                        <option>Picnic shelter</option>
+                                    </select>
+                                </article>
+
+                                <!-- Preferred field field -->
+                                <article class="col-12">
+                                    <label class="form-label">Preferred field or area</label>
+                                    <select name="field_id" id="field_id" class="form-select form-select-lg">
+                                        <option value="">No specific field</option>
+
+                                        <?php foreach ($fields as $field): ?>
+                                            <option value="<?= $field['id'] ?>" data-park="<?= $field['park_id'] ?>" data-capacity="<?= (int)$field['capacity'] ?>">
+                                                <?= e($field['park_name']) ?> — <?= e($field['name']) ?> (capacity <?= (int)$field['capacity'] ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </article>
+
+                                <!-- Event description field -->
+                                <article class="col-12">
+                                    <label class="form-label">Event description</label>
+                                    <textarea rows="5" name="event_description" class="form-control form-control-lg" placeholder="Purpose, audience, staffing, and setup notes" required></textarea>
+                                </article>
+
+                                <!-- Special requests field -->
+                                <article class="col-12">
+                                    <label class="form-label">Special requests</label>
+                                    <textarea rows="3" name="special_requests" class="form-control" placeholder="Security, parking, power, permits, or ADA notes"></textarea>
+                                </article>
+                            </section>
+
+                            <!-- Form buttons -->
+                            <section class="d-flex flex-wrap gap-2 mt-4">
+                                <button type="submit" class="btn btn-success rounded-pill px-4">Submit Booking Request</button>
+                                <a href="client-dashboard.php" class="btn btn-outline-dark rounded-pill px-4">Back to Dashboard</a>
+                            </section>
+                        </form>
+                    </section>
+                </article>
+
+                <!-- Booking flow column -->
+                <article class="col-xl-4">
+                    <section class="soft-card p-4 h-100">
+                        <h2 class="h5 fw-bold mb-3">How this flows</h2>
+
+                        <ol class="text-muted ps-3 mb-4">
+                            <li class="mb-2">Client submits a booking request.</li>
+                            <li class="mb-2">Admin reviews it in the bookings queue.</li>
+                            <li class="mb-2">Admin approves or denies the request.</li>
+                            <li class="mb-0">Approved requests appear on the client dashboard.</li>
+                        </ol>
+
+                        <section class="note-box">
+                            This page now writes directly to the live bookings table and checks for overlapping field requests.
+                        </section>
+                    </section>
+                </article>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        // Update capacity hints by selected park/field.
+        const parkSelect = document.getElementById('park_id');
+        const fieldSelect = document.getElementById('field_id');
+        const guestCountInput = document.getElementById('guest_count');
+        const capacityHint = document.getElementById('capacity_hint');
+
+        // Refresh guest capacity hint.
+        function updateCapacityHint() {
+            const selectedField = fieldSelect.selectedOptions[0];
+            const selectedPark = parkSelect.selectedOptions[0];
+            const fieldCapacity = selectedField && selectedField.value ? parseInt(selectedField.dataset.capacity || '0', 10) : 0;
+            const parkCapacity = selectedPark ? parseInt(selectedPark.dataset.capacity || '0', 10) : 0;
+            const limit = fieldCapacity || parkCapacity;
+
+            if (limit > 0) {
+                guestCountInput.max = String(limit);
+                capacityHint.textContent = fieldCapacity
+                    ? `Selected field max capacity: ${limit}. Capacity available for this request: up to ${limit} guests.`
+                    : `No field selected. Park max capacity: ${limit}. Capacity available for this request: up to ${limit} guests.`;
+            } else {
+                guestCountInput.removeAttribute('max');
+                capacityHint.textContent = 'Select a park or field to view the maximum capacity available.';
+            }
+        }
+
+        // Show fields for selected park.
+        function filterFieldsByPark() {
+            const selectedPark = parkSelect.value;
+
+            Array.from(fieldSelect.options).forEach(option => {
+                if (!option.value) {
+                    option.hidden = false;
+                    return;
+                }
+
+                option.hidden = option.dataset.park !== selectedPark;
+            });
+
+            if (fieldSelect.selectedOptions.length && fieldSelect.selectedOptions[0].hidden) {
+                fieldSelect.value = '';
+            }
+
+            updateCapacityHint();
+        }
+
+        // Bind capacity events.
+        parkSelect.addEventListener('change', filterFieldsByPark);
+        fieldSelect.addEventListener('change', updateCapacityHint);
+        filterFieldsByPark();
+    </script>
+
 <?php include __DIR__ . '/includes/footer.php'; ?>

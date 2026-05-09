@@ -4,6 +4,8 @@ This is my NYS Parks & Recreation capstone project. It is a public-facing parks 
 
 The site combines public park discovery pages, event listings, news updates, a searchable FAQ, a mock donation flow, a map page, an AI guide page, and private dashboards for different user roles. Most pages keep the original static front-end structure, but the important workflows are connected to MySQL through `bootstrap.php` and prepared PDO queries.
 
+This final package uses the polished p7r18 page structure and comments as the base, with the stable p7r19 `register.php` flow kept for client account registration.
+
 ---
 
 ## Project goals
@@ -45,7 +47,7 @@ There are no Laravel, Symfony, React, Node, Composer, or npm requirements.
 The project is flat on purpose. All main pages live in the root folder.
 
 ```text
-p7r13/
+p7r18_base_p7r19_register_final/
 ├── about.php
 ├── account.php
 ├── admin-bookings.php
@@ -173,7 +175,7 @@ Copy the full project folder into XAMPP `htdocs`.
 Example:
 
 ```text
-C:\xampp\htdocs\p7r13
+C:\xampp\htdocs\p7r18_base_p7r19_register_final
 ```
 
 ### 2. Start services
@@ -225,8 +227,35 @@ For a normal XAMPP install, `root` with a blank password should work.
 Use:
 
 ```text
-http://localhost/p7r13/index.php
+http://localhost/p7r18_base_p7r19_register_final/index.php
 ```
+
+---
+
+## Deployment setup on XfinityFree.com
+
+I also deployed the project on XfinityFree.com using the same basic process as the local XAMPP setup.
+
+### 1. Upload the source code
+
+In the XfinityFree.com hosting control panel, open **File Manager** and upload the project source code into the site `htdocs` folder.
+
+The uploaded files should include the PHP pages, `css/`, `js/`, `includes/`, and `db/` folders.
+
+### 2. Import the database
+
+Open phpMyAdmin from the XfinityFree.com hosting control panel and import the SQL files in this order:
+
+1. `db/schema.sql`
+2. `db/seed.sql`
+
+This creates and fills the `nys_parks` database tables the same way the local XAMPP setup does.
+
+### 3. Hook up the domain and open the site
+
+After the source code is in `htdocs` and the database has been imported through phpMyAdmin, connect the hosted domain to the account/site.
+
+Once the domain is connected, the project can be opened from the live domain instead of the local XAMPP URL.
 
 ---
 

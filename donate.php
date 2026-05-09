@@ -2,6 +2,7 @@
 // Load project setup.
 require 'bootstrap.php';
 
+// Use the current logged-in user.
 $user = $currentUser;
 $donationFlow = $_SERVER['REQUEST_METHOD'] === 'POST' || get('action') === 'donate';
 
@@ -66,7 +67,6 @@ foreach ($formData as $k => $v) {
 }
 
 // Validate and save donation submissions.
-// Handle submitted form actions.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = [];
 
@@ -79,26 +79,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $frequency = $formData['frequency'];
     $paymentMethod = $formData['payment_method'];
 
+    // Validate donor name.
     if ($donorName === '') {
         $errors[] = 'Please enter your full name.';
     }
 
+    // Validate donor email.
     if (!valid_email($donorEmail)) {
         $errors[] = 'Please enter a valid email address.';
     }
 
+    // Validate donation focus.
     if (!isset($donationFocusOptions[$donationFocus])) {
         $errors[] = 'Please choose a valid donation focus.';
     }
 
+    // Validate donation frequency.
     if (!isset($frequencyOptions[$frequency])) {
         $errors[] = 'Please choose a valid donation frequency.';
     }
 
+    // Validate payment method.
     if (!isset($paymentOptions[$paymentMethod])) {
         $errors[] = 'Please choose a valid payment method.';
     }
 
+    // Validate selected park.
     if ($selectedPark !== 'statewide' && !in_array($selectedPark, $parkNames, true)) {
         $errors[] = 'Please choose a valid park option.';
     }
@@ -120,10 +126,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Validate acknowledgement checkbox.
     if (empty($formData['agree_terms'])) {
         $errors[] = 'Please confirm the donation acknowledgement checkbox.';
     }
 
+    // Prepare payment values.
     $cardNum = null;
     $month = null;
     $year = null;
@@ -150,6 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $paymentStatus = 'completed';
     }
 
+    // Return validation errors.
     if ($errors) {
         flash_set('error', implode(' ', $errors));
         redirect('donate.php?action=donate');
@@ -191,6 +200,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $ref
     ]);
 
+    // Confirm donation save.
     flash_set(
         'success',
         $paymentMethod === 'card'
@@ -241,6 +251,8 @@ $extraHead = '';
     <section class="py-5 section-soft-green border-bottom">
         <div class="container">
             <div class="row g-4">
+
+                <!-- Trail impact card -->
                 <div class="col-md-4">
                     <div class="impact-card h-100">
                         <div class="impact-icon">
@@ -255,6 +267,7 @@ $extraHead = '';
                     </div>
                 </div>
 
+                <!-- Habitat impact card -->
                 <div class="col-md-4">
                     <div class="impact-card h-100">
                         <div class="impact-icon">
@@ -269,6 +282,7 @@ $extraHead = '';
                     </div>
                 </div>
 
+                <!-- Program impact card -->
                 <div class="col-md-4">
                     <div class="impact-card h-100">
                         <div class="impact-icon">
@@ -282,6 +296,7 @@ $extraHead = '';
                         </p>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
@@ -291,9 +306,13 @@ $extraHead = '';
     <section class="py-5">
         <div class="container">
             <div class="row g-4 align-items-start">
+
+                <!-- Donation form column -->
                 <div class="col-lg-7">
                     <div class="card border-0 shadow-sm donate-form-card">
                         <div class="card-body p-4 p-lg-5">
+
+                            <!-- Donation form heading -->
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
                                 <div>
                                     <p class="section-label mb-2">DONATION FORM</p>
@@ -306,13 +325,16 @@ $extraHead = '';
                                 </span>
                             </div>
 
+                            <!-- Flash message -->
                             <?php if ($flash): ?>
                                 <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?>" role="alert">
                                     <?= e($flash['message']) ?>
                                 </div>
                             <?php endif; ?>
 
+                            <!-- Donation form -->
                             <form method="post" action="donate.php?action=donate" id="donateForm" novalidate>
+
                                 <!-- Donor contact fields -->
                                 <div class="row g-3 mb-4">
                                     <div class="col-md-6">
@@ -433,6 +455,8 @@ $extraHead = '';
 
                                 <!-- Frequency and payment method -->
                                 <div class="row g-4 mb-4">
+
+                                    <!-- Frequency options -->
                                     <div class="col-md-6">
                                         <label class="form-label d-block mb-3">Donation Frequency</label>
 
@@ -452,6 +476,7 @@ $extraHead = '';
                                         </div>
                                     </div>
 
+                                    <!-- Payment options -->
                                     <div class="col-md-6">
                                         <label class="form-label d-block mb-3">Payment Method</label>
 
@@ -567,6 +592,7 @@ $extraHead = '';
                                     this page uses mock payment handling. Card numbers and CVV are validated only by digit count/range for the capstone database.
                                 </div>
 
+                                <!-- Donation acknowledgement -->
                                 <div class="form-check mb-4">
                                     <input
                                             class="form-check-input"
@@ -600,6 +626,8 @@ $extraHead = '';
                 <!-- Donation sidebar -->
                 <div class="col-lg-5">
                     <div class="donate-sidebar-stack">
+
+                        <!-- Giving snapshot card -->
                         <div class="card border-0 shadow-sm donate-summary-card">
                             <div class="card-body p-4">
                                 <p class="section-label mb-2">GIVING SNAPSHOT</p>
@@ -622,6 +650,7 @@ $extraHead = '';
                             </div>
                         </div>
 
+                        <!-- Next steps card -->
                         <div class="card border-0 shadow-sm donate-summary-card">
                             <div class="card-body p-4">
                                 <p class="section-label mb-2">WHAT HAPPENS NEXT</p>
@@ -634,6 +663,7 @@ $extraHead = '';
                                 </ol>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -647,6 +677,8 @@ $extraHead = '';
                 <div class="col-lg-8">
                     <div class="card border-0 shadow-sm donate-form-card">
                         <div class="card-body p-4 p-lg-5 text-center">
+
+                            <!-- Flash message -->
                             <?php if ($flash): ?>
                                 <div class="alert alert-<?= $flash['type'] === 'error' ? 'danger' : 'success' ?>" role="alert">
                                     <?= e($flash['message']) ?>
