@@ -35,6 +35,9 @@ The project demonstrates:
 - **Bootstrap Icons** for navigation and UI icons
 - **Vanilla JavaScript** for filtering, FAQ search, news expansion, donation form toggles, AI chat UI, and chart setup
 - **Chart.js** for dashboard charts where available
+- **Google Maps JavaScript API** for the live public map feature when a key is configured
+- **OpenAI / ChatGPT API** for the AI Guide chat functionality through `ai-api.php`
+- **External CDN/API resources** including Bootstrap, Bootstrap Icons, Chart.js, Google Maps, Unsplash images, and OpenAI API access
 - **XAMPP** as the intended local runtime
 - **HTML/CSS** with one shared stylesheet in `css/styles.css`
 
@@ -249,11 +252,25 @@ Open phpMyAdmin from the XfinityFree.com hosting control panel and import the SQ
 1. `db/schema.sql`
 2. `db/seed.sql`
 
-This creates and fills the `nys_parks` database tables the same way the local XAMPP setup does.
+This creates and fills the `nys_parks` database tables the same way the local XAMPP setup does. On shared hosting, you may need to remove or skip the `DROP DATABASE`, `CREATE DATABASE`, and `USE` lines from `db/schema.sql` because the host usually creates the database for you. In that case, select the assigned database in phpMyAdmin first, then import the table/schema statements and seed data.
 
-### 3. Hook up the domain and open the site
+### 3. Update hosted database settings
 
-After the source code is in `htdocs` and the database has been imported through phpMyAdmin, connect the hosted domain to the account/site.
+Open `bootstrap.php` and update the SQL server information to match the hosting control panel values:
+
+```php
+$host = 'your-host-name';
+$port = '3306';
+$dbname = 'your-database-name';
+$username = 'your-database-username';
+$password = 'your-database-password';
+```
+
+The required values are the host name, database name, username, password, and port. These are usually different from the local XAMPP defaults.
+
+### 4. Hook up the domain and open the site
+
+After the source code is in `htdocs`, the database has been imported through phpMyAdmin, and `bootstrap.php` has the hosted database settings, connect the hosted domain to the account/site.
 
 Once the domain is connected, the project can be opened from the live domain instead of the local XAMPP URL.
 
@@ -301,7 +318,7 @@ These pages can be viewed without logging in:
 | `news.php` | News | Shows published public updates from the `news` table with topic/region/search filters |
 | `about.php` | About Us | Static public information page about the project/site |
 | `faq.php` | FAQ | Searchable/filterable FAQ stored in a PHP array for now |
-| `donate.php` | Donate | Donation page with mock card/in-person payment handling |
+| `donate.php` | Donate | Public donation information page with mock card/in-person payment handling for logged-in clients |
 | `ai.php` | AI Guide | Public AI assistant page that connects to `ai-api.php` |
 | `search.php` | Search | Sitewide search across parks, events, and news |
 | `login.php` | Login | User login page |
@@ -310,7 +327,7 @@ These pages can be viewed without logging in:
 | `reset-password.php` | Reset Password | Updates the password after verification |
 | `logout.php` | Logout | Ends the session and returns the user to the public site |
 
-Some public pages have optional logged-in behavior. For example, the events page can show RSVP actions when a client is logged in.
+Some public pages have optional logged-in behavior. For example, the events page can show RSVP actions when a client is logged in, and public events can also accept guest RSVP entries by email.
 
 ### Private pages
 
@@ -328,7 +345,7 @@ These pages require login and role checks through `require_login()` or `require_
 | `admin-employee-accounts.php` | Admin | Create, update, disable, and reactivate employee accounts |
 | `admin-news.php` | Admin | Create, update, search, and delete news records |
 | `admin-bookings.php` | Admin | Review, approve, deny, and link booking requests to private events |
-| `admin-employee-schedule.php` | Admin | Create/delete employee shift schedules with overlap validation |
+| `admin-employee-schedule.php` | Admin | Create, update, and delete employee shift schedules with overlap validation |
 | `admin-pto.php` | Admin | Approve or deny employee PTO requests |
 | `admin-csv.php` | Admin | Export database datasets as CSV downloads |
 
@@ -382,7 +399,7 @@ An admin can:
 3. Create/update/disable employee accounts on `admin-employee-accounts.php`
 4. Add/update/delete public news records on `admin-news.php`
 5. Approve or deny booking requests on `admin-bookings.php`
-6. Create or delete employee schedules on `admin-employee-schedule.php`
+6. Create, update, or delete employee schedules on `admin-employee-schedule.php`
 7. Approve or deny PTO requests on `admin-pto.php`
 8. Export CSV datasets through `admin-csv.php`
 
@@ -402,13 +419,15 @@ Park cards include public-facing information such as region, type, description, 
 
 ### Events page
 
-`events.php` loads events from the `events` table and joins parks for park names/regions. It supports public event browsing and client RSVP behavior.
+`events.php` loads events from the `events` table and joins parks for park names/regions. It supports public event browsing, logged-in client RSVP behavior, and guest RSVP by email for public events.
 
 Important event behavior:
 
 - events have timing states like upcoming, live, past, or cancelled
 - event listings can use image fields from `events` or fall back to park images
 - RSVP records are stored in `attendance`
+- logged-in clients can RSVP using their account email
+- public visitors can RSVP to public events by entering an email address
 - duplicate active RSVP records are prevented by the unique attendance constraint
 - capacity is checked in PHP before a new RSVP is accepted
 - RSVP cancellation updates attendance status instead of deleting the row
@@ -454,7 +473,7 @@ This was kept simple so the FAQ can be edited directly in the page. A future ver
 
 ### Donation flow
 
-`donate.php` supports a mock donation workflow.
+`donate.php` supports a mock donation workflow. Public donation information is visible without logging in, but submitting the mock donation form requires a logged-in client account.
 
 Important details:
 
@@ -498,16 +517,16 @@ This is the intended flow:
 
 ### Employee schedule flow
 
-`admin-employee-schedule.php` lets admins create employee shifts.
+`admin-employee-schedule.php` lets admins create and update employee shifts.
 
-The code checks for overlapping shifts for the same employee/date before inserting a new schedule.
+The code checks for overlapping shifts for the same employee/date before inserting or updating a schedule.
 
 Employees view schedules on:
 
 - `employee-dashboard.php`
 - `employee-schedule.php`
 
-Employees cannot edit their own schedule from those pages.
+Employees cannot edit their own schedule from those pages. Admin schedule actions also support deleting/cancelling schedule records from the admin schedule page.
 
 ### PTO flow
 
@@ -543,13 +562,13 @@ It uses database queries for:
 - active employee counts
 - chart data for bookings, events, attendance, and donations
 
-Employee account management and news management now live on dedicated admin pages: `admin-employee-accounts.php` and `admin-news.php`. The dashboard links to those tools instead of handling those mutations directly.
+Employee account management and news management now live on dedicated admin pages: `admin-employee-accounts.php` and `admin-news.php`. The dashboard links to those tools instead of handling those mutations directly. Disabling an employee account also cancels that employee’s future scheduled shifts so disabled employees do not remain assigned to upcoming work.
 
 ### CSV export
 
 `admin-csv.php` exports selected datasets as CSV downloads.
 
-It does not require filesystem write permissions because it sends the CSV directly as a download response.
+It supports optional `date_from` and `date_to` filters for date-based exports, using the appropriate date column for each selected dataset. It does not require filesystem write permissions because it sends the CSV directly as a download response.
 
 Supported export-style datasets include:
 
@@ -569,13 +588,13 @@ Supported export-style datasets include:
 
 `ai.php` provides the public AI guide interface.
 
-`ai-api.php` handles the backend API call pattern. The front-end sends the user message and recent chat history. If a live API key/backend is not configured, the page still provides a clear place for that feature.
+`ai-api.php` handles the backend API call pattern using the OpenAI / ChatGPT API for the chat function. The front-end sends the user message and recent chat history. The API key configuration is commented near the top of `ai-api.php` so it can be edited for the local or hosted setup. If a live API key/backend is not configured, the page still provides a clear place for that feature.
 
 ### Map page
 
 `map.php` loads park records and prepares map-friendly data such as name, region, address, latitude, longitude, image, and summary.
 
-`map-api.php` contains a helper for checking whether a Google Maps API key is configured.
+`map-api.php` contains a helper for checking whether a Google Maps API key is configured. The Google Maps API key configuration is commented near the top of `map-api.php` so it can be edited for the local or hosted setup.
 
 ---
 
@@ -606,7 +625,7 @@ Approximate seeded content:
 
 | Table | Seed data included |
 |---|---:|
-| `parks` | 12 parks |
+| `parks` | 27 parks |
 | `users` | 5 users |
 | `fields` | 6 facilities/fields |
 | `events` | 24 events |
@@ -680,6 +699,9 @@ Important fields:
 - `park_id`
 - `account_status`
 - `last_login_at`
+- `profile_image_url`
+- `created_at`
+- `updated_at`
 
 Role values:
 
@@ -1106,8 +1128,8 @@ Important limitations:
 - payment handling is mock/demo only
 - CVV/card fields should not be stored in a real production system
 - password reset does not send email or use expiring reset tokens
-- API keys should be loaded from environment variables, not committed to source
-- AI API configuration depends on local setup/environment
+- API key configuration is commented in `ai-api.php` and `map-api.php`; edit those values for your own OpenAI and Google Maps setup
+- AI API configuration depends on the local/hosted setup and the OpenAI API key used for the ChatGPT-style chat function
 - database credentials are currently local XAMPP defaults in `bootstrap.php`
 
 ---
@@ -1154,7 +1176,7 @@ For a real production site, this would need a payment processor like Stripe, Squ
 
 The CSV export page is admin-only.
 
-The export is generated directly in PHP and downloaded immediately. This avoids folder permission problems because the server does not need to write CSV files to disk.
+The export is generated directly in PHP and downloaded immediately. Optional `date_from` and `date_to` filters can narrow exports by date where the selected dataset has a date column. This avoids folder permission problems because the server does not need to write CSV files to disk.
 
 This is useful for the project because it demonstrates structured data output without adding storage folders or export log tables.
 
@@ -1245,6 +1267,7 @@ Before submitting or demoing, I should click-test these flows in XAMPP:
 - Deny booking
 - Confirm approved booking creates/updates private event
 - Create employee schedule
+- Update employee schedule
 - Confirm schedule overlap prevention
 - Delete schedule
 - Approve PTO
@@ -1308,9 +1331,9 @@ These are realistic improvements that could be added after the capstone version:
 - connect donation/reservation payment to a real payment processor
 - replace local password reset with email/token-based reset
 - add admin CRUD for parks and events
-- add employee schedule editing instead of create/delete only
+- expand employee schedule tools beyond the current create/update/delete workflow
 - add attendance check-in tools for employees/admins
-- add API key configuration through environment variables
+- continue improving API key setup comments and deployment configuration for OpenAI and Google Maps
 - add pagination for news, events, and admin tables
 - add image upload support instead of external image URLs
 

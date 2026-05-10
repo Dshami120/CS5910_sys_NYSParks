@@ -2,7 +2,9 @@
 declare(strict_types=1);
 
 // Configure OpenAI for the AI Guide.
-define('OPENAI_API_KEY', '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'); //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
+define('OPENAI_API_KEY', 'PASTE_YOUR_OPENAI_API_KEY_HERE');
+//s.k. -proj-4zXxhGuBvwn2NLANye4FVNZ0fr-nPiL9phXA4beV5WzuUGIM_QTEKmJ8baEmwelqMkDOs70YieT3BlbkFJ67d5gHtynTukh1rlXTYNS_6_T1urVjp35luQLBZ317MyhiyslJp3YYh7tXPEj-gIaHFDyYvaEA
+//s.k. -proj-4zXxhGuBvwn2NLANye4FVNZ0fr-nPiL9phXA4beV5WzuUGIM_QTEKmJ8baEmwelqMkDOs70YieT3BlbkFJ67d5gHtynTukh1rlXTYNS_6_T1urVjp35luQLBZ317MyhiyslJp3YYh7tXPEj-gIaHFDyYvaEA
 define('OPENAI_MODEL', 'gpt-4.1-mini');
 
 // Only accept chat POST requests.
