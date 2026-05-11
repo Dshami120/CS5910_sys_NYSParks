@@ -348,6 +348,8 @@ Main demo accounts:
 | Employee | `employee@nysparks.local` | Employee dashboard, schedule, PTO requests |
 | Client | `client@nysparks.local` | Client dashboard, RSVPs, event requests, donations |
 
+DEMO ACCOUNT PASSWORDS: Password123!
+
 Additional seeded employees:
 
 | Name | Email | Role |
